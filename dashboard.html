@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MX5a EREV 예지보전 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #222; }
+  .topbar { background: #1a1a2e; color: #fff; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.02em; }
+  .topbar span { font-size: 12px; opacity: 0.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .kpi { background: #fff; border-radius: 10px; padding: 16px 20px; border: 1px solid #e8e8e8; }
+  .kpi-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+  .kpi-val { font-size: 28px; font-weight: 600; }
+  .kpi-val.red { color: #c0392b; }
+  .kpi-val.yellow { color: #d68910; }
+  .kpi-val.green { color: #1e8449; }
+  .kpi-val.blue { color: #1a1a2e; }
+  .charts-row { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 20px; }
+  .card { background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #e8e8e8; }
+  .card h3 { font-size: 13px; color: #666; font-weight: 600; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .trend-card { margin-bottom: 20px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; font-size: 11px; color: #666; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: #f8f8f8; }
+  th { padding: 10px 12px; text-align: center; font-size: 11px; color: #666; font-weight: 600; border-bottom: 1px solid #eee; text-transform: uppercase; }
+  td { padding: 9px 12px; text-align: center; border-bottom: 1px solid #f0f0f0; }
+  tr:hover td { background: #fafafa; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge-red { background: #fdedec; color: #c0392b; }
+  .badge-yellow { background: #fef9e7; color: #d68910; }
+  .badge-green { background: #eafaf1; color: #1e8449; }
+  .badge-gray { background: #f0f0f0; color: #888; }
+  .trend-up { color: #c0392b; font-weight: 600; }
+  .trend-down { color: #1e8449; font-weight: 600; }
+  .trend-flat { color: #888; }
+  .footer { text-align: center; font-size: 11px; color: #aaa; padding: 20px 0; }
+  @media (max-width: 700px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>MX5a EREV &nbsp;|&nbsp; BR BRKT RH (BR0037) &nbsp;예지보전 대시보드</h1>
+  <span>최근 측정: 2026-05-08 &nbsp;|&nbsp; 본사(HQ) vs VINA 비교</span>
+</div>
+
+<div class="container">
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">전체 측정 항목</div><div class="kpi-val blue">18</div></div>
+    <div class="kpi"><div class="kpi-label">즉시수리 필요</div><div class="kpi-val red">9</div></div>
+    <div class="kpi"><div class="kpi-label">주의 관찰</div><div class="kpi-val yellow">2</div></div>
+    <div class="kpi"><div class="kpi-label">정상</div><div class="kpi-val green">7</div></div>
+  </div>
+
+  <div class="charts-row">
+    <div class="card">
+      <h3>판정 현황</h3>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#e74c3c"></span>즉시수리 9</span>
+        <span><span class="legend-dot" style="background:#f39c12"></span>주의관찰 2</span>
+        <span><span class="legend-dot" style="background:#27ae60"></span>정상 7</span>
+      </div>
+      <div style="position:relative;height:200px;">
+        <canvas id="donutChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h3>항목별 Gap 크기 (본사 대비)</h3>
+      <div style="position:relative;height:220px;">
+        <canvas id="gapChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card trend-card">
+    <h3>날짜별 Gap 추이 — 주요 항목</h3>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:#2980b9"></span>No.1 Y축거리</span>
+      <span><span class="legend-dot" style="background:#e74c3c"></span>No.7 Y축거리</span>
+      <span><span class="legend-dot" style="background:#f39c12"></span>No.10 각도</span>
+      <span><span class="legend-dot" style="background:#27ae60"></span>No.18 각도</span>
+    </div>
+    <div style="position:relative;height:200px;">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>전체 항목 상세</h3>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>No.</th><th>Spec</th><th>측정항목</th>
+          <th>HQ 평균</th><th>VINA 최근</th><th>Gap</th>
+          <th>마모추세</th><th>판정</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    성우전자 글로벌 품질관리 · 데이터 출처: Google Drive / MX5AEREV_BR BRKT RH_BR0037_DATA · 생성일: 2026-05-15
+  </div>
+
+</div>
+
+<script>
+const data = [
+  { no:1,  spec:19.5, item:'Y축 거리', hq:19.635, vina:19.507, gap:0.128, trend:'down', status:'red' },
+  { no:2,  spec:12.0, item:'Y축 거리', hq:12.004, vina:11.962, gap:0.042, trend:'flat', status:'green' },
+  { no:3,  spec:8.5,  item:'홀 파이',  hq:8.607,  vina:8.510,  gap:0.097, trend:'up',   status:'yellow' },
+  { no:4,  spec:12.0, item:'X축 거리', hq:11.990, vina:11.990, gap:0.000, trend:'down', status:'green' },
+  { no:5,  spec:24.0, item:'X축 거리', hq:24.015, vina:24.048, gap:0.033, trend:'flat', status:'green' },
+  { no:6,  spec:4.0,  item:'X축 거리', hq:4.097,  vina:3.990,  gap:0.107, trend:'down', status:'red' },
+  { no:7,  spec:9.51, item:'Y축 거리', hq:9.448,  vina:9.634,  gap:0.186, trend:'flat', status:'red' },
+  { no:8,  spec:36.1, item:'Y축 거리', hq:36.200, vina:36.203, gap:0.003, trend:'down', status:'green' },
+  { no:9,  spec:5.0,  item:'Y축 거리', hq:4.960,  vina:4.840,  gap:0.120, trend:'down', status:'red' },
+  { no:10, spec:16.5, item:'각도',     hq:15.906, vina:17.276, gap:1.370, trend:'up',   status:'red' },
+  { no:11, spec:2.0,  item:'각도',     hq:2.189,  vina:2.323,  gap:0.135, trend:'down', status:'red' },
+  { no:12, spec:5.0,  item:'X축 거리', hq:4.925,  vina:4.920,  gap:0.005, trend:'flat', status:'green' },
+  { no:13, spec:2.0,  item:'T값',      hq:1.980,  vina:2.080,  gap:0.100, trend:'up',   status:'red' },
+  { no:14, spec:19.5, item:'X축 거리', hq:19.565, vina:19.610, gap:0.045, trend:'flat', status:'green' },
+  { no:15, spec:18.0, item:'X축 거리', hq:18.015, vina:18.120, gap:0.105, trend:'up',   status:'red' },
+  { no:16, spec:90.0, item:'각도',     hq:90.468, vina:90.385, gap:0.083, trend:'down', status:'yellow' },
+  { no:17, spec:19.5, item:'Y축 거리', hq:19.575, vina:19.620, gap:0.045, trend:'flat', status:'green' },
+  { no:18, spec:2.5,  item:'각도',     hq:2.039,  vina:3.031,  gap:0.992, trend:'down', status:'red' },
+];
+
+const statusLabel = { red:'🔴 즉시수리', yellow:'🟡 주의관찰', green:'🟢 정상' };
+const badgeClass  = { red:'badge-red', yellow:'badge-yellow', green:'badge-green' };
+const trendHTML   = { up:'<span class="trend-up">↗ 마모진행</span>', down:'<span class="trend-down">↘ 안정화</span>', flat:'<span class="trend-flat">→ 유지</span>' };
+
+const tbody = document.getElementById('tableBody');
+data.forEach(d => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><strong>${d.no}</strong></td>
+    <td>${d.spec}</td>
+    <td style="text-align:left">${d.item}</td>
+    <td>${d.hq.toFixed(3)}</td>
+    <td>${d.vina.toFixed(3)}</td>
+    <td><strong style="color:${d.gap>=0.1?'#c0392b':d.gap>=0.05?'#d68910':'#1e8449'}">${d.gap.toFixed(3)}</strong></td>
+    <td>${trendHTML[d.trend]}</td>
+    <td><span class="badge ${badgeClass[d.status]}">${statusLabel[d.status]}</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+new Chart(document.getElementById('donutChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['즉시수리','주의관찰','정상'],
+    datasets: [{ data:[9,2,7], backgroundColor:['#e74c3c','#f39c12','#27ae60'], borderWidth:0 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{ display:false } } }
+});
+
+new Chart(document.getElementById('gapChart'), {
+  type: 'bar',
+  data: {
+    labels: data.map(d=>`No.${d.no}`),
+    datasets: [{
+      data: data.map(d=>d.gap),
+      backgroundColor: data.map(d=>d.status==='red'?'#e74c3c':d.status==='yellow'?'#f39c12':'#27ae60'),
+      borderWidth:0, borderRadius:3
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    scales:{
+      x:{ ticks:{ font:{size:10}, autoSkip:false, maxRotation:0 }, grid:{ display:false } },
+      y:{ ticks:{ font:{size:10} }, grid:{ color:'rgba(0,0,0,0.06)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: ['03/28','04/15','04/16','04/25','05/08'],
+    datasets: [
+      { label:'No.1',  data:[0.128,0.132,0.141,0.135,0.128], borderColor:'#2980b9', backgroundColor:'transparent', pointRadius:4, borderWidth:2, tension:0.3 },
+      { label:'No.7',  data:[0.195,0.202,0.190,0.188,0.186], borderColor:'#e74c3c', backgroundColor:'transparent', pointRadius:4, borderWidth:2, tension:0.3 },
+      { label:'No.10', data:[1.250,1.310,1.340,1.360,1.370], borderColor:'#f39c12', backgroundColor:'transparent', pointRadius:4, borderWidth:2, tension:0.3, borderDash:[4,3] },
+      { label:'No.18', data:[1.050,1.020,0.998,1.010,0.992], borderColor:'#27ae60', backgroundColor:'transparent', pointRadius:4, borderWidth:2, tension:0.3, borderDash:[2,2] },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    scales:{
+      x:{ ticks:{ font:{size:11} }, grid:{ display:false } },
+      y:{ ticks:{ font:{size:11} }, grid:{ color:'rgba(0,0,0,0.06)' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
