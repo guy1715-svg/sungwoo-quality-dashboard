@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MX5a EREV 예지보전 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; color: #222; }
+.topbar { background: #1a1a2e; color: #fff; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+.topbar h1 { font-size: 15px; font-weight: 700; }
+.topbar p { font-size: 11px; opacity: 0.5; margin-top: 3px; }
+.topbar-right { font-size: 11px; opacity: 0.55; text-align: right; line-height: 1.9; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 18px; }
+.kpi { background: #fff; border-radius: 10px; padding: 14px 16px; border: 1px solid #e4e4e4; }
+.kpi-label { font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+.kpi-val { font-size: 26px; font-weight: 700; }
+.kpi-sub { font-size: 11px; color: #aaa; margin-top: 3px; }
+.red { color: #c0392b; } .yellow { color: #d68910; } .green { color: #1e8449; } .blue { color: #1a1a2e; } .purple { color: #6c3483; }
+.row2 { display: grid; grid-template-columns: 220px 1fr; gap: 14px; margin-bottom: 14px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.card { background: #fff; border-radius: 10px; padding: 18px; border: 1px solid #e4e4e4; }
+.card-title { font-size: 11px; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; font-size: 11px; color: #666; }
+.legend span { display: flex; align-items: center; gap: 4px; }
+.ld { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { padding: 8px 10px; text-align: center; font-size: 10px; color: #666; font-weight: 700; border-bottom: 1px solid #eee; background: #f8f8f8; text-transform: uppercase; white-space: nowrap; }
+td { padding: 7px 10px; text-align: center; border-bottom: 1px solid #f2f2f2; white-space: nowrap; }
+td.left { text-align: left; }
+tr:hover td { background: #fafafa; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+.br { background:#fdedec; color:#c0392b; }
+.by { background:#fef9e7; color:#d68910; }
+.bg { background:#eafaf1; color:#1e8449; }
+.trend-up { color:#c0392b; } .trend-dn { color:#1e8449; } .trend-fl { color:#999; }
+.part-tag { display:inline-block; font-size:9px; padding:1px 5px; border-radius:3px; margin-left:3px; font-weight:600; }
+.tag-f { background:#dbeafe; color:#1e40af; }
+.tag-s { background:#ede9fe; color:#5b21b6; }
+.tag-b { background:#d1fae5; color:#065f46; }
+.footer { text-align:center; font-size:11px; color:#bbb; padding:16px 0; border-top:1px solid #e8e8e8; margin-top:16px; }
+@media(max-width:800px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} .row2,.row3{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <h1>성우전자 &nbsp;|&nbsp; MX5a EREV &nbsp;BR BRKT LH·RH (BR0037) &nbsp;예지보전 대시보드</h1>
+    <p>SUNGWOO ELECTRONICS · 글로벌 품질관리 · 본사 기준값 vs 출하검사 vs VINA 현지 3중 비교</p>
+  </div>
+  <div class="topbar-right">
+    본사 기준: 2026-03-31 &nbsp;|&nbsp; 출하검사: 2026-05-14<br>
+    VINA 최근: 2026-05-08 &nbsp;|&nbsp; Part: BR0037-L/R-A
+  </div>
+</div>
+
+<div class="container">
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">전체 측정항목</div><div class="kpi-val blue">18</div><div class="kpi-sub">LH · RH 공통</div></div>
+    <div class="kpi"><div class="kpi-label">즉시수리</div><div class="kpi-val red" id="kpi-red">-</div><div class="kpi-sub">Gap ≥ 0.1</div></div>
+    <div class="kpi"><div class="kpi-label">주의관찰</div><div class="kpi-val yellow" id="kpi-yellow">-</div><div class="kpi-sub">Gap 0.05~0.1</div></div>
+    <div class="kpi"><div class="kpi-label">정상</div><div class="kpi-val green" id="kpi-green">-</div><div class="kpi-sub">Gap &lt; 0.05</div></div>
+    <div class="kpi"><div class="kpi-label">최대 Gap항목</div><div class="kpi-val purple" id="kpi-maxno">-</div><div class="kpi-sub" id="kpi-maxval">-</div></div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="card-title">판정 현황</div>
+      <div class="legend">
+        <span><span class="ld" style="background:#e74c3c"></span>즉시수리</span>
+        <span><span class="ld" style="background:#f39c12"></span>주의관찰</span>
+        <span><span class="ld" style="background:#27ae60"></span>정상</span>
+      </div>
+      <div style="position:relative;height:160px;"><canvas id="donutChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">항목별 Gap — 출하검사 평균 대비 VINA</div>
+      <div style="position:relative;height:180px;"><canvas id="gapChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row3">
+    <div class="card">
+      <div class="card-title">출하검사 LH — 산포 R값</div>
+      <div style="position:relative;height:180px;"><canvas id="rChartLH"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">출하검사 RH — 산포 R값</div>
+      <div style="position:relative;height:180px;"><canvas id="rChartRH"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title">날짜별 Gap 추이 — 주요 이상 항목 (VINA)</div>
+    <div class="legend">
+      <span><span class="ld" style="background:#2980b9"></span>No.10 파이프각도</span>
+      <span><span class="ld" style="background:#e74c3c"></span>No.18 우측각도</span>
+      <span><span class="ld" style="background:#f39c12"></span>No.7 브라켓Y축</span>
+      <span><span class="ld" style="background:#27ae60"></span>No.9 Y축거리</span>
+    </div>
+    <div style="position:relative;height:180px;"><canvas id="trendChart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">전체 항목 상세 — 출하LH · 출하RH · VINA 3중 비교</div>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>No.</th>
+          <th style="text-align:left">측정 부위</th>
+          <th>Spec</th>
+          <th>TOL</th>
+          <th>출하LH<br>평균</th>
+          <th>출하RH<br>평균</th>
+          <th>VINA<br>최근</th>
+          <th>Gap</th>
+          <th>R값LH</th>
+          <th>R값RH</th>
+          <th>마모추세</th>
+          <th>판정</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    성우전자 글로벌 품질관리 &nbsp;·&nbsp; MX5a EREV BR BRKT LH·RH (BR0037-L/R-A) &nbsp;·&nbsp; 생성일: 2026-05-15
+  </div>
+</div>
+
+<script>
+const partInfo = [
+  {no:1,  part:'상단 마운팅 Y축 거리',    view:'정면도', spec:19.5, tol:0.5},
+  {no:2,  part:'좌측 브라켓 Y축 거리',    view:'정면도', spec:12.0, tol:0.4},
+  {no:3,  part:'하단 홀 직경 (ø8.5)',     view:'정면도', spec:8.5,  tol:0.2},
+  {no:4,  part:'중앙 브라켓 X축 거리',    view:'정면도', spec:12.0, tol:0.4},
+  {no:5,  part:'하단 X축 거리',           view:'정면도', spec:24.0, tol:0.5},
+  {no:6,  part:'좌측 단차 X축 거리',      view:'정면도', spec:4.0,  tol:0.4},
+  {no:7,  part:'우측 브라켓 Y축 거리',    view:'정면도', spec:9.5,  tol:0.5},
+  {no:8,  part:'우측 파이프 직경 (ø36.1)',view:'정면도', spec:36.1, tol:0.5},
+  {no:9,  part:'우측 상단 홀 Y축',        view:'정면도', spec:5.0,  tol:0.2},
+  {no:10, part:'파이프 연결 각도',         view:'측면도', spec:16.5, tol:3.0},
+  {no:11, part:'하단 플랜지 각도',         view:'측면도', spec:2.0,  tol:3.0},
+  {no:12, part:'파이프 X축 거리',          view:'측면도', spec:5.0,  tol:0.4},
+  {no:13, part:'스프링 클립 두께 (T값)',   view:'측면도', spec:2.0,  tol:0.5},
+  {no:14, part:'상단 X축 거리',            view:'배면도', spec:19.5, tol:0.5},
+  {no:15, part:'중앙 X축 거리',            view:'배면도', spec:18.0, tol:0.5},
+  {no:16, part:'좌측 플랜지 각도 (90°)',   view:'배면도', spec:90.0, tol:3.0},
+  {no:17, part:'하단 Y축 거리',            view:'배면도', spec:19.5, tol:0.5},
+  {no:18, part:'우측 파이프 각도 (2.5°)',  view:'배면도', spec:2.5,  tol:3.0},
+];
+const lhData = [
+  {no:1,avg:19.5675,r:0.0221},{no:2,avg:12.0291,r:0.0264},{no:3,avg:8.5615,r:0.0332},
+  {no:4,avg:11.9811,r:0.0299},{no:5,avg:23.9960,r:0.0246},{no:6,avg:3.9765,r:0.0230},
+  {no:7,avg:9.6722,r:0.0270},{no:8,avg:36.1910,r:0.0244},{no:9,avg:4.9120,r:0.0200},
+  {no:10,avg:16.5659,r:0.0511},{no:11,avg:2.5242,r:0.3606},{no:12,avg:4.9600,r:0.0200},
+  {no:13,avg:2.0840,r:0.0100},{no:14,avg:19.5940,r:0.0300},{no:15,avg:18.1700,r:0.0300},
+  {no:16,avg:89.5361,r:0.2434},{no:17,avg:19.6020,r:0.0400},{no:18,avg:2.6053,r:0.4163},
+];
+const rhData = [
+  {no:1,avg:19.5042,r:0.0099},{no:2,avg:11.9834,r:0.0389},{no:3,avg:8.5369,r:0.0742},
+  {no:4,avg:11.9785,r:0.0362},{no:5,avg:24.0334,r:0.0272},{no:6,avg:3.9847,r:0.0123},
+  {no:7,avg:9.6436,r:0.0180},{no:8,avg:36.1807,r:0.0503},{no:9,avg:4.8400,r:0.0200},
+  {no:10,avg:17.2859,r:0.1271},{no:11,avg:2.3408,r:0.3197},{no:12,avg:4.9280,r:0.0200},
+  {no:13,avg:2.0800,r:0.0200},{no:14,avg:19.6180,r:0.0200},{no:15,avg:18.1160,r:0.0400},
+  {no:16,avg:90.4184,r:0.4976},{no:17,avg:19.6160,r:0.0100},{no:18,avg:3.0238,r:0.2323},
+];
+const vinaData = [
+  {no:1,v:19.5072},{no:2,v:11.9623},{no:3,v:8.5097},{no:4,v:11.9898},
+  {no:5,v:24.0480},{no:6,v:3.9897},{no:7,v:9.6517},{no:8,v:36.2031},
+  {no:9,v:4.8400},{no:10,v:17.2759},{no:11,v:2.3226},{no:12,v:4.9400},
+  {no:13,v:2.0800},{no:14,v:19.6300},{no:15,v:18.1400},{no:16,v:90.6364},
+  {no:17,v:19.6200},{no:18,v:3.0307},
+];
+const trendMap = {1:'down',2:'flat',3:'up',4:'down',5:'flat',6:'down',7:'flat',
+  8:'down',9:'down',10:'up',11:'down',12:'flat',13:'up',14:'flat',15:'up',
+  16:'down',17:'flat',18:'down'};
+const tagClass = {'정면도':'tag-f','측면도':'tag-s','배면도':'tag-b'};
+const trendHTML = {
+  up:'<span class="trend-up">↗ 마모진행</span>',
+  down:'<span class="trend-dn">↘ 안정화</span>',
+  flat:'<span class="trend-fl">→ 유지</span>'
+};
+
+let redCnt=0,yelCnt=0,grnCnt=0,maxGap=0,maxNo=0;
+const tbody = document.getElementById('tableBody');
+const gapVals = [];
+
+partInfo.forEach((p,i) => {
+  const lh=lhData[i], rh=rhData[i], vina=vinaData[i];
+  const hqAvg=(lh.avg+rh.avg)/2;
+  const gap=Math.abs(hqAvg-vina.v);
+  gapVals.push(gap);
+  let status,badgeCls;
+  if(gap>=0.1){status='🔴 즉시수리';badgeCls='br';redCnt++;}
+  else if(gap>=0.05){status='🟡 주의관찰';badgeCls='by';yelCnt++;}
+  else{status='🟢 정상';badgeCls='bg';grnCnt++;}
+  if(gap>maxGap){maxGap=gap;maxNo=p.no;}
+  const gapColor=gap>=0.1?'#c0392b':gap>=0.05?'#d68910':'#1e8449';
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><strong>${p.no}</strong></td>
+    <td class="left">${p.part}<span class="part-tag ${tagClass[p.view]}">${p.view}</span></td>
+    <td>${p.spec}</td>
+    <td>±${p.tol}</td>
+    <td>${lh.avg.toFixed(4)}</td>
+    <td>${rh.avg.toFixed(4)}</td>
+    <td>${vina.v.toFixed(4)}</td>
+    <td><strong style="color:${gapColor}">${gap.toFixed(3)}</strong></td>
+    <td style="color:${lh.r>p.tol*0.5?'#c0392b':'#888'}">${lh.r.toFixed(4)}</td>
+    <td style="color:${rh.r>p.tol*0.5?'#c0392b':'#888'}">${rh.r.toFixed(4)}</td>
+    <td>${trendHTML[trendMap[p.no]]}</td>
+    <td><span class="badge ${badgeCls}">${status}</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+
+document.getElementById('kpi-red').textContent=redCnt;
+document.getElementById('kpi-yellow').textContent=yelCnt;
+document.getElementById('kpi-green').textContent=grnCnt;
+document.getElementById('kpi-maxno').textContent='No.'+maxNo;
+document.getElementById('kpi-maxval').textContent='Gap '+maxGap.toFixed(3);
+
+new Chart(document.getElementById('donutChart'),{
+  type:'doughnut',
+  data:{labels:['즉시수리','주의관찰','정상'],
+    datasets:[{data:[redCnt,yelCnt,grnCnt],backgroundColor:['#e74c3c','#f39c12','#27ae60'],borderWidth:0}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
+});
+new Chart(document.getElementById('gapChart'),{
+  type:'bar',
+  data:{labels:partInfo.map(p=>`No.${p.no}`),
+    datasets:[{data:gapVals,backgroundColor:gapVals.map(g=>g>=0.1?'#e74c3c':g>=0.05?'#f39c12':'#27ae60'),borderWidth:0,borderRadius:3}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{font:{size:9},autoSkip:false,maxRotation:0},grid:{display:false}},
+      y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+});
+new Chart(document.getElementById('rChartLH'),{
+  type:'bar',
+  data:{labels:lhData.map(d=>`P${d.no}`),
+    datasets:[{data:lhData.map(d=>d.r),backgroundColor:lhData.map((d,i)=>d.r>partInfo[i].tol*0.5?'#e74c3c':'#3498db'),borderWidth:0,borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+});
+new Chart(document.getElementById('rChartRH'),{
+  type:'bar',
+  data:{labels:rhData.map(d=>`P${d.no}`),
+    datasets:[{data:rhData.map(d=>d.r),backgroundColor:rhData.map((d,i)=>d.r>partInfo[i].tol*0.5?'#e74c3c':'#9b59b6'),borderWidth:0,borderRadius:2}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+});
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{labels:['03/28','04/15','04/16','04/25','05/08'],
+    datasets:[
+      {label:'No.10',data:[1.250,1.310,1.340,1.360,1.370],borderColor:'#2980b9',backgroundColor:'transparent',pointRadius:4,borderWidth:2,tension:0.3},
+      {label:'No.18',data:[1.050,1.020,0.998,1.010,0.992],borderColor:'#e74c3c',backgroundColor:'transparent',pointRadius:4,borderWidth:2,tension:0.3,borderDash:[4,3]},
+      {label:'No.7', data:[0.195,0.202,0.190,0.188,0.186],borderColor:'#f39c12',backgroundColor:'transparent',pointRadius:4,borderWidth:2,tension:0.3},
+      {label:'No.9', data:[0.160,0.145,0.132,0.128,0.120],borderColor:'#27ae60',backgroundColor:'transparent',pointRadius:4,borderWidth:2,tension:0.3,borderDash:[2,2]},
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{font:{size:11}},grid:{display:false}},y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}}}
+});
+</script>
+</body>
+</html>
