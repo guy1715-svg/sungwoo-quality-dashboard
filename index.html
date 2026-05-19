@@ -610,8 +610,7 @@ function initCharts(){
 let hqParsed=null,vinaParsed=null;
 function parseIntSafe(val){
   if(val===null||val===undefined)return null;
-  const s=String(val).trim().replace('.0','');
-  const n=parseFloat(s);
+  const n=parseFloat(String(val).trim());
   return(!isNaN(n)&&n===Math.floor(n)&&n>0&&n<200)?Math.floor(n):null;
 }
 function cleanNum(val){
