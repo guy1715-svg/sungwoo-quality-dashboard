@@ -89,6 +89,19 @@ tr.angle-row td { background:#f9f9f9; color:#bbb; }
 .angle-badge { display:inline-block; background:#f0f0f0; color:#999; font-size:9px; padding:1px 6px; border-radius:3px; margin-left:4px; }
 .notice { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 16px; font-size:11px; color:#92400e; margin-bottom:14px; }
 .gap-info { background:#f0f7ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 16px; font-size:11px; color:#1e40af; margin-bottom:14px; }
+
+/* Spec 위치 차트 */
+.spec-pos-chart { position:relative; height:36px; margin:6px 0 2px; }
+.sp-track { position:absolute; top:14px; left:0; right:0; height:8px; background:#f0f0f0; border-radius:4px; }
+.sp-range { position:absolute; top:14px; height:8px; border-radius:3px; }
+.sp-nom { position:absolute; top:14px; width:2px; height:8px; background:#93c5fd; }
+.sp-dot { position:absolute; top:8px; width:20px; height:20px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.2); transform:translateX(-50%); z-index:2; cursor:pointer; transition:transform 0.15s; }
+.sp-dot:hover { transform:translateX(-50%) scale(1.2); }
+.sp-lbl { position:absolute; bottom:0; font-size:9px; color:#aaa; transform:translateX(-50%); }
+.sp-lbl-nom { color:#3b82f6; font-weight:600; }
+.sp-lbl-val { font-size:9px; font-weight:700; }
+
+/* 팝업 */
 .popup-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); z-index:1000; justify-content:center; align-items:center; }
 .popup-overlay.active { display:flex; }
 .popup-box { background:#fff; border-radius:14px; padding:24px; max-width:560px; width:92%; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
@@ -98,6 +111,8 @@ tr.angle-row td { background:#f9f9f9; color:#bbb; }
 .popup-sub { font-size:11px; color:#888; margin-bottom:14px; }
 .popup-img { width:100%; border-radius:8px; border:1px solid #eee; }
 .popup-highlight { font-size:12px; color:#c0392b; font-weight:600; margin-top:10px; text-align:center; background:#fff5f5; padding:8px; border-radius:6px; }
+
+/* 파일 업로드 */
 .upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
 .upload-box { background:#fff; border-radius:12px; border:2px dashed #e4e4e4; padding:28px 20px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; }
 .upload-box:hover { border-color:#3b82f6; background:#f8fbff; }
@@ -122,26 +137,15 @@ tr.angle-row td { background:#f9f9f9; color:#bbb; }
 .cmp-spec { font-size:11px; color:#888; margin-top:2px; }
 .cmp-vals { display:flex; gap:14px; font-size:11px; flex-wrap:wrap; margin-left:auto; }
 .val-hq{color:#2980b9;font-weight:600;} .val-vina{color:#e74c3c;font-weight:600;}
-.spec-chart { position:relative; height:40px; }
-.spec-track { position:absolute; top:16px; left:0; right:0; height:8px; background:#f0f0f0; border-radius:4px; }
-.spec-range { position:absolute; top:16px; height:8px; background:#dbeafe; border:1px solid #93c5fd; border-radius:3px; }
-.spec-nom { position:absolute; top:16px; width:2px; height:8px; background:#93c5fd; }
-.pt-hq { position:absolute; top:10px; width:20px; height:20px; border-radius:50%; background:#2980b9; border:2px solid #fff; box-shadow:0 2px 6px rgba(41,128,185,0.4); transform:translateX(-50%); z-index:2; }
-.pt-vina { position:absolute; top:10px; width:20px; height:20px; border-radius:50%; background:#e74c3c; border:2px solid #fff; box-shadow:0 2px 6px rgba(231,76,60,0.4); transform:translateX(-50%); z-index:2; }
-.lbl { position:absolute; bottom:0; font-size:9px; color:#aaa; transform:translateX(-50%); }
-.lbl-nom { color:#3b82f6; font-weight:600; }
 .section-divider { font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:0.06em; margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid #eee; }
 .legend-bar { background:#fff; border-radius:10px; padding:12px 20px; border:1px solid #e4e4e4; margin-bottom:16px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; font-size:12px; }
 .error-msg { background:#fdedec; border:1px solid #f5c6cb; border-radius:8px; padding:12px 16px; font-size:12px; color:#c0392b; margin-bottom:16px; display:none; }
-.footer { text-align:center; font-size:11px; color:#bbb; padding:16px 0; border-top:1px solid #e8e8e8; margin-top:16px; }
-
-/* PDF 버튼 */
 .pdf-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; background:#fff; border:1px solid #e4e4e4; border-radius:8px; font-size:12px; font-weight:600; color:#555; cursor:pointer; margin-bottom:16px; transition:all 0.2s; float:right; }
 .pdf-btn:hover { border-color:#1a1a2e; color:#1a1a2e; }
-
+.footer { text-align:center; font-size:11px; color:#bbb; padding:16px 0; border-top:1px solid #e8e8e8; margin-top:16px; }
 @media(max-width:800px) { .kpi-grid{grid-template-columns:repeat(2,1fr);} .row2,.row3{grid-template-columns:1fr;} .upload-grid{grid-template-columns:1fr;} .stats-row{grid-template-columns:repeat(2,1fr);} }
 @media print {
-  .topbar, .tabs, .breadcrumb, .pdf-btn, .back-btn, .upload-grid, .run-btn { display:none !important; }
+  .topbar,.tabs,.breadcrumb,.pdf-btn { display:none !important; }
   .screen { display:block !important; }
   .tab-content { display:block !important; }
   #dash2 { display:none !important; }
@@ -171,9 +175,7 @@ tr.angle-row td { background:#f9f9f9; color:#bbb; }
 </div>
 
 <div class="container">
-  <div class="breadcrumb" id="breadcrumb">
-    <span class="crumb active">🏠 홈</span>
-  </div>
+  <div class="breadcrumb" id="breadcrumb"><span class="crumb active">🏠 홈</span></div>
 
   <!-- 홈 -->
   <div id="screen-home" class="screen active">
@@ -221,15 +223,13 @@ tr.angle-row td { background:#f9f9f9; color:#bbb; }
         <div class="p-code">BR0035 L-A / R-A</div><div class="p-name">FRT BRKT LH#1</div>
         <div class="p-meta"><span class="p-tag tag-none">데이터 준비중</span></div>
         <div class="p-bar"><div class="p-bar-fill" style="width:0%;background:#e0e0e0"></div></div>
-        <div class="p-bar-label"><span>진행률 0%</span><span>-</span></div>
-        <span class="p-arrow">→</span>
+        <div class="p-bar-label"><span>진행률 0%</span><span>-</span></div><span class="p-arrow">→</span>
       </div>
       <div class="product-card disabled">
         <div class="p-code">BR0036 L-A / R-A</div><div class="p-name">RR BRKT LH#1</div>
         <div class="p-meta"><span class="p-tag tag-none">데이터 준비중</span></div>
         <div class="p-bar"><div class="p-bar-fill" style="width:0%;background:#e0e0e0"></div></div>
-        <div class="p-bar-label"><span>진행률 0%</span><span>-</span></div>
-        <span class="p-arrow">→</span>
+        <div class="p-bar-label"><span>진행률 0%</span><span>-</span></div><span class="p-arrow">→</span>
       </div>
       <div class="product-card" onclick="goDashboard()">
         <div class="p-code">BR0037 L-A / R-A</div><div class="p-name">RR BRKT LH#2</div>
@@ -242,8 +242,7 @@ tr.angle-row td { background:#f9f9f9; color:#bbb; }
         <div class="p-code">BR0038 L-A / R-A</div><div class="p-name">RR BRKT LH#3</div>
         <div class="p-meta"><span class="p-tag tag-none">데이터 준비중</span></div>
         <div class="p-bar"><div class="p-bar-fill" style="width:0%;background:#e0e0e0"></div></div>
-        <div class="p-bar-label"><span>진행률 0%</span><span>-</span></div>
-        <span class="p-arrow">→</span>
+        <div class="p-bar-label"><span>진행률 0%</span><span>-</span></div><span class="p-arrow">→</span>
       </div>
     </div>
   </div>
@@ -252,65 +251,80 @@ tr.angle-row td { background:#f9f9f9; color:#bbb; }
   <div id="screen-dashboard" class="screen">
     <button class="pdf-btn" onclick="window.print()">🖨️ PDF 출력</button>
     <div style="clear:both;margin-bottom:8px;"></div>
-
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('dash1',this)">📊 예지보전 대시보드</div>
+      <div class="tab active" onclick="switchTab('dash1',this)">📊 VINA 예지보전 대시보드</div>
       <div class="tab" onclick="switchTab('dash2',this)">📂 HQ vs VINA 파일 비교</div>
     </div>
 
-    <!-- 탭1 -->
+    <!-- 탭1: VINA 단독 대시보드 -->
     <div id="dash1" class="tab-content active">
-      <div class="notice">📐 <strong>각도 항목 (No.10, 11, 16, 18)</strong>은 측정 오차 특성상 Gap 판정에서 제외됩니다.</div>
-      <div class="gap-info">📊 <strong>Gap 계산:</strong> |HQ평균 − VINA최근| &nbsp;·&nbsp; 정상 &lt;0.05 / 주의 0.05~0.1 / 즉시수리 ≥0.1 &nbsp;·&nbsp; <strong>불량 항목 자동 상단 정렬</strong></div>
-      <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label">판정 대상</div><div class="kpi-val blue">14</div><div class="kpi-sub">각도 제외</div></div>
-        <div class="kpi"><div class="kpi-label">즉시수리</div><div class="kpi-val red" id="kpi-red">-</div><div class="kpi-sub">Gap ≥ 0.1</div></div>
-        <div class="kpi"><div class="kpi-label">주의관찰</div><div class="kpi-val yellow" id="kpi-yellow">-</div><div class="kpi-sub">Gap 0.05~0.1</div></div>
-        <div class="kpi"><div class="kpi-label">정상</div><div class="kpi-val green" id="kpi-green">-</div><div class="kpi-sub">Gap &lt; 0.05</div></div>
-        <div class="kpi"><div class="kpi-label">각도(참고)</div><div class="kpi-val gray">4</div><div class="kpi-sub">No.10·11·16·18</div></div>
+      <div class="notice">
+        📐 <strong>각도 항목 (No.10, 11, 16, 18)</strong>은 측정 오차 특성상 참고치수로만 표시됩니다.
       </div>
+      <div class="gap-info">
+        📊 <strong>판정 기준:</strong> &nbsp;VINA 측정값이 Spec 허용범위 대비 위치로 판정
+        &nbsp;·&nbsp; 정상: 범위 내 중앙 70% &nbsp;/&nbsp; 주의: 범위 내 경계 30% &nbsp;/&nbsp; 즉시수리: 범위 초과
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">전체 항목</div><div class="kpi-val blue">18</div><div class="kpi-sub">VINA 측정</div></div>
+        <div class="kpi"><div class="kpi-label">즉시수리</div><div class="kpi-val red" id="kpi-red">-</div><div class="kpi-sub">범위 초과</div></div>
+        <div class="kpi"><div class="kpi-label">주의관찰</div><div class="kpi-val yellow" id="kpi-yellow">-</div><div class="kpi-sub">경계 근접</div></div>
+        <div class="kpi"><div class="kpi-label">정상</div><div class="kpi-val green" id="kpi-green">-</div><div class="kpi-sub">범위 내 안정</div></div>
+        <div class="kpi"><div class="kpi-label">최근 측정일</div><div class="kpi-val blue" style="font-size:18px">05/08</div><div class="kpi-sub">2026년</div></div>
+      </div>
+
       <div class="row2">
         <div class="card">
           <div class="card-title">판정 현황</div>
-          <div class="legend"><span><span class="ld" style="background:#e74c3c"></span>즉시수리</span><span><span class="ld" style="background:#f39c12"></span>주의관찰</span><span><span class="ld" style="background:#27ae60"></span>정상</span></div>
+          <div class="legend">
+            <span><span class="ld" style="background:#e74c3c"></span>즉시수리</span>
+            <span><span class="ld" style="background:#f39c12"></span>주의관찰</span>
+            <span><span class="ld" style="background:#27ae60"></span>정상</span>
+          </div>
           <div style="position:relative;height:160px;"><canvas id="donutChart"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-title">항목별 Gap (각도 제외) — 불량 순 정렬</div>
-          <div style="position:relative;height:180px;"><canvas id="gapChart"></canvas></div>
+          <div class="card-title">Spec 중앙 대비 VINA 편차 — 공차 비율(%)</div>
+          <div style="position:relative;height:180px;"><canvas id="deviationChart"></canvas></div>
         </div>
       </div>
-      <div class="row3">
-        <div class="card">
-          <div class="card-title">출하검사 LH — 산포 R값</div>
-          <div style="position:relative;height:180px;"><canvas id="rChartLH"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-title">출하검사 RH — 산포 R값</div>
-          <div style="position:relative;height:180px;"><canvas id="rChartRH"></canvas></div>
-        </div>
-      </div>
+
       <div class="card" style="margin-bottom:14px;">
-        <div class="card-title">날짜별 Gap 추이 — 실제 VINA 측정 데이터 (각도 제외)</div>
+        <div class="card-title">날짜별 VINA 측정값 추이 — 주요 항목 (Spec 대비 위치)</div>
         <div class="legend" id="trendLegend"></div>
         <div style="position:relative;height:220px;"><canvas id="trendChart"></canvas></div>
       </div>
+
       <div class="card">
-        <div class="card-title">전체 항목 상세 &nbsp;<span style="font-size:10px;color:#e74c3c;font-weight:600">🔴 즉시수리 항목 상단 자동 정렬</span>&nbsp;<span style="font-size:10px;color:#aaa;font-weight:400">※ 부위 클릭 시 도면 팝업</span></div>
+        <div class="card-title">
+          전체 항목 상세 — VINA Spec 위치 분석
+          &nbsp;<span style="font-size:10px;color:#e74c3c;font-weight:600">🔴 위험 항목 상단 정렬</span>
+          &nbsp;<span style="font-size:10px;color:#aaa;font-weight:400">※ 부위 클릭 시 도면 팝업</span>
+        </div>
         <div style="overflow-x:auto;">
-          <table><thead><tr>
-            <th>No.</th><th style="text-align:left">측정 부위 📐</th>
-            <th>Spec</th><th>TOL</th>
-            <th>HQ 평균</th><th>VINA 최근</th>
-            <th>Gap</th><th>추세</th><th>판정</th>
-          </tr></thead><tbody id="tableBody"></tbody></table>
+          <table>
+            <thead><tr>
+              <th>No.</th>
+              <th style="text-align:left">측정 부위 📐</th>
+              <th>Spec</th><th>TOL</th>
+              <th>하한</th><th>상한</th>
+              <th>VINA 최근</th>
+              <th>Spec 위치</th>
+              <th>추세</th>
+              <th>판정</th>
+            </tr></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- 탭2 -->
+    <!-- 탭2: HQ vs VINA 파일 비교 -->
     <div id="dash2" class="tab-content">
-      <div class="gap-info" style="margin-bottom:16px;">📂 <strong>사용법:</strong> 본사(HQ) 엑셀과 VINA 엑셀을 각각 업로드하면 자동으로 Spec 범위 내 실측값을 비교합니다.</div>
+      <div class="gap-info" style="margin-bottom:16px;">
+        📂 <strong>사용법:</strong> 본사(HQ) 엑셀과 VINA 엑셀을 각각 업로드하면 자동으로 Spec 범위 내 실측값을 비교합니다.
+      </div>
       <div class="upload-grid">
         <div class="upload-box" id="hqBox">
           <input type="file" class="upload-input" id="hqFile" accept=".xlsx,.xls" onchange="loadFile('hq',this)">
@@ -357,17 +371,10 @@ tr.angle-row td { background:#f9f9f9; color:#bbb; }
 
 <script>
 // ===== 화면 전환 =====
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
-}
-function updateBreadcrumb(items) {
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+id).classList.add('active'); }
+function updateBreadcrumb(items){
   const bc=document.getElementById('breadcrumb');
-  bc.innerHTML=items.map((item,i)=>
-    i<items.length-1
-      ? `<span class="crumb" onclick="${item.fn}">${item.label}</span><span class="sep">›</span>`
-      : `<span class="crumb active">${item.label}</span>`
-  ).join('');
+  bc.innerHTML=items.map((item,i)=>i<items.length-1?`<span class="crumb" onclick="${item.fn}">${item.label}</span><span class="sep">›</span>`:`<span class="crumb active">${item.label}</span>`).join('');
 }
 function goHome(){ showScreen('home'); updateBreadcrumb([{label:'🏠 홈',fn:''}]); document.getElementById('topbarRight').innerHTML='관리자: 성우전자 품질팀<br>업데이트: 2026-05-19'; }
 function goModel(){ showScreen('model'); updateBreadcrumb([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]); }
@@ -375,7 +382,7 @@ function goProduct(){ showScreen('product'); updateBreadcrumb([{label:'🏠 홈'
 function goDashboard(){
   showScreen('dashboard');
   updateBreadcrumb([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:'BR0037 RR BRKT LH#2'}]);
-  document.getElementById('topbarRight').innerHTML='본사 기준: 2026-03-31 &nbsp;|&nbsp; 출하검사: 2026-05-14<br>VINA 최근: 2026-05-08 &nbsp;|&nbsp; Part: BR0037-L/R-A';
+  document.getElementById('topbarRight').innerHTML='VINA 최근 측정: 2026-05-08<br>Part: BR0037-L/R-A &nbsp;|&nbsp; Spec 기준 판정';
   initCharts();
 }
 function switchTab(id,el){
@@ -396,107 +403,95 @@ function showPopup(no,part,view,viewLabel){
 }
 function closePopup(e){ if(e.target===document.getElementById('popupOverlay')) document.getElementById('popupOverlay').classList.remove('active'); }
 
-// ===== 데이터 =====
+// ===== 기준 데이터 =====
 const ANGLE_NOS=[10,11,16,18];
 const PART_NAMES={1:'상단 마운팅 Y축 거리',2:'좌측 브라켓 Y축 거리',3:'하단 홀 직경 (ø8.5)',4:'중앙 브라켓 X축 거리',5:'하단 X축 거리',6:'좌측 단차 X축 거리',7:'우측 브라켓 Y축 거리',8:'우측 파이프 직경 (ø36.1)',9:'우측 상단 홀 Y축',10:'파이프 연결 각도',11:'하단 플랜지 각도',12:'파이프 X축 거리',13:'스프링 클립 두께 (T값)',14:'상단 X축 거리',15:'중앙 X축 거리',16:'좌측 플랜지 각도 (90°)',17:'하단 Y축 거리',18:'우측 파이프 각도 (2.5°)'};
 const VIEW_MAP={1:'front',2:'front',3:'front',4:'front',5:'front',6:'front',7:'front',8:'front',9:'front',10:'side',11:'side',12:'side',13:'side',14:'back',15:'back',16:'back',17:'back',18:'back'};
 const VIEW_LABEL={front:'정면도',side:'측면도',back:'배면도'};
+const SPEC_MAP={1:19.5,2:12.0,3:8.5,4:12.0,5:24.0,6:4.0,7:9.51,8:36.1,9:5.0,10:16.5,11:2.0,12:5.0,13:2.0,14:19.5,15:18.0,16:90.0,17:19.5,18:2.5};
 const TOL_MAP={1:0.5,2:0.4,3:0.2,4:0.4,5:0.5,6:0.4,7:0.5,8:0.5,9:0.2,10:3.0,11:3.0,12:0.4,13:0.5,14:0.5,15:0.5,16:3.0,17:0.5,18:3.0};
 const tagClass={front:'tag-f',side:'tag-s',back:'tag-b'};
 
-// 실제 HQ 평균값
-const HQ_AVG={1:19.5975,2:11.9790,3:8.6095,4:11.9870,5:24.0075,6:4.1020,7:9.4378,8:36.2000,9:4.9500,10:15.6717,11:1.9738,12:4.9375,13:1.9800,14:19.5725,15:18.0125,16:89.8930,17:19.5725,18:1.8533};
-
-// 실제 VINA 날짜별 Gap 데이터
-const TREND_DATA={
-  1: [0.1133,0.1225,0.1225,0.1225,0.0550],
-  2: [0.0108,0.0102,0.0160,0.0160,0.0236],
-  3: [0.0052,0.0030,0.0055,0.0055,0.0744],
-  4: [0.0314,0.0220,0.0170,0.0170,0.0019],
-  5: [0.0361,0.0500,0.0425,0.0425,0.0140],
-  6: [0.2189,0.1495,0.1370,0.1370,0.1114],
-  7: [0.2189,0.1997,0.2022,0.2022,0.2079],
-  8: [0.0880,0.0875,0.0875,0.0875,0.0050],
-  9: [0.1575,0.1600,0.1600,0.1700,0.0700],
-  12:[0.0225,0.0425,0.0375,0.0375,0.0025],
-  13:[0.0175,0.0200,0.0200,0.0200,0.1000],
-  14:[0.0825,0.0650,0.0625,0.0475,0.0375],
-  15:[0.0150,0.0175,0.0225,0.0525,0.1325],
-  17:[0.0475,0.0625,0.0625,0.0275,0.0375],
+// 실제 VINA 날짜별 측정값
+const VINA_DATA={
+  '03/28':{1:19.4842,2:11.9898,3:8.6043,4:12.0184,5:23.9714,6:3.8831,7:9.6566,8:36.1120,9:4.7925,10:15.5736,11:3.0060,12:4.9150,13:1.9975,14:19.4900,15:18.0275,16:89.3651,17:19.5250,18:3.1962},
+  '04/15':{1:19.4750,2:11.9892,3:8.6125,4:11.9650,5:23.9575,6:3.9525,7:9.6375,8:36.1125,9:4.7900,10:17.0350,11:2.3300,12:4.8950,13:2.0000,14:19.5075,15:18.0300,16:89.9700,17:19.5100,18:2.8875},
+  '04/16':{1:19.4750,2:11.9950,3:8.6150,4:11.9700,5:23.9650,6:3.9650,7:9.6400,8:36.1125,9:4.7900,10:16.9270,11:2.3990,12:4.9000,13:2.0000,14:19.5100,15:18.0350,16:90.2665,17:19.5100,18:2.8400},
+  '04/25':{1:19.4750,2:11.9950,3:8.6150,4:11.9700,5:23.9650,6:3.9650,7:9.6400,8:36.1125,9:4.7800,10:16.9270,11:2.3990,12:4.9000,13:2.0000,14:19.5250,15:18.0650,16:90.2665,17:19.5450,18:2.8400},
+  '05/08':{1:19.5425,2:12.0026,3:8.5351,4:11.9851,5:24.0215,6:3.9906,7:9.6457,8:36.2050,9:4.8800,10:16.9099,11:2.3746,12:4.9400,13:2.0800,14:19.6100,15:18.1450,16:90.0154,17:19.6100,18:2.8228},
 };
-const TREND_DATES=['03/28','04/15','04/16','04/25','05/08'];
+const DATES=Object.keys(VINA_DATA);
 
-// VINA 최근값 (05/08 기준)
-const VINA_LATEST={};
-Object.keys(TREND_DATA).forEach(no=>{
-  const gaps=TREND_DATA[no];
-  const lastGap=gaps[gaps.length-1];
-  VINA_LATEST[no]=HQ_AVG[no]-lastGap; // 근사값
-});
+// Spec 대비 위치 계산 (공차 비율 %)
+function calcDeviation(val, spec, tol){
+  const center = spec;
+  const deviation = val - center;
+  const pct = (deviation / tol) * 100; // -100%~+100% = 공차 범위
+  return pct;
+}
 
-const lhData=[
-  {no:1,r:0.0221},{no:2,r:0.0264},{no:3,r:0.0332},{no:4,r:0.0299},{no:5,r:0.0246},
-  {no:6,r:0.0230},{no:7,r:0.0270},{no:8,r:0.0244},{no:9,r:0.0200},{no:10,r:0.0511},
-  {no:11,r:0.3606},{no:12,r:0.0200},{no:13,r:0.0100},{no:14,r:0.0300},{no:15,r:0.0300},
-  {no:16,r:0.2434},{no:17,r:0.0400},{no:18,r:0.4163},
-];
-const rhData=[
-  {no:1,r:0.0099},{no:2,r:0.0389},{no:3,r:0.0742},{no:4,r:0.0362},{no:5,r:0.0272},
-  {no:6,r:0.0123},{no:7,r:0.0180},{no:8,r:0.0503},{no:9,r:0.0200},{no:10,r:0.1271},
-  {no:11,r:0.3197},{no:12,r:0.0200},{no:13,r:0.0200},{no:14,r:0.0200},{no:15,r:0.0400},
-  {no:16,r:0.4976},{no:17,r:0.0100},{no:18,r:0.2323},
-];
+// 판정: 공차 비율 기준
+function getStatus(val, spec, tol, isAngle){
+  if(isAngle) return {status:'참고치수', badgeCls:'bk', sortKey:3, color:'#ccc'};
+  const min=spec-tol, max=spec+tol;
+  if(val < min || val > max) return {status:'🔴 즉시수리', badgeCls:'br', sortKey:0, color:'#c0392b'};
+  const pct = Math.abs(calcDeviation(val, spec, tol));
+  if(pct >= 70) return {status:'🟡 주의관찰', badgeCls:'by', sortKey:1, color:'#d68910'};
+  return {status:'🟢 정상', badgeCls:'bg', sortKey:2, color:'#1e8449'};
+}
 
 let chartsInited=false;
 function initCharts(){
   if(chartsInited)return;
   chartsInited=true;
 
-  // 판정 계산 + 정렬 (즉시수리→주의관찰→정상→각도참고)
+  const latest=VINA_DATA['05/08'];
   const rows=[];
+
   for(let no=1;no<=18;no++){
+    const spec=SPEC_MAP[no], tol=TOL_MAP[no];
     const isAngle=ANGLE_NOS.includes(no);
-    const tol=TOL_MAP[no];
-    const hq=HQ_AVG[no];
-    const lastGap=TREND_DATA[no]?TREND_DATA[no][TREND_DATA[no].length-1]:null;
-    const vinaVal=lastGap!==null?hq-lastGap:null;
+    const val=latest[no];
+    const st=getStatus(val,spec,tol,isAngle);
+    const min=spec-tol, max=spec+tol;
 
-    let status,badgeCls,sortKey,gapDisplay,gapColor;
-    if(isAngle){status='참고치수';badgeCls='bk';sortKey=3;gapDisplay='-';gapColor='#ccc';}
-    else if(lastGap===null){status='데이터없음';badgeCls='bk';sortKey=4;gapDisplay='-';gapColor='#ccc';}
-    else if(lastGap>=0.1){status='🔴 즉시수리';badgeCls='br';sortKey=0;gapDisplay=lastGap.toFixed(3);gapColor='#c0392b';}
-    else if(lastGap>=0.05){status='🟡 주의관찰';badgeCls='by';sortKey=1;gapDisplay=lastGap.toFixed(3);gapColor='#d68910';}
-    else{status='🟢 정상';badgeCls='bg';sortKey=2;gapDisplay=lastGap.toFixed(3);gapColor='#1e8449';}
-
-    // 추세 계산
+    // 추세
     let trendTxt='<span style="color:#999">-</span>';
-    if(TREND_DATA[no]&&TREND_DATA[no].length>=2){
-      const arr=TREND_DATA[no];
-      const diff=arr[arr.length-1]-arr[arr.length-2];
-      if(diff>0.005) trendTxt='<span class="trend-up">↗ 마모진행</span>';
-      else if(diff<-0.005) trendTxt='<span class="trend-dn">↘ 안정화</span>';
+    if(!isAngle){
+      const vals=DATES.map(d=>VINA_DATA[d][no]);
+      const last=vals[vals.length-1], prev=vals[vals.length-2];
+      const center=spec;
+      const lastDev=Math.abs(last-center), prevDev=Math.abs(prev-center);
+      const diff=lastDev-prevDev;
+      if(diff>0.003) trendTxt='<span class="trend-up">↗ 악화</span>';
+      else if(diff<-0.003) trendTxt='<span class="trend-dn">↘ 개선</span>';
       else trendTxt='<span class="trend-fl">→ 유지</span>';
     }
 
-    rows.push({no,isAngle,tol,hq,vinaVal,lastGap,status,badgeCls,sortKey,gapDisplay,gapColor,trendTxt});
+    // Spec 위치 표시 (% 계산)
+    const devPct = isAngle ? null : calcDeviation(val, spec, tol).toFixed(1);
+    const posLabel = isAngle ? '-' : `${devPct>0?'+':''}${devPct}%`;
+    const posColor = isAngle ? '#ccc' : Math.abs(devPct)>=70?'#c0392b':Math.abs(devPct)>=40?'#d68910':'#1e8449';
+
+    rows.push({no,spec,tol,val,min,max,isAngle,st,trendTxt,devPct,posLabel,posColor});
   }
 
-  // 정렬: 즉시수리(0) → 주의관찰(1) → 정상(2) → 각도참고(3)
-  rows.sort((a,b)=>a.sortKey-b.sortKey);
+  // 정렬
+  rows.sort((a,b)=>a.st.sortKey-b.st.sortKey);
 
   let redCnt=0,yelCnt=0,grnCnt=0;
-  const gapChartData=[];
+  const deviationData=[];
   const tbody=document.getElementById('tableBody');
 
   rows.forEach(r=>{
-    if(!r.isAngle&&r.lastGap!==null){
-      if(r.lastGap>=0.1)redCnt++;
-      else if(r.lastGap>=0.05)yelCnt++;
+    if(!r.isAngle){
+      if(r.st.sortKey===0)redCnt++;
+      else if(r.st.sortKey===1)yelCnt++;
       else grnCnt++;
-      gapChartData.push({no:r.no,gap:r.lastGap,color:r.lastGap>=0.1?'#e74c3c':r.lastGap>=0.05?'#f39c12':'#27ae60'});
+      deviationData.push({no:r.no,pct:Math.abs(r.devPct),color:r.st.color});
     }
-    const view=VIEW_MAP[r.no];
-    const vLabel=VIEW_LABEL[view];
+
+    const view=VIEW_MAP[r.no], vLabel=VIEW_LABEL[view];
     const tr=document.createElement('tr');
     if(r.isAngle)tr.classList.add('angle-row');
     tr.innerHTML=`
@@ -510,13 +505,14 @@ function initCharts(){
           ${vLabel} 📐
         </span>
       </td>
-      <td>${TOL_MAP[r.no]?'±'+TOL_MAP[r.no]:'-'}</td>
-      <td>${TOL_MAP[r.no]||'-'}</td>
-      <td style="color:${r.isAngle?'#ccc':'#222'}">${r.hq.toFixed(4)}</td>
-      <td style="color:${r.isAngle?'#ccc':'#222'}">${r.vinaVal!==null?r.vinaVal.toFixed(4):'-'}</td>
-      <td><strong style="color:${r.gapColor}">${r.gapDisplay}</strong></td>
+      <td>${r.spec}</td>
+      <td>±${r.tol}</td>
+      <td style="color:${r.isAngle?'#ccc':'#555'}">${r.min.toFixed(3)}</td>
+      <td style="color:${r.isAngle?'#ccc':'#555'}">${r.max.toFixed(3)}</td>
+      <td><strong style="color:${r.isAngle?'#ccc':r.st.color}">${r.isAngle?r.val.toFixed(4):r.val.toFixed(4)}</strong></td>
+      <td><span style="color:${r.posColor};font-weight:600">${r.posLabel}</span></td>
       <td>${r.trendTxt}</td>
-      <td><span class="badge ${r.badgeCls}">${r.status}</span></td>
+      <td><span class="badge ${r.st.badgeCls}">${r.st.status}</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -526,34 +522,58 @@ function initCharts(){
   document.getElementById('kpi-green').textContent=grnCnt;
 
   // 도넛
-  new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:['즉시수리','주의관찰','정상'],datasets:[{data:[redCnt,yelCnt,grnCnt],backgroundColor:['#e74c3c','#f39c12','#27ae60'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
+  new Chart(document.getElementById('donutChart'),{
+    type:'doughnut',
+    data:{labels:['즉시수리','주의관찰','정상'],datasets:[{data:[redCnt,yelCnt,grnCnt],backgroundColor:['#e74c3c','#f39c12','#27ae60'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
+  });
 
-  // Gap 바차트 (불량순 정렬)
-  gapChartData.sort((a,b)=>b.gap-a.gap);
-  new Chart(document.getElementById('gapChart'),{type:'bar',data:{labels:gapChartData.map(d=>`No.${d.no}`),datasets:[{data:gapChartData.map(d=>d.gap),backgroundColor:gapChartData.map(d=>d.color),borderWidth:0,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},autoSkip:false,maxRotation:0},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}  }});
+  // 공차 비율 바차트 (위험 순)
+  deviationData.sort((a,b)=>b.pct-a.pct);
+  new Chart(document.getElementById('deviationChart'),{
+    type:'bar',
+    data:{
+      labels:deviationData.map(d=>`No.${d.no}`),
+      datasets:[{
+        data:deviationData.map(d=>d.pct),
+        backgroundColor:deviationData.map(d=>d.color),
+        borderWidth:0,borderRadius:3
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:9},autoSkip:false,maxRotation:0},grid:{display:false}},
+        y:{
+          ticks:{font:{size:10},callback:v=>v+'%'},
+          grid:{color:'rgba(0,0,0,0.05)'},
+          max:100,
+          title:{display:true,text:'공차 대비 편차(%)',font:{size:10},color:'#888'}
+        }
+      }
+    }
+  });
 
-  // R값 차트
-  new Chart(document.getElementById('rChartLH'),{type:'bar',data:{labels:lhData.map(d=>`P${d.no}`),datasets:[{data:lhData.map(d=>d.r),backgroundColor:lhData.map((d,i)=>ANGLE_NOS.includes(d.no)?'#e0e0e0':d.r>TOL_MAP[d.no]*0.5?'#e74c3c':'#3498db'),borderWidth:0,borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}  }}});
-  new Chart(document.getElementById('rChartRH'),{type:'bar',data:{labels:rhData.map(d=>`P${d.no}`),datasets:[{data:rhData.map(d=>d.r),backgroundColor:rhData.map((d,i)=>ANGLE_NOS.includes(d.no)?'#e0e0e0':d.r>TOL_MAP[d.no]*0.5?'#e74c3c':'#9b59b6'),borderWidth:0,borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}  }}});
-
-  // 실제 추세 차트 - 즉시수리 항목 위주로 상위 5개
+  // 추세 차트 - 주요 항목 (Spec 대비 위치 %)
+  const topNos=[9,7,6,15,1];
   const COLORS=['#e74c3c','#f39c12','#2980b9','#27ae60','#9b59b6'];
-  const topNos=[6,7,1,9,15]; // Gap 큰 순서
   const trendDatasets=topNos.map((no,i)=>{
-    const data=TREND_DATA[no]||[];
+    const spec=SPEC_MAP[no], tol=TOL_MAP[no];
+    const data=DATES.map(d=>{
+      const val=VINA_DATA[d][no];
+      return parseFloat(((val-spec)/tol*100).toFixed(2));
+    });
     return {
-      label:`No.${no} ${PART_NAMES[no]}`,
-      data:data,
+      label:`No.${no}`,
+      data,
       borderColor:COLORS[i],
       backgroundColor:'transparent',
-      pointRadius:5,
-      borderWidth:2,
-      tension:0.3,
+      pointRadius:5,borderWidth:2,tension:0.3,
       borderDash:i>=3?[4,3]:[]
     };
   });
 
-  // 레전드 생성
   const legendEl=document.getElementById('trendLegend');
   topNos.forEach((no,i)=>{
     const span=document.createElement('span');
@@ -563,16 +583,23 @@ function initCharts(){
 
   new Chart(document.getElementById('trendChart'),{
     type:'line',
-    data:{labels:TREND_DATES,datasets:trendDatasets},
+    data:{labels:DATES,datasets:trendDatasets},
     options:{
       responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
+      plugins:{
+        legend:{display:false},
+        annotation:{annotations:{
+          upper:{type:'line',yMin:70,yMax:70,borderColor:'#f39c12',borderWidth:1,borderDash:[4,4]},
+          lower:{type:'line',yMin:-70,yMax:-70,borderColor:'#f39c12',borderWidth:1,borderDash:[4,4]},
+          zero:{type:'line',yMin:0,yMax:0,borderColor:'#93c5fd',borderWidth:1}
+        }}
+      },
       scales:{
         x:{ticks:{font:{size:11}},grid:{display:false}},
         y:{
-          ticks:{font:{size:11}},
+          ticks:{font:{size:10},callback:v=>v+'%'},
           grid:{color:'rgba(0,0,0,0.05)'},
-          title:{display:true,text:'Gap (mm)',font:{size:10},color:'#888'}
+          title:{display:true,text:'Spec 중앙 대비 편차(%)',font:{size:10},color:'#888'}
         }
       }
     }
@@ -581,8 +608,17 @@ function initCharts(){
 
 // ===== TAB2 파일 업로드 =====
 let hqParsed=null,vinaParsed=null;
-function parseIntSafe(val){if(val===null||val===undefined)return null;const s=String(val).trim().replace('.0','');const f=parseFloat(s);return(!isNaN(f)&&f===Math.floor(f)&&f>0&&f<200)?Math.floor(f):null;}
-function cleanNum(val){if(val===null||val===undefined)return null;const f=parseFloat(String(val).trim());return isNaN(f)?null:f;}
+function parseIntSafe(val){
+  if(val===null||val===undefined)return null;
+  const s=String(val).trim().replace('.0','');
+  const n=parseFloat(s);
+  return(!isNaN(n)&&n===Math.floor(n)&&n>0&&n<200)?Math.floor(n):null;
+}
+function cleanNum(val){
+  if(val===null||val===undefined)return null;
+  const f=parseFloat(String(val).trim());
+  return isNaN(f)?null:f;
+}
 
 function loadFile(type,input){
   const file=input.files[0];if(!file)return;
@@ -601,20 +637,38 @@ function loadFile(type,input){
               const spec=cleanNum(row[6]);
               let avg=cleanNum(row[16]);
               if(avg===null||avg===0)avg=cleanNum(row[15]);
-              if(avg!==null&&avg!==0){if(!result[no])result[no]={spec:spec,vals:[]};result[no].vals.push(avg);}
+              if(avg!==null&&avg!==0){
+                if(!result[no])result[no]={spec:spec,vals:[]};
+                result[no].vals.push(avg);
+              }
             }
           }else{
             const no=parseIntSafe(row[2]);
-            if(no&&no<=18){const val=cleanNum(row[10]);if(val!==null){if(!result[no])result[no]={vals:[]};result[no].vals.push(val);}}
+            if(no&&no<=18){
+              const val=cleanNum(row[10]);
+              if(val!==null){
+                if(!result[no])result[no]={vals:[]};
+                result[no].vals.push(val);
+              }
+            }
           }
         });
       });
       const parsed={};
-      Object.keys(result).forEach(no=>{const d=result[no];parsed[no]={avg:d.vals.reduce((a,b)=>a+b,0)/d.vals.length,spec:d.spec};  });
+      Object.keys(result).forEach(no=>{
+        const d=result[no];
+        if(d.vals.length>0)
+          parsed[no]={avg:d.vals.reduce((a,b)=>a+b,0)/d.vals.length, spec:d.spec};
+      });
+      console.log(`${type} parsed:`, parsed);
       if(type==='hq'){hqParsed=parsed;document.getElementById('hqName').textContent='✅ '+file.name;document.getElementById('hqBox').classList.add('done');}
       else{vinaParsed=parsed;document.getElementById('vinaName').textContent='✅ '+file.name;document.getElementById('vinaBox').classList.add('done');}
       if(hqParsed&&vinaParsed)document.getElementById('runBtn').disabled=false;
-    }catch(err){document.getElementById('errorMsg').textContent='파일 읽기 오류: '+err.message;document.getElementById('errorMsg').style.display='block';}
+    }catch(err){
+      document.getElementById('errorMsg').textContent='파일 읽기 오류: '+err.message;
+      document.getElementById('errorMsg').style.display='block';
+      console.error(err);
+    }
   };
   reader.readAsArrayBuffer(file);
 }
@@ -637,8 +691,10 @@ function makeCmpCard(no,hq,vina,spec,tol,isAngle){
   return `<div class="cmp-card ${cardCls}">
     <div class="cmp-header">
       <div class="cmp-no ${isAngle?'ref':''}">${no}</div>
-      <div><div class="cmp-name">${PART_NAMES[no]||'No.'+no} <small style="color:#aaa">${vl}</small></div>
-      <div class="cmp-spec">Spec 범위: ${min.toFixed(3)} ~ ${max.toFixed(3)}</div></div>
+      <div>
+        <div class="cmp-name">${PART_NAMES[no]||'No.'+no} <small style="color:#aaa">${vl}</small></div>
+        <div class="cmp-spec">Spec: ${spec} ± ${tol} &nbsp;범위: ${min.toFixed(3)} ~ ${max.toFixed(3)}</div>
+      </div>
       <div class="cmp-vals">
         <span class="val-hq">🔵 HQ: ${hq.toFixed(4)}${hqOut?'<span style="color:#c0392b;font-weight:700"> ⚠️</span>':''}</span>
         <span class="val-vina">🔴 VINA: ${vina.toFixed(4)}${vinaOut?'<span style="color:#c0392b;font-weight:700"> ⚠️</span>':''}</span>
@@ -646,35 +702,52 @@ function makeCmpCard(no,hq,vina,spec,tol,isAngle){
         <span class="badge ${badgeCls}">${badgeTxt}</span>
       </div>
     </div>
-    <div class="spec-chart">
-      <div class="spec-track"></div>
-      <div class="spec-range" style="left:${specL}%;width:${specR-specL}%"></div>
-      <div class="spec-nom" style="left:${nomP}%"></div>
-      <div class="pt-hq" style="left:${hqP}%"></div>
-      <div class="pt-vina" style="left:${vinaP}%"></div>
-      <div class="lbl" style="left:${specL}%">${min.toFixed(2)}</div>
-      <div class="lbl lbl-nom" style="left:${nomP}%">${spec}</div>
-      <div class="lbl" style="left:${specR}%">${max.toFixed(2)}</div>
+    <div class="spec-chart" style="position:relative;height:40px;">
+      <div style="position:absolute;top:16px;left:0;right:0;height:8px;background:#f0f0f0;border-radius:4px;"></div>
+      <div style="position:absolute;top:16px;left:${specL}%;width:${specR-specL}%;height:8px;background:#dbeafe;border:1px solid #93c5fd;border-radius:3px;"></div>
+      <div style="position:absolute;top:16px;left:${nomP}%;width:2px;height:8px;background:#93c5fd;"></div>
+      <div style="position:absolute;top:10px;left:${hqP}%;width:20px;height:20px;border-radius:50%;background:#2980b9;border:2px solid #fff;box-shadow:0 2px 6px rgba(41,128,185,0.4);transform:translateX(-50%);z-index:2;" title="HQ: ${hq}"></div>
+      <div style="position:absolute;top:10px;left:${vinaP}%;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:2px solid #fff;box-shadow:0 2px 6px rgba(231,76,60,0.4);transform:translateX(-50%);z-index:2;" title="VINA: ${vina}"></div>
+      <div style="position:absolute;bottom:0;left:${specL}%;font-size:9px;color:#aaa;transform:translateX(-50%)">${min.toFixed(2)}</div>
+      <div style="position:absolute;bottom:0;left:${nomP}%;font-size:9px;color:#3b82f6;font-weight:600;transform:translateX(-50%)">${spec}</div>
+      <div style="position:absolute;bottom:0;left:${specR}%;font-size:9px;color:#aaa;transform:translateX(-50%)">${max.toFixed(2)}</div>
     </div>
   </div>`;
 }
 
 function analyze(){
   document.getElementById('errorMsg').style.display='none';
-  const cards=document.getElementById('cmpCards');cards.innerHTML='';
+  const cards=document.getElementById('cmpCards');
+  cards.innerHTML='';
   let rc=0,yc=0,gc=0,total=0,frontH='',sideH='',backH='';
+
   for(let no=1;no<=18;no++){
     const hqInfo=hqParsed[no],vinaInfo=vinaParsed[no];
-    if(!hqInfo||!vinaInfo)continue;
-    const spec=hqInfo.spec||0,tol=TOL_MAP[no]||0.5,isAngle=ANGLE_NOS.includes(no);
+    if(!hqInfo||!vinaInfo){ console.log(`No.${no} 데이터 없음 HQ:${!!hqInfo} VINA:${!!vinaInfo}`); continue; }
+    const spec=hqInfo.spec||SPEC_MAP[no]||0;
+    const tol=TOL_MAP[no]||0.5;
+    const isAngle=ANGLE_NOS.includes(no);
     const gap=Math.abs(hqInfo.avg-vinaInfo.avg);
     total++;
     if(!isAngle){if(gap>=0.1)rc++;else if(gap>=0.05)yc++;else gc++;}
     const card=makeCmpCard(no,hqInfo.avg,vinaInfo.avg,spec,tol,isAngle);
     const v=VIEW_MAP[no];
-    if(v==='front')frontH+=card;else if(v==='side')sideH+=card;else backH+=card;
+    if(v==='front')frontH+=card;
+    else if(v==='side')sideH+=card;
+    else backH+=card;
   }
-  cards.innerHTML=`<div class="section-divider">정면도 항목 (No.1~9)</div>${frontH}<div class="section-divider">측면도 항목 (No.10~13)</div>${sideH}<div class="section-divider">배면도 항목 (No.14~18)</div>${backH}`;
+
+  if(total===0){
+    document.getElementById('errorMsg').textContent='데이터를 읽지 못했습니다. 파일 형식을 확인해주세요. (콘솔에서 상세 확인 가능)';
+    document.getElementById('errorMsg').style.display='block';
+    return;
+  }
+
+  cards.innerHTML=`
+    <div class="section-divider">정면도 항목 (No.1~9)</div>${frontH}
+    <div class="section-divider">측면도 항목 (No.10~13)</div>${sideH}
+    <div class="section-divider">배면도 항목 (No.14~18)</div>${backH}
+  `;
   document.getElementById('c-total').textContent=total;
   document.getElementById('c-red').textContent=rc;
   document.getElementById('c-yellow').textContent=yc;
