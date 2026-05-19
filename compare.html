@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>본사 vs VINA 치수 비교</title>
+<title>HQ vs VINA 파일 비교</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; color: #222; }
@@ -11,186 +13,342 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; b
 .topbar h1 { font-size: 15px; font-weight: 700; }
 .topbar p { font-size: 11px; opacity: 0.5; margin-top: 3px; }
 .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
-.legend-bar { background: #fff; border-radius: 10px; padding: 14px 20px; border: 1px solid #e4e4e4; margin-bottom: 16px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
-.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-.dot-hq { background: #2980b9; }
-.dot-vina { background: #e74c3c; }
-.spec-bar-legend { width: 30px; height: 8px; background: #dbeafe; border-radius: 2px; border: 1px solid #93c5fd; }
-.card { background: #fff; border-radius: 10px; padding: 20px; border: 1px solid #e4e4e4; margin-bottom: 12px; }
-.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.card-no { width: 28px; height: 28px; border-radius: 50%; background: #1a1a2e; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.card-no.angle { background: #aaa; }
-.card-info { flex: 1; margin-left: 12px; }
-.card-name { font-size: 13px; font-weight: 700; color: #1a1a2e; }
-.card-spec { font-size: 11px; color: #888; margin-top: 2px; }
-.card-vals { display: flex; gap: 16px; font-size: 11px; }
+.back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #666; margin-bottom: 20px; cursor: pointer; padding: 6px 12px; border-radius: 6px; border: 1px solid #e4e4e4; background: #fff; }
+.back-btn:hover { border-color: #1a1a2e; color: #1a1a2e; }
+
+/* 업로드 영역 */
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.upload-box { background: #fff; border-radius: 12px; border: 2px dashed #e4e4e4; padding: 28px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+.upload-box:hover { border-color: #3b82f6; background: #f8fbff; }
+.upload-box.done { border-color: #27ae60; border-style: solid; background: #f0fdf4; }
+.upload-box.done:hover { border-color: #27ae60; }
+.upload-icon { font-size: 32px; margin-bottom: 10px; }
+.upload-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.upload-sub { font-size: 11px; color: #888; }
+.upload-filename { font-size: 11px; color: #27ae60; font-weight: 600; margin-top: 8px; }
+.upload-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+.run-btn { width: 100%; padding: 14px; background: #1a1a2e; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 24px; transition: background 0.2s; }
+.run-btn:hover { background: #2d2d4e; }
+.run-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+/* 결과 영역 */
+.result-section { display: none; }
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.summary-box { background: #fff; border-radius: 10px; padding: 14px 16px; border: 1px solid #e4e4e4; text-align: center; }
+.summary-val { font-size: 24px; font-weight: 700; }
+.summary-label { font-size: 11px; color: #888; margin-top: 3px; }
+
+.legend-bar { background: #fff; border-radius: 10px; padding: 12px 20px; border: 1px solid #e4e4e4; margin-bottom: 16px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+
+.card { background: #fff; border-radius: 10px; padding: 18px 20px; border: 1px solid #e4e4e4; margin-bottom: 10px; }
+.card.danger { border-left: 4px solid #e74c3c; }
+.card.warn { border-left: 4px solid #f39c12; }
+.card.ok { border-left: 4px solid #27ae60; }
+.card.ref { border-left: 4px solid #ccc; opacity: 0.7; }
+
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.no-badge { width: 28px; height: 28px; border-radius: 50%; background: #1a1a2e; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.no-badge.ref { background: #aaa; }
+.card-name { font-size: 13px; font-weight: 700; flex: 1; }
+.card-spec { font-size: 11px; color: #888; }
+.card-vals { display: flex; gap: 14px; font-size: 11px; flex-wrap: wrap; margin-left: auto; }
 .val-hq { color: #2980b9; font-weight: 600; }
 .val-vina { color: #e74c3c; font-weight: 600; }
-.val-gap { color: #888; }
-.val-gap.warn { color: #d68910; font-weight: 600; }
-.val-gap.danger { color: #c0392b; font-weight: 600; }
-
-/* 스펙 범위 차트 */
-.spec-chart { position: relative; height: 36px; margin-top: 8px; }
-.spec-track { position: absolute; top: 14px; left: 0; right: 0; height: 8px; background: #f0f0f0; border-radius: 4px; }
-.spec-range { position: absolute; top: 14px; height: 8px; background: #dbeafe; border: 1px solid #93c5fd; border-radius: 3px; }
-.spec-center { position: absolute; top: 14px; width: 2px; height: 8px; background: #93c5fd; }
-.dot-hq-pos { position: absolute; top: 8px; width: 18px; height: 18px; border-radius: 50%; background: #2980b9; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(41,128,185,0.4); transform: translateX(-50%); cursor: pointer; transition: transform 0.2s; }
-.dot-hq-pos:hover { transform: translateX(-50%) scale(1.2); }
-.dot-vina-pos { position: absolute; top: 8px; width: 18px; height: 18px; border-radius: 50%; background: #e74c3c; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(231,76,60,0.4); transform: translateX(-50%); cursor: pointer; transition: transform 0.2s; }
-.dot-vina-pos:hover { transform: translateX(-50%) scale(1.2); }
-.spec-label-min { position: absolute; bottom: 0; font-size: 9px; color: #aaa; transform: translateX(-50%); }
-.spec-label-max { position: absolute; bottom: 0; font-size: 9px; color: #aaa; transform: translateX(-50%); }
-.spec-label-nom { position: absolute; bottom: 0; font-size: 9px; color: #3b82f6; transform: translateX(-50%); font-weight: 600; }
-.out-of-range { font-size: 10px; color: #c0392b; font-weight: 600; margin-left: 6px; }
-
-.angle-note { font-size: 10px; color: #aaa; margin-top: 8px; font-style: italic; }
-.badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.val-gap { font-weight: 600; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
 .bg { background: #eafaf1; color: #1e8449; }
 .by { background: #fef9e7; color: #d68910; }
 .br { background: #fdedec; color: #c0392b; }
 .bk { background: #f0f0f0; color: #999; }
 
-.section-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin: 20px 0 10px; }
+/* 스펙 차트 */
+.spec-chart { position: relative; height: 40px; }
+.spec-track { position: absolute; top: 16px; left: 0; right: 0; height: 8px; background: #f0f0f0; border-radius: 4px; }
+.spec-range { position: absolute; top: 16px; height: 8px; background: #dbeafe; border: 1px solid #93c5fd; border-radius: 3px; }
+.spec-nom { position: absolute; top: 16px; width: 2px; height: 8px; background: #93c5fd; }
+.pt-hq { position: absolute; top: 10px; width: 20px; height: 20px; border-radius: 50%; background: #2980b9; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(41,128,185,0.4); transform: translateX(-50%); z-index: 2; }
+.pt-vina { position: absolute; top: 10px; width: 20px; height: 20px; border-radius: 50%; background: #e74c3c; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(231,76,60,0.4); transform: translateX(-50%); z-index: 2; }
+.lbl-min { position: absolute; bottom: 0; font-size: 9px; color: #aaa; transform: translateX(-50%); }
+.lbl-max { position: absolute; bottom: 0; font-size: 9px; color: #aaa; transform: translateX(-50%); }
+.lbl-nom { position: absolute; bottom: 0; font-size: 9px; color: #3b82f6; font-weight: 600; transform: translateX(-50%); }
+.out-mark { font-size: 10px; color: #c0392b; font-weight: 700; }
+
+.section-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
 .footer { text-align: center; font-size: 11px; color: #bbb; padding: 16px 0; border-top: 1px solid #e8e8e8; margin-top: 16px; }
-.back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #666; margin-bottom: 16px; cursor: pointer; padding: 6px 12px; border-radius: 6px; border: 1px solid #e4e4e4; background: #fff; }
-.back-btn:hover { border-color: #1a1a2e; color: #1a1a2e; }
+.error-msg { background: #fdedec; border: 1px solid #f5c6cb; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #c0392b; margin-bottom: 16px; display: none; }
+@media(max-width:600px) { .upload-grid { grid-template-columns: 1fr; } .summary-grid { grid-template-columns: repeat(2,1fr); } }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div>
-    <h1>성우전자 &nbsp;|&nbsp; 본사(HQ) vs VINA 치수 비교</h1>
-    <p>MX5A EREV · BR BRKT LH·RH (BR0037) · Spec 범위 내 실측값 비교</p>
+    <h1>성우전자 &nbsp;|&nbsp; HQ vs VINA 파일 비교 분석</h1>
+    <p>엑셀 파일 업로드 → 자동 파싱 → Spec 범위 내 실측값 비교</p>
   </div>
 </div>
 
 <div class="container">
+  <div class="back-btn" onclick="history.back()">← 대시보드로</div>
 
-  <div class="back-btn" onclick="history.back()">← 대시보드로 돌아가기</div>
-
-  <div class="legend-bar">
-    <strong style="font-size:12px;color:#333">범례</strong>
-    <div class="legend-item"><span class="dot dot-hq"></span> 본사(HQ) 측정값</div>
-    <div class="legend-item"><span class="dot dot-vina"></span> VINA 측정값</div>
-    <div class="legend-item"><span class="spec-bar-legend"></span> Spec 허용 범위</div>
-    <div class="legend-item" style="margin-left:auto">
-      <span class="badge bg">정상</span>&nbsp;Gap &lt; 0.05 &nbsp;
-      <span class="badge by">주의</span>&nbsp;0.05~0.1 &nbsp;
-      <span class="badge br">즉시수리</span>&nbsp;≥ 0.1
+  <div class="upload-grid">
+    <div class="upload-box" id="hqBox">
+      <input type="file" class="upload-input" id="hqFile" accept=".xlsx,.xls" onchange="loadFile('hq', this)">
+      <div class="upload-icon">🏢</div>
+      <div class="upload-title" style="color:#2980b9">본사(HQ) 파일</div>
+      <div class="upload-sub">측정 DATA 엑셀 업로드</div>
+      <div class="upload-filename" id="hqName">파일을 선택하세요</div>
+    </div>
+    <div class="upload-box" id="vinaBox">
+      <input type="file" class="upload-input" id="vinaFile" accept=".xlsx,.xls" onchange="loadFile('vina', this)">
+      <div class="upload-icon">🌏</div>
+      <div class="upload-title" style="color:#e74c3c">VINA 파일</div>
+      <div class="upload-sub">Measurement Data 엑셀 업로드</div>
+      <div class="upload-filename" id="vinaName">파일을 선택하세요</div>
     </div>
   </div>
 
-  <div class="section-title">정면도 항목 (No.1 ~ 9)</div>
-  <div id="frontItems"></div>
+  <div class="error-msg" id="errorMsg"></div>
+  <button class="run-btn" id="runBtn" onclick="analyze()" disabled>📊 비교 분석 시작</button>
 
-  <div class="section-title">측면도 항목 (No.10 ~ 13)</div>
-  <div id="sideItems"></div>
+  <div class="result-section" id="resultSection">
+    <div class="summary-grid">
+      <div class="summary-box"><div class="summary-val" style="color:#1a1a2e" id="s-total">-</div><div class="summary-label">전체 항목</div></div>
+      <div class="summary-box"><div class="summary-val" style="color:#c0392b" id="s-red">-</div><div class="summary-label">즉시수리</div></div>
+      <div class="summary-box"><div class="summary-val" style="color:#d68910" id="s-yellow">-</div><div class="summary-label">주의관찰</div></div>
+      <div class="summary-box"><div class="summary-val" style="color:#1e8449" id="s-green">-</div><div class="summary-label">정상</div></div>
+    </div>
 
-  <div class="section-title">배면도 항목 (No.14 ~ 18)</div>
-  <div id="backItems"></div>
+    <div class="legend-bar">
+      <strong>범례</strong>
+      <div class="legend-item"><span class="dot" style="background:#2980b9"></span> 본사(HQ)</div>
+      <div class="legend-item"><span class="dot" style="background:#e74c3c"></span> VINA</div>
+      <div class="legend-item"><span style="display:inline-block;width:24px;height:8px;background:#dbeafe;border:1px solid #93c5fd;border-radius:2px"></span> Spec 허용범위</div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <span class="badge bg">정상 &lt;0.05</span>
+        <span class="badge by">주의 0.05~0.1</span>
+        <span class="badge br">즉시수리 ≥0.1</span>
+      </div>
+    </div>
 
-  <div class="footer">
-    성우전자 글로벌 품질관리 · BR0037 HQ vs VINA 치수 비교 · 생성일: 2026-05-19
+    <div id="resultCards"></div>
   </div>
+
+  <div class="footer">성우전자 글로벌 품질관리 · HQ vs VINA 비교 분석 도구</div>
 </div>
 
 <script>
-const items = [
-  {no:1,  name:'상단 마운팅 Y축 거리', view:'front', spec:19.5, tol:0.5,  hq:19.635, vina:19.507, isAngle:false},
-  {no:2,  name:'좌측 브라켓 Y축 거리', view:'front', spec:12.0, tol:0.4,  hq:12.004, vina:11.962, isAngle:false},
-  {no:3,  name:'하단 홀 직경 (ø8.5)', view:'front', spec:8.5,  tol:0.2,  hq:8.607,  vina:8.510,  isAngle:false},
-  {no:4,  name:'중앙 브라켓 X축 거리', view:'front', spec:12.0, tol:0.4,  hq:11.990, vina:11.990, isAngle:false},
-  {no:5,  name:'하단 X축 거리',        view:'front', spec:24.0, tol:0.5,  hq:24.015, vina:24.048, isAngle:false},
-  {no:6,  name:'좌측 단차 X축 거리',   view:'front', spec:4.0,  tol:0.4,  hq:4.097,  vina:3.990,  isAngle:false},
-  {no:7,  name:'우측 브라켓 Y축 거리', view:'front', spec:9.5,  tol:0.5,  hq:9.448,  vina:9.634,  isAngle:false},
-  {no:8,  name:'파이프 직경 (ø36.1)', view:'front', spec:36.1, tol:0.5,  hq:36.200, vina:36.203, isAngle:false},
-  {no:9,  name:'상단 홀 Y축',          view:'front', spec:5.0,  tol:0.2,  hq:4.960,  vina:4.840,  isAngle:false},
-  {no:10, name:'파이프 연결 각도',      view:'side',  spec:16.5, tol:3.0,  hq:15.906, vina:17.276, isAngle:true},
-  {no:11, name:'하단 플랜지 각도',      view:'side',  spec:2.0,  tol:3.0,  hq:2.189,  vina:2.323,  isAngle:true},
-  {no:12, name:'파이프 X축 거리',       view:'side',  spec:5.0,  tol:0.4,  hq:4.925,  vina:4.920,  isAngle:false},
-  {no:13, name:'스프링 클립 두께(T값)', view:'side',  spec:2.0,  tol:0.5,  hq:1.980,  vina:2.080,  isAngle:false},
-  {no:14, name:'상단 X축 거리',         view:'back',  spec:19.5, tol:0.5,  hq:19.565, vina:19.610, isAngle:false},
-  {no:15, name:'중앙 X축 거리',         view:'back',  spec:18.0, tol:0.5,  hq:18.015, vina:18.120, isAngle:false},
-  {no:16, name:'좌측 플랜지 각도(90°)', view:'back',  spec:90.0, tol:3.0,  hq:90.468, vina:90.385, isAngle:true},
-  {no:17, name:'하단 Y축 거리',         view:'back',  spec:19.5, tol:0.5,  hq:19.575, vina:19.620, isAngle:false},
-  {no:18, name:'우측 파이프 각도(2.5°)',view:'back',  spec:2.5,  tol:3.0,  hq:2.039,  vina:3.031,  isAngle:true},
-];
+let hqData = null;
+let vinaData = null;
 
-function makeCard(item) {
-  const gap = Math.abs(item.hq - item.vina);
-  const min = item.spec - item.tol;
-  const max = item.spec + item.tol;
-  const range = item.tol * 2;
-  const chartW = 100; // %
+function parseIntSafe(val) {
+  if(val === null || val === undefined) return null;
+  const f = parseFloat(String(val).trim());
+  if(!isNaN(f) && f === Math.floor(f) && f > 0 && f < 200) return Math.floor(f);
+  return null;
+}
+function cleanNum(val) {
+  if(val === null || val === undefined) return null;
+  const f = parseFloat(String(val).trim());
+  return isNaN(f) ? null : f;
+}
 
-  // 차트 범위를 spec 중심으로 양쪽 tol*1.5 여유
-  const viewMin = item.spec - item.tol * 1.8;
-  const viewMax = item.spec + item.tol * 1.8;
+function loadFile(type, input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const result = {};
+      wb.SheetNames.forEach(sname => {
+        const ws = wb.Sheets[sname];
+        const arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+        arr.forEach(row => {
+          if(type === 'hq') {
+            // HQ: No=열4, Spec=열6, 평균=열16 or 15
+            const no = parseIntSafe(row[4]);
+            if(no && no <= 18) {
+              const spec = cleanNum(row[6]);
+              let avg = cleanNum(row[16]);
+              if(avg === null || avg === 0) avg = cleanNum(row[15]);
+              if(avg !== null && avg !== 0) {
+                if(!result[no]) result[no] = {spec: spec, vals: []};
+                result[no].vals.push(avg);
+              }
+            }
+          } else {
+            // VINA: No=열2, Average=열10
+            const no = parseIntSafe(row[2]);
+            if(no && no <= 18) {
+              const val = cleanNum(row[10]);
+              if(val !== null) {
+                if(!result[no]) result[no] = {vals: []};
+                result[no].vals.push(val);
+              }
+            }
+          }
+        });
+      });
+
+      // 평균 계산
+      const parsed = {};
+      Object.keys(result).forEach(no => {
+        const d = result[no];
+        const avg = d.vals.reduce((a,b)=>a+b,0) / d.vals.length;
+        parsed[no] = { avg: avg, spec: d.spec };
+      });
+
+      if(type === 'hq') {
+        hqData = parsed;
+        document.getElementById('hqName').textContent = '✅ ' + file.name;
+        document.getElementById('hqBox').classList.add('done');
+      } else {
+        vinaData = parsed;
+        document.getElementById('vinaName').textContent = '✅ ' + file.name;
+        document.getElementById('vinaBox').classList.add('done');
+      }
+
+      if(hqData && vinaData) {
+        document.getElementById('runBtn').disabled = false;
+      }
+    } catch(err) {
+      showError('파일 읽기 오류: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+const ANGLE_NOS = [10, 11, 16, 18];
+const PART_NAMES = {
+  1:'상단 마운팅 Y축 거리', 2:'좌측 브라켓 Y축 거리', 3:'하단 홀 직경 (ø8.5)',
+  4:'중앙 브라켓 X축 거리', 5:'하단 X축 거리', 6:'좌측 단차 X축 거리',
+  7:'우측 브라켓 Y축 거리', 8:'우측 파이프 직경 (ø36.1)', 9:'우측 상단 홀 Y축',
+  10:'파이프 연결 각도', 11:'하단 플랜지 각도', 12:'파이프 X축 거리',
+  13:'스프링 클립 두께 (T값)', 14:'상단 X축 거리', 15:'중앙 X축 거리',
+  16:'좌측 플랜지 각도 (90°)', 17:'하단 Y축 거리', 18:'우측 파이프 각도 (2.5°)'
+};
+const TOL_MAP = {
+  1:0.5,2:0.4,3:0.2,4:0.4,5:0.5,6:0.4,7:0.5,8:0.5,9:0.2,
+  10:3.0,11:3.0,12:0.4,13:0.5,14:0.5,15:0.5,16:3.0,17:0.5,18:3.0
+};
+const VIEW_MAP = {
+  1:'정면도',2:'정면도',3:'정면도',4:'정면도',5:'정면도',6:'정면도',7:'정면도',8:'정면도',9:'정면도',
+  10:'측면도',11:'측면도',12:'측면도',13:'측면도',
+  14:'배면도',15:'배면도',16:'배면도',17:'배면도',18:'배면도'
+};
+
+function toPercent(val, viewMin, viewRange) {
+  return Math.min(Math.max(((val - viewMin) / viewRange) * 100, 1), 99);
+}
+
+function makeCard(no, hq, vina, spec, tol, isAngle) {
+  const gap = Math.abs(hq - vina);
+  const min = spec - tol;
+  const max = spec + tol;
+  const viewMin = spec - tol * 1.8;
+  const viewMax = spec + tol * 1.8;
   const viewRange = viewMax - viewMin;
 
-  function toPercent(val) {
-    return Math.min(Math.max(((val - viewMin) / viewRange) * 100, 2), 98);
-  }
+  const specL = toPercent(min, viewMin, viewRange);
+  const specR = toPercent(max, viewMin, viewRange);
+  const nomP  = toPercent(spec, viewMin, viewRange);
+  const hqP   = toPercent(hq, viewMin, viewRange);
+  const vinaP = toPercent(vina, viewMin, viewRange);
 
-  const specLeft = toPercent(min);
-  const specRight = toPercent(max);
-  const specWidth = specRight - specLeft;
-  const nomPos = toPercent(item.spec);
-  const hqPos = toPercent(item.hq);
-  const vinaPos = toPercent(item.vina);
+  const hqOut   = hq < min || hq > max;
+  const vinaOut = vina < min || vina > max;
 
-  const hqOut = item.hq < min || item.hq > max;
-  const vinaOut = item.vina < min || item.vina > max;
-
-  let badgeCls, badgeText;
-  if(item.isAngle) { badgeCls='bk'; badgeText='참고치수'; }
-  else if(gap >= 0.1) { badgeCls='br'; badgeText='즉시수리'; }
-  else if(gap >= 0.05) { badgeCls='by'; badgeText='주의관찰'; }
-  else { badgeCls='bg'; badgeText='정상'; }
-
-  const gapClass = item.isAngle ? '' : gap >= 0.1 ? 'danger' : gap >= 0.05 ? 'warn' : '';
+  let cardCls, badgeCls, badgeTxt, gapColor;
+  if(isAngle) { cardCls='ref'; badgeCls='bk'; badgeTxt='각도참고'; gapColor='#aaa'; }
+  else if(gap >= 0.1) { cardCls='danger'; badgeCls='br'; badgeTxt='🔴 즉시수리'; gapColor='#c0392b'; }
+  else if(gap >= 0.05) { cardCls='warn'; badgeCls='by'; badgeTxt='🟡 주의관찰'; gapColor='#d68910'; }
+  else { cardCls='ok'; badgeCls='bg'; badgeTxt='🟢 정상'; gapColor='#1e8449'; }
 
   return `
-  <div class="card">
+  <div class="card ${cardCls}">
     <div class="card-header">
-      <div class="card-no ${item.isAngle?'angle':''}">${item.no}</div>
-      <div class="card-info">
-        <div class="card-name">${item.name} ${item.isAngle?'<span style="font-size:10px;color:#aaa;font-weight:400">(각도 참고)</span>':''}</div>
-        <div class="card-spec">Spec: ${item.spec} ± ${item.tol} &nbsp;|&nbsp; 범위: ${min.toFixed(2)} ~ ${max.toFixed(2)}</div>
+      <div class="no-badge ${isAngle?'ref':''}">${no}</div>
+      <div>
+        <div class="card-name">${PART_NAMES[no]||'No.'+no} <small style="color:#aaa;font-weight:400">${VIEW_MAP[no]||''}</small></div>
+        <div class="card-spec">Spec: ${spec} ± ${tol} &nbsp;범위: ${min.toFixed(3)} ~ ${max.toFixed(3)}</div>
       </div>
       <div class="card-vals">
-        <div class="val-hq">● HQ: ${item.hq.toFixed(3)}${hqOut?'<span class="out-of-range">범위초과!</span>':''}</div>
-        <div class="val-vina">● VINA: ${item.vina.toFixed(3)}${vinaOut?'<span class="out-of-range">범위초과!</span>':''}</div>
-        <div class="val-gap ${gapClass}">Gap: ${gap.toFixed(3)}</div>
-        <span class="badge ${badgeCls}">${badgeText}</span>
+        <span class="val-hq">🔵 HQ: ${hq.toFixed(4)}${hqOut?'<span class="out-mark"> ⚠️</span>':''}</span>
+        <span class="val-vina">🔴 VINA: ${vina.toFixed(4)}${vinaOut?'<span class="out-mark"> ⚠️</span>':''}</span>
+        <span class="val-gap" style="color:${gapColor}">Gap: ${isAngle?'-':gap.toFixed(3)}</span>
+        <span class="badge ${badgeCls}">${badgeTxt}</span>
       </div>
     </div>
     <div class="spec-chart">
       <div class="spec-track"></div>
-      <div class="spec-range" style="left:${specLeft}%;width:${specWidth}%"></div>
-      <div class="spec-center" style="left:${nomPos}%"></div>
-      <div class="dot-hq-pos" style="left:${hqPos}%" title="HQ: ${item.hq}"></div>
-      <div class="dot-vina-pos" style="left:${vinaPos}%" title="VINA: ${item.vina}"></div>
-      <div class="spec-label-min" style="left:${specLeft}%">${min.toFixed(2)}</div>
-      <div class="spec-label-nom" style="left:${nomPos}%">${item.spec}</div>
-      <div class="spec-label-max" style="left:${specRight}%">${max.toFixed(2)}</div>
+      <div class="spec-range" style="left:${specL}%;width:${specR-specL}%"></div>
+      <div class="spec-nom" style="left:${nomP}%"></div>
+      <div class="pt-hq" style="left:${hqP}%" title="HQ: ${hq}"></div>
+      <div class="pt-vina" style="left:${vinaP}%" title="VINA: ${vina}"></div>
+      <div class="lbl-min" style="left:${specL}%">${min.toFixed(2)}</div>
+      <div class="lbl-nom" style="left:${nomP}%">${spec}</div>
+      <div class="lbl-max" style="left:${specR}%">${max.toFixed(2)}</div>
     </div>
   </div>`;
 }
 
-const frontEl = document.getElementById('frontItems');
-const sideEl = document.getElementById('sideItems');
-const backEl = document.getElementById('backItems');
+function analyze() {
+  document.getElementById('errorMsg').style.display = 'none';
+  const container = document.getElementById('resultCards');
+  container.innerHTML = '';
 
-items.forEach(item => {
-  const card = makeCard(item);
-  if(item.view === 'front') frontEl.innerHTML += card;
-  else if(item.view === 'side') sideEl.innerHTML += card;
-  else backEl.innerHTML += card;
-});
+  let redCnt=0, yelCnt=0, grnCnt=0, total=0;
+  let frontHtml='', sideHtml='', backHtml='';
+
+  for(let no=1; no<=18; no++) {
+    const hqInfo = hqData[no];
+    const vinaInfo = vinaData[no];
+    if(!hqInfo || !vinaInfo) continue;
+
+    const spec = hqInfo.spec || vinaInfo.spec || 0;
+    const tol = TOL_MAP[no] || 0.5;
+    const isAngle = ANGLE_NOS.includes(no);
+    const hq = hqInfo.avg;
+    const vina = vinaInfo.avg;
+    const gap = Math.abs(hq - vina);
+    total++;
+
+    if(!isAngle) {
+      if(gap >= 0.1) redCnt++;
+      else if(gap >= 0.05) yelCnt++;
+      else grnCnt++;
+    }
+
+    const card = makeCard(no, hq, vina, spec, tol, isAngle);
+    const view = VIEW_MAP[no];
+    if(view === '정면도') frontHtml += card;
+    else if(view === '측면도') sideHtml += card;
+    else backHtml += card;
+  }
+
+  container.innerHTML = `
+    <div class="section-title">정면도 항목 (No.1~9)</div>${frontHtml}
+    <div class="section-title">측면도 항목 (No.10~13)</div>${sideHtml}
+    <div class="section-title">배면도 항목 (No.14~18)</div>${backHtml}
+  `;
+
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-red').textContent = redCnt;
+  document.getElementById('s-yellow').textContent = yelCnt;
+  document.getElementById('s-green').textContent = grnCnt;
+  document.getElementById('resultSection').style.display = 'block';
+  document.getElementById('resultSection').scrollIntoView({behavior:'smooth'});
+}
 </script>
 </body>
 </html>
