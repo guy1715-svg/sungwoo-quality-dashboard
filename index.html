@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>성우전자 글로벌 품질관리 시스템</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; color: #222; }
+.topbar { background: #1a1a2e; color: #fff; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+.topbar h1 { font-size: 16px; font-weight: 700; letter-spacing: 0.02em; }
+.topbar p { font-size: 11px; opacity: 0.5; margin-top: 3px; }
+.topbar-right { font-size: 11px; opacity: 0.5; text-align: right; }
+.container { max-width: 1100px; margin: 0 auto; padding: 28px 16px; }
+
+/* 브레드크럼 */
+.breadcrumb { font-size: 12px; color: #888; margin-bottom: 20px; display: flex; align-items: center; gap: 6px; }
+.breadcrumb span { cursor: pointer; }
+.breadcrumb span:hover { color: #1a1a2e; }
+.breadcrumb .sep { color: #ccc; }
+.breadcrumb .active { color: #1a1a2e; font-weight: 600; }
+
+/* 섹션 타이틀 */
+.section-title { font-size: 13px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+
+/* 고객사 카드 */
+.customer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 32px; }
+.customer-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e4e4e4; cursor: pointer; transition: all 0.2s; }
+.customer-card:hover { border-color: #1a1a2e; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.customer-card.active { border-color: #1a1a2e; background: #1a1a2e; color: #fff; }
+.customer-card .name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.customer-card .sub { font-size: 11px; opacity: 0.6; }
+.customer-card .count { font-size: 11px; margin-top: 10px; opacity: 0.7; }
+
+/* 모델 카드 */
+.model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.model-card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #e4e4e4; cursor: pointer; transition: all 0.2s; }
+.model-card:hover { border-color: #3b82f6; box-shadow: 0 4px 16px rgba(59,130,246,0.1); }
+.model-card.active { border-color: #3b82f6; background: #eff6ff; }
+.model-card .name { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
+.model-card .sub { font-size: 11px; color: #888; }
+.model-card .count { font-size: 11px; color: #3b82f6; margin-top: 8px; font-weight: 600; }
+
+/* 제품 카드 */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.product-card { background: #fff; border-radius: 12px; padding: 18px; border: 1px solid #e4e4e4; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+.product-card:hover { border-color: #27ae60; box-shadow: 0 4px 20px rgba(39,174,96,0.1); transform: translateY(-2px); }
+.product-card .code { font-size: 11px; color: #888; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; }
+.product-card .name { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+.product-card .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.product-card .tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+.tag-vina { background: #dbeafe; color: #1e40af; }
+.tag-hq { background: #d1fae5; color: #065f46; }
+.tag-ready { background: #fef9e7; color: #92400e; }
+.tag-none { background: #f0f0f0; color: #888; }
+.product-card .status-bar { height: 4px; border-radius: 2px; margin-top: 12px; background: #eee; overflow: hidden; }
+.product-card .status-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+.product-card .status-label { font-size: 10px; color: #888; margin-top: 5px; display: flex; justify-content: space-between; }
+.product-card .arrow { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; color: #ddd; }
+.product-card:hover .arrow { color: #27ae60; }
+.product-card.disabled { opacity: 0.5; cursor: default; }
+.product-card.disabled:hover { transform: none; box-shadow: none; border-color: #e4e4e4; }
+
+/* 통계 바 */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+.stat-box { background: #fff; border-radius: 10px; padding: 14px 16px; border: 1px solid #e4e4e4; text-align: center; }
+.stat-val { font-size: 22px; font-weight: 700; }
+.stat-label { font-size: 11px; color: #888; margin-top: 3px; }
+
+.hidden { display: none; }
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.footer { text-align: center; font-size: 11px; color: #bbb; padding: 20px 0; border-top: 1px solid #e8e8e8; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>성우전자 &nbsp;|&nbsp; 글로벌 품질관리 시스템</h1>
+    <p>SUNGWOO ELECTRONICS · Global Quality Management · 예지보전 대시보드</p>
+  </div>
+  <div class="topbar-right">
+    관리자: 성우전자 품질팀<br>
+    업데이트: 2026-05-19
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 브레드크럼 -->
+  <div class="breadcrumb" id="breadcrumb">
+    <span class="active">🏠 홈</span>
+  </div>
+
+  <!-- 홈 화면 -->
+  <div id="homeView" class="fade-in">
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val" style="color:#1a1a2e">1</div><div class="stat-label">고객사</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#3b82f6">1</div><div class="stat-label">관리 모델</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#27ae60">4</div><div class="stat-label">관리 제품</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#e74c3c">1</div><div class="stat-label">대시보드 완성</div></div>
+    </div>
+
+    <div class="section-title">고객사 선택</div>
+    <div class="customer-grid">
+      <div class="customer-card" onclick="selectCustomer('mando')">
+        <div class="name">만도</div>
+        <div class="sub">Mando Corporation</div>
+        <div class="count">모델 1개 · 제품 4종</div>
+      </div>
+      <div class="customer-card" style="opacity:0.4;cursor:default;">
+        <div class="name">+ 고객사 추가</div>
+        <div class="sub">준비 중</div>
+        <div class="count">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모델 화면 -->
+  <div id="modelView" class="hidden fade-in">
+    <div class="section-title" id="modelTitle">모델 선택</div>
+    <div class="model-grid">
+      <div class="model-card active" onclick="selectModel('mx5a')">
+        <div class="name">MX5A EREV</div>
+        <div class="sub">전기차 브레이크 브라켓</div>
+        <div class="count">제품 4종 관리 중</div>
+      </div>
+      <div class="model-card" style="opacity:0.4;cursor:default;">
+        <div class="name">+ 모델 추가</div>
+        <div class="sub">준비 중</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 제품 화면 -->
+  <div id="productView" class="hidden fade-in">
+    <div class="section-title">제품 선택 — MX5A EREV</div>
+    <div class="product-grid">
+
+      <div class="product-card disabled">
+        <div class="code">BR0035 L-A / R-A</div>
+        <div class="name">FRT BRKT LH#1</div>
+        <div class="meta">
+          <span class="tag tag-none">데이터 준비중</span>
+        </div>
+        <div class="status-bar"><div class="status-fill" style="width:0%;background:#e0e0e0"></div></div>
+        <div class="status-label"><span>진행률 0%</span><span>-</span></div>
+        <span class="arrow">→</span>
+      </div>
+
+      <div class="product-card disabled">
+        <div class="code">BR0036 L-A / R-A</div>
+        <div class="name">RR BRKT LH#1</div>
+        <div class="meta">
+          <span class="tag tag-none">데이터 준비중</span>
+        </div>
+        <div class="status-bar"><div class="status-fill" style="width:0%;background:#e0e0e0"></div></div>
+        <div class="status-label"><span>진행률 0%</span><span>-</span></div>
+        <span class="arrow">→</span>
+      </div>
+
+      <div class="product-card" onclick="window.open('dashboard.html','_blank')">
+        <div class="code">BR0037 L-A / R-A</div>
+        <div class="name">RR BRKT LH#2</div>
+        <div class="meta">
+          <span class="tag tag-hq">본사 ✓</span>
+          <span class="tag tag-vina">VINA ✓</span>
+        </div>
+        <div class="status-bar"><div class="status-fill" style="width:100%;background:#27ae60"></div></div>
+        <div class="status-label"><span>대시보드 완성</span><span>2026-05-19</span></div>
+        <span class="arrow" style="color:#27ae60">→</span>
+      </div>
+
+      <div class="product-card disabled">
+        <div class="code">BR0038 L-A / R-A</div>
+        <div class="name">RR BRKT LH#3</div>
+        <div class="meta">
+          <span class="tag tag-none">데이터 준비중</span>
+        </div>
+        <div class="status-bar"><div class="status-fill" style="width:0%;background:#e0e0e0"></div></div>
+        <div class="status-label"><span>진행률 0%</span><span>-</span></div>
+        <span class="arrow">→</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    성우전자 글로벌 품질관리 시스템 &nbsp;·&nbsp; SUNGWOO ELECTRONICS &nbsp;·&nbsp; 2026
+  </div>
+</div>
+
+<script>
+function selectCustomer(id) {
+  document.getElementById('homeView').classList.add('hidden');
+  document.getElementById('modelView').classList.remove('hidden');
+  document.getElementById('modelView').classList.add('fade-in');
+  document.getElementById('productView').classList.add('hidden');
+  document.getElementById('breadcrumb').innerHTML = `
+    <span onclick="goHome()">🏠 홈</span>
+    <span class="sep">›</span>
+    <span class="active">만도</span>
+  `;
+}
+
+function selectModel(id) {
+  document.getElementById('modelView').classList.add('hidden');
+  document.getElementById('productView').classList.remove('hidden');
+  document.getElementById('productView').classList.add('fade-in');
+  document.getElementById('breadcrumb').innerHTML = `
+    <span onclick="goHome()">🏠 홈</span>
+    <span class="sep">›</span>
+    <span onclick="selectCustomer('mando')">만도</span>
+    <span class="sep">›</span>
+    <span class="active">MX5A EREV</span>
+  `;
+}
+
+function goHome() {
+  document.getElementById('homeView').classList.remove('hidden');
+  document.getElementById('homeView').classList.add('fade-in');
+  document.getElementById('modelView').classList.add('hidden');
+  document.getElementById('productView').classList.add('hidden');
+  document.getElementById('breadcrumb').innerHTML = `<span class="active">🏠 홈</span>`;
+}
+</script>
+</body>
+</html>
