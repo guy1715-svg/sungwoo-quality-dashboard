@@ -722,7 +722,7 @@ function analyze(){
   let rc=0,yc=0,gc=0,total=0,frontH='',sideH='',backH='';
 
   for(let no=1;no<=18;no++){
-    const hqInfo=hqParsed[no],vinaInfo=vinaParsed[no];
+    const hqInfo=hqParsed[String(no)],vinaInfo=vinaParsed[String(no)];
     if(!hqInfo||!vinaInfo){ console.log(`No.${no} 데이터 없음 HQ:${!!hqInfo} VINA:${!!vinaInfo}`); continue; }
     const spec=hqInfo.spec||SPEC_MAP[no]||0;
     const tol=TOL_MAP[no]||0.5;
