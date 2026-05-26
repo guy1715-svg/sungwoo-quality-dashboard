@@ -119,6 +119,14 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 @media(max-width:800px){.kpi-grid{grid-template-columns:repeat(2,1fr);}.row2,.row3{grid-template-columns:1fr;}.upload-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
 @media print{
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #fff !important; }
+  .topbar, .tabs, .breadcrumb, .pdf-btn, #screen-home, #screen-model, #screen-product { display: none !important; }
+  #screen-dashboard { display: block !important; }
+  #dash1 { display: block !important; }
+  #dash2 { display: none !important; }
+  canvas { display: block !important; }
+  .card { break-inside: avoid; }
+}
   canvas { display: block !important; }
 
   .print-img{display:block!important;}
