@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>파일 비교 디버그</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+body { font-family: sans-serif; padding: 20px; }
+textarea { width: 100%; height: 300px; font-size: 11px; font-family: monospace; }
+button { padding: 10px 20px; margin: 8px 4px; background: #1a1a2e; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+</style>
+</head>
+<body>
+<h2>HQ 파일 구조 디버그</h2>
+<p>HQ 파일 선택 후 "HQ 분석" 클릭</p>
+<input type="file" id="hqFile" accept=".xlsx">
+<button onclick="debugHQ()">HQ 분석</button>
+<br><br>
+<p>VINA 파일 선택 후 "VINA 분석" 클릭</p>
+<input type="file" id="vinaFile" accept=".xlsx">
+<button onclick="debugVINA()">VINA 분석</button>
+<br><br>
+<textarea id="out">결과가 여기 나옵니다...</textarea>
+
+<script>
+function log(msg) {
+  document.getElementById('out').value += msg + '\n';
+}
+function clear() {
+  document.getElementById('out').value = '';
+}
+
+function debugHQ() {
+  clear();
+  var file = document.getElementById('hqFile').files[0];
+  if(!file) { log('파일 선택하세요'); return; }
+  log('파일: ' + file.name);
+  
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var wb = XLSX.read(e.target.result, {type:'array'});
+    log('시트: ' + wb.SheetNames.join(', '));
+    
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+    log('총 행수: ' + arr.length);
+    log('');
+    log('=== 상위 30행 (열0~열17) ===');
+    for(var i=0; i<Math.min(30, arr.length); i++) {
+      var row = arr[i];
+      if(!row) continue;
+      var vals = [];
+      for(var j=0; j<=17; j++) {
+        vals.push('열'+j+'='+JSON.stringify(row[j]));
+      }
+      log('행'+i+': ' + vals.slice(0,8).join(' | '));
+    }
+    log('');
+    log('=== 열4가 1~18 숫자인 행 ===');
+    for(var i=0; i<arr.length; i++) {
+      var row = arr[i];
+      if(!row) continue;
+      var v = row[4];
+      if(v !== null && v !== undefined) {
+        var n = parseFloat(String(v).trim());
+        if(!isNaN(n) && n >= 1 && n <= 18) {
+          log('행'+i+': 열4='+v+' 열6='+row[6]+' 열15='+row[15]+' 열16='+row[16]);
+        }
+      }
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function debugVINA() {
+  clear();
+  var file = document.getElementById('vinaFile').files[0];
+  if(!file) { log('파일 선택하세요'); return; }
+  log('파일: ' + file.name);
+  
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var wb = XLSX.read(e.target.result, {type:'array'});
+    log('시트: ' + wb.SheetNames.join(', '));
+    
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+    log('총 행수: ' + arr.length);
+    log('');
+    log('=== 열2가 1~18 숫자인 행 ===');
+    for(var i=0; i<arr.length; i++) {
+      var row = arr[i];
+      if(!row) continue;
+      var v = row[2];
+      if(v !== null && v !== undefined) {
+        var n = parseFloat(String(v).trim());
+        if(!isNaN(n) && n >= 1 && n <= 18) {
+          log('행'+i+': 열2='+v+' 열10='+row[10]);
+        }
+      }
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+</script>
+</body>
+</html>
