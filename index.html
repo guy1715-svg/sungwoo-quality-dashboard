@@ -425,9 +425,9 @@ function initCharts(){
     tr.innerHTML=
       '<td><strong style="color:'+(r.isAngle?'#ccc':'#222')+'">'+r.no+'</strong></td>'+
       '<td class="left">'+
-        '<span class="part-name" onclick="showPopup('+r.no+',''+PART_NAMES[r.no]+'',''+view+'',''+vLabel+'')">'+PART_NAMES[r.no]+'</span>'+
+        '<span class="part-name" onclick="showPopup('+r.no+',\''+PART_NAMES[r.no]+'\',\''+view+'\',\''+vLabel+'\')">'+PART_NAMES[r.no]+'</span>'+
         (r.isAngle?'<span class="angle-badge">각도</span>':'')+
-        '<span class="part-tag '+tagClass[view]+'" onclick="showPopup('+r.no+',''+PART_NAMES[r.no]+'',''+view+'',''+vLabel+'')">'+vLabel+' 📐</span>'+
+        '<span class="part-tag '+tagClass[view]+'" onclick="showPopup('+r.no+',\''+PART_NAMES[r.no]+'\',\''+view+'\',\''+vLabel+'\')">'+vLabel+' 📐</span>'+
       '</td>'+
       '<td>'+r.spec+'</td><td>±'+r.tol+'</td>'+
       '<td style="color:'+(r.isAngle?'#ccc':'#555')+'">'+r.min.toFixed(3)+'</td>'+
