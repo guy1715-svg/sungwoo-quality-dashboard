@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>body{font-family:sans-serif;padding:20px;} textarea{width:100%;height:400px;font-size:11px;font-family:monospace;} button{padding:8px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;cursor:pointer;margin:4px;}</style>
+</head>
+<body>
+<h2>HQ 파일 열 위치 확인</h2>
+<input type="file" id="f" accept=".xlsx">
+<button onclick="go()">분석</button>
+<textarea id="out"></textarea>
+<script>
+function go() {
+  var file = document.getElementById('f').files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var wb = XLSX.read(e.target.result, {type:'array'});
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+    var out = '';
+    out += '시트: ' + wb.SheetNames[0] + '\n';
+    out += '총행수: ' + arr.length + '\n\n';
+    
+    // 행 10~29 전체 출력
+    for(var i=10; i<Math.min(30,arr.length); i++) {
+      var row = arr[i];
+      var vals = [];
+      for(var j=0; j<row.length; j++) {
+        if(row[j] !== null) vals.push('열'+j+'='+JSON.stringify(row[j]));
+      }
+      out += '행'+i+': ' + vals.join(' | ') + '\n';
+    }
+    document.getElementById('out').value = out;
+  };
+  reader.readAsArrayBuffer(file);
+}
+</script>
+</body></html>
