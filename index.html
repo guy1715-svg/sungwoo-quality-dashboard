@@ -837,7 +837,7 @@ function loadApprovalFile(file){
         var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
         arr.forEach(function(row){
           if(!row||!row.length) return;
-          // No 파싱 - 문자열/숫자 모두 처리
+          // No = 열2 (문자열 '1','2'...)
           var noRaw = row[2];
           var no = null;
           if(noRaw !== null && noRaw !== undefined){
@@ -851,15 +851,19 @@ function loadApprovalFile(file){
             var tolPlus = pNum(row[6]);
             var tolMinus = pNum(row[7]);
             if(spec===null) return;
-            // 측정값 열8부터
-            var vals = [];
-            for(var c=8;c<row.length;c++){
-              var v = pNum(row[c]);
-              if(v!==null && v!==0 && !isNaN(v)) vals.push(v);
+            // 평균값 = 열10 (Average)
+            var avg = pNum(row[10]);
+            // 없으면 열8,9 측정값으로 계산
+            if(avg===null || avg===0){
+              var vals=[];
+              for(var c=8;c<=9;c++){
+                var v=pNum(row[c]);
+                if(v!==null&&v!==0) vals.push(v);
+              }
+              if(vals.length>0) avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
             }
-            if(vals.length>0){
-              if(!result[no]) result[no]={spec:spec,tolPlus:tolPlus,tolMinus:tolMinus,vals:[]};
-              result[no].vals = result[no].vals.concat(vals);
+            if(avg!==null && avg!==0){
+              if(!result[no]) result[no]={spec:spec,tolPlus:tolPlus,tolMinus:tolMinus,avg:avg};
             }
           }
         });
@@ -898,8 +902,8 @@ function runApproval(){
   Object.keys(approvalData).forEach(function(no){
     no = parseInt(no);
     var d = approvalData[no];
-    if(!d.vals.length) return;
-    var avg = d.vals.reduce(function(a,b){return a+b;},0)/d.vals.length;
+    if(!d.avg) return;
+    var avg = d.avg;
     var spec = d.spec || (product.specMap[no]||0);
     var tolPlus = d.tolPlus || (product.tolMap[no]||0.5);
     var tolMinus = d.tolMinus || (product.tolMap[no]||0.5);
@@ -1079,7 +1083,7 @@ function loadApprovalFile(file){
         var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
         arr.forEach(function(row){
           if(!row||!row.length) return;
-          // No 파싱 - 문자열/숫자 모두 처리
+          // No = 열2 (문자열 '1','2'...)
           var noRaw = row[2];
           var no = null;
           if(noRaw !== null && noRaw !== undefined){
@@ -1093,15 +1097,19 @@ function loadApprovalFile(file){
             var tolPlus = pNum(row[6]);
             var tolMinus = pNum(row[7]);
             if(spec===null) return;
-            // 측정값 열8부터
-            var vals = [];
-            for(var c=8;c<row.length;c++){
-              var v = pNum(row[c]);
-              if(v!==null && v!==0 && !isNaN(v)) vals.push(v);
+            // 평균값 = 열10 (Average)
+            var avg = pNum(row[10]);
+            // 없으면 열8,9 측정값으로 계산
+            if(avg===null || avg===0){
+              var vals=[];
+              for(var c=8;c<=9;c++){
+                var v=pNum(row[c]);
+                if(v!==null&&v!==0) vals.push(v);
+              }
+              if(vals.length>0) avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
             }
-            if(vals.length>0){
-              if(!result[no]) result[no]={spec:spec,tolPlus:tolPlus,tolMinus:tolMinus,vals:[]};
-              result[no].vals = result[no].vals.concat(vals);
+            if(avg!==null && avg!==0){
+              if(!result[no]) result[no]={spec:spec,tolPlus:tolPlus,tolMinus:tolMinus,avg:avg};
             }
           }
         });
@@ -1140,8 +1148,8 @@ function runApproval(){
   Object.keys(approvalData).forEach(function(no){
     no = parseInt(no);
     var d = approvalData[no];
-    if(!d.vals.length) return;
-    var avg = d.vals.reduce(function(a,b){return a+b;},0)/d.vals.length;
+    if(!d.avg) return;
+    var avg = d.avg;
     var spec = d.spec || (product.specMap[no]||0);
     var tolPlus = d.tolPlus || (product.tolMap[no]||0.5);
     var tolMinus = d.tolMinus || (product.tolMap[no]||0.5);
