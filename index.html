@@ -72,9 +72,6 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 .br{background:#fdedec;color:#c0392b;}.by{background:#fef9e7;color:#d68910;}.bg{background:#eafaf1;color:#1e8449;}.bk{background:#f0f0f0;color:#999;}
 .trend-up{color:#c0392b;}.trend-dn{color:#1e8449;}.trend-fl{color:#999;}
 .part-name{font-weight:600;}
-.part-tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:600;}
-.tag-f{background:#dbeafe;color:#1e40af;}.tag-s{background:#ede9fe;color:#5b21b6;}.tag-b{background:#d1fae5;color:#065f46;}
-.angle-badge{display:inline-block;background:#f0f0f0;color:#999;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:4px;}
 .notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 16px;font-size:11px;color:#92400e;margin-bottom:14px;}
 .gap-info{background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;font-size:11px;color:#1e40af;margin-bottom:14px;}
 .filter-bar{background:#fff;border-radius:10px;padding:12px 16px;border:1px solid #e4e4e4;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
@@ -134,7 +131,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div class="stat-box"><div class="stat-val blue">1</div><div class="stat-label">고객사</div></div>
       <div class="stat-box"><div class="stat-val" style="color:#3b82f6">1</div><div class="stat-label">관리 모델</div></div>
       <div class="stat-box"><div class="stat-val green">4</div><div class="stat-label">관리 제품</div></div>
-      <div class="stat-box"><div class="stat-val red">1</div><div class="stat-label">대시보드 완성</div></div>
+      <div class="stat-box"><div class="stat-val red">4</div><div class="stat-label">대시보드 완성</div></div>
     </div>
     <div class="sec-title">고객사 선택</div>
     <div class="customer-grid">
@@ -170,23 +167,23 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
   <div id="screen-product" class="screen">
     <div class="sec-title">제품 선택 — MX5A EREV</div>
     <div class="product-grid">
-      <div class="product-card disabled">
+      <div class="product-card" onclick="goDashboard('br0035')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0035 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">FRT BRKT LH#1</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-none">데이터 준비중</span></div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:0%;background:#e0e0e0"></div></div>
-        <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>진행률 0%</span><span>-</span></div>
-        <span class="p-arrow">→</span>
+        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
+        <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-21</span></div>
+        <span class="p-arrow" style="color:#3b82f6">→</span>
       </div>
-      <div class="product-card disabled">
+      <div class="product-card" onclick="goDashboard('br0036')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0036 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#1</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-none">데이터 준비중</span></div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:0%;background:#e0e0e0"></div></div>
-        <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>진행률 0%</span><span>-</span></div>
-        <span class="p-arrow">→</span>
+        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
+        <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-09</span></div>
+        <span class="p-arrow" style="color:#3b82f6">→</span>
       </div>
-      <div class="product-card" onclick="goDashboard()">
+      <div class="product-card" onclick="goDashboard('br0037')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0037 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#2</div>
         <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-hq">본사 ✓</span><span class="p-tag tag-vina">VINA ✓</span></div>
@@ -194,13 +191,13 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>대시보드 완성</span><span>2026-05-26</span></div>
         <span class="p-arrow" style="color:#27ae60">→</span>
       </div>
-      <div class="product-card disabled">
+      <div class="product-card" onclick="goDashboard('br0038')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0038 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#3</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-none">데이터 준비중</span></div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:0%;background:#e0e0e0"></div></div>
-        <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>진행률 0%</span><span>-</span></div>
-        <span class="p-arrow">→</span>
+        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
+        <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-12</span></div>
+        <span class="p-arrow" style="color:#3b82f6">→</span>
       </div>
     </div>
   </div>
@@ -209,24 +206,19 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
   <div id="screen-dashboard" class="screen">
     <button class="pdf-btn" onclick="window.print()">🖨️ PDF 출력</button>
     <div style="clear:both;margin-bottom:8px"></div>
-    <div class="tabs">
+    <div class="tabs" id="dashTabs">
       <div class="tab active" onclick="switchTab('dash1',this)">📊 VINA 예지보전 대시보드</div>
-      <div class="tab" onclick="switchTab('dash2',this)">📂 HQ vs VINA 파일 비교</div>
+      <div class="tab" id="tab-hqvina" onclick="switchTab('dash2',this)">📂 HQ vs VINA 파일 비교</div>
     </div>
 
     <!-- 탭1 -->
     <div id="dash1" class="tab-content active">
-      <div class="notice">📐 <strong>각도 항목 (No.10, 11, 16, 18)</strong>은 측정 오차 특성상 참고치수로만 표시됩니다.</div>
+      <div class="notice">📐 <strong>각도 항목</strong>은 측정 오차 특성상 참고치수로만 표시됩니다.</div>
       <div class="gap-info">📊 <strong>판정 기준:</strong> VINA 측정값이 Spec 허용범위 대비 위치로 판정 · 정상: 범위 내 중앙 70% · 주의: 경계 30% · 즉시수리: 범위 초과</div>
 
-      <div class="filter-bar">
+      <div class="filter-bar" id="filterBar">
         <span style="font-size:12px;font-weight:700;color:#555">📅 날짜:</span>
-        <button class="filter-btn active" onclick="setDate('all',this)">전체</button>
-        <button class="filter-btn" onclick="setDate('03/28',this)">03/28</button>
-        <button class="filter-btn" onclick="setDate('04/15',this)">04/15</button>
-        <button class="filter-btn" onclick="setDate('04/16',this)">04/16</button>
-        <button class="filter-btn" onclick="setDate('04/25',this)">04/25</button>
-        <button class="filter-btn" onclick="setDate('05/08',this)">05/08</button>
+        <div id="dateBtns"></div>
         <div class="filter-sep"></div>
         <span style="font-size:12px;font-weight:700;color:#555">🔧 구분:</span>
         <button class="filter-btn active" onclick="setSide('all',this)">LH+RH</button>
@@ -236,11 +228,11 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       </div>
 
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label">전체 항목</div><div class="kpi-val blue">18</div><div class="kpi-sub">VINA 측정</div></div>
+        <div class="kpi"><div class="kpi-label">전체 항목</div><div class="kpi-val blue" id="kpi-total">-</div><div class="kpi-sub">VINA 측정</div></div>
         <div class="kpi"><div class="kpi-label">즉시수리</div><div class="kpi-val red" id="kpi-red">-</div><div class="kpi-sub">범위 초과</div></div>
         <div class="kpi"><div class="kpi-label">주의관찰</div><div class="kpi-val yellow" id="kpi-yellow">-</div><div class="kpi-sub">경계 근접</div></div>
         <div class="kpi"><div class="kpi-label">정상</div><div class="kpi-val green" id="kpi-green">-</div><div class="kpi-sub">범위 내 안정</div></div>
-        <div class="kpi"><div class="kpi-label">선택</div><div class="kpi-val blue" style="font-size:14px" id="kpi-sel">전체·ALL</div><div class="kpi-sub">날짜·구분</div></div>
+        <div class="kpi"><div class="kpi-label">선택</div><div class="kpi-val blue" style="font-size:14px" id="kpi-sel">-</div><div class="kpi-sub">날짜·구분</div></div>
       </div>
 
       <div class="row2">
@@ -256,7 +248,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       </div>
 
       <div class="card" style="margin-bottom:14px">
-        <div class="card-title">날짜별 VINA 측정값 추이 — 주요 항목 <span id="trendSideLabel" style="color:#2980b9">(LH+RH 평균)</span></div>
+        <div class="card-title">날짜별 VINA 측정값 추이 <span id="trendSideLabel" style="color:#2980b9">(LH+RH 평균)</span></div>
         <div class="legend" id="trendLegend"></div>
         <div style="position:relative;height:220px"><canvas id="trendChart"></canvas></div>
       </div>
@@ -266,7 +258,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
         <div style="overflow-x:auto">
           <table><thead><tr>
             <th>No.</th><th style="text-align:left">측정 부위</th>
-            <th>도면</th><th>Spec</th><th>TOL</th><th>하한</th><th>상한</th>
+            <th>Spec</th><th>TOL</th><th>하한</th><th>상한</th>
             <th>VINA 값</th><th>Spec 위치</th><th>추세</th><th>판정</th>
           </tr></thead><tbody id="tableBody"></tbody></table>
         </div>
@@ -321,6 +313,113 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 </div>
 
 <script>
+// ===== 제품 데이터 =====
+var PRODUCTS = {
+  br0035: {
+    name: 'BR0035 FRT BRKT LH#1',
+    code: 'BR0035 L-A / R-A',
+    lastDate: '2026-05-21',
+    hasHQ: false,
+    angleNos: [15,26,32],
+    specMap: {1:5.0,2:67.04,3:8.5,4:84.4,5:15.8,6:3.4,7:4.9,8:13.2,9:19.5,10:18.84,11:8.15,12:15.0,13:11.0,14:8.0,15:90.0,16:53.5,17:12.8,18:16.0,19:7.5,20:7.0,21:12.0,22:27.8,23:5.0,24:5.0,25:1.6,26:68.1,27:27.9,28:4.2,29:23.1,30:2.9,31:7.1,32:90.0},
+    tolMap:  {1:3.0,2:0.5,3:0.2,4:3.0,5:0.4,6:0.5,7:0.5,8:0.5,9:0.5,10:0.5,11:0.5,12:0.5,13:0.2,14:0.5,15:3.0,16:0.5,17:0.5,18:0.5,19:0.4,20:0.2,21:0.2,22:0.5,23:0.2,24:0.5,25:0.5,26:3.0,27:0.5,28:0.5,29:0.5,30:0.5,31:0.5,32:3.0},
+    partNames: {1:'Y축 거리 #1',2:'Y축 거리 #2',3:'홀 직경 (ø8.5)',4:'X축 거리 #1',5:'X축 거리 #2',6:'X축 거리 #3',7:'Y축 거리 #3',8:'파이프 직경',9:'Y축 거리 #4',10:'각도 #1',11:'홀 직경 #2',12:'거리 #1',13:'두께 (T값)',14:'X축 거리 #4',15:'각도 #2',16:'X축 거리 #5',17:'Y축 거리 #5',18:'거리 #2',19:'R값 #1',20:'R값 #2',21:'거리 #3',22:'Y축 거리 #6',23:'홀 직경 #3',24:'홀 직경 #4',25:'두께 #2',26:'각도 #3',27:'X축 거리 #6',28:'X축 거리 #7',29:'X축 거리 #8',30:'거리 #4',31:'Y축 거리 #7',32:'각도 #4'},
+    vinaAll: {
+      '05/12':{1:4.7656,2:66.9462,3:8.5284,4:84.3262,5:15.8675,6:3.3156,7:4.8296,8:13.2352,9:19.5726,10:18.715,11:8.3866,12:15.545,13:10.9118,14:7.968,15:88.8807,16:53.3355,17:12.795,18:16.06,19:7.5597,20:6.9359,21:11.902,22:27.96,23:5.155,24:5.055,25:1.645,26:68.61,27:27.8367,28:4.4616,29:23.1239,30:2.6246,31:7.1021,32:89.135},
+      '05/21':{1:5.1464,2:67.0444,3:8.5737,4:84.3803,5:15.8486,6:3.3167,7:4.8666,8:13.1982,9:19.4576,10:19.0,11:8.3618,12:15.15,13:11.0446,14:8.1044,15:90.3551,16:53.295,17:12.7175,18:15.945,19:7.4922,20:7.0238,21:12.0009,22:27.945,23:5.05,24:4.99,25:1.585,26:69.095,27:27.772,28:4.5465,29:23.0289,30:2.6246,31:7.073,32:88.74}
+    },
+    vinaLH: {
+      '05/12':{1:4.4817,2:66.8429,3:8.5102,4:84.2866,5:15.8343,6:3.3159,7:4.8389,8:13.2519,9:19.557,10:18.77,11:8.4324,12:15.53,13:10.972,14:7.9421,15:88.7893,16:53.581,17:12.8125,18:16.06,19:7.5906,20:6.9471,21:11.8704,22:27.97,23:5.15,24:5.05,25:1.64,26:68.48,27:27.7885,28:4.3858,29:22.9763,30:2.6111,31:6.9325,32:89.22},
+      '05/21':{1:4.5517,2:66.827,3:8.5368,4:84.5144,5:15.8629,6:3.3303,7:4.8565,8:13.1907,9:19.417,10:19.17,11:8.3422,12:15.14,13:11.0238,14:8.0933,15:90.3142,16:53.35,17:12.698,18:15.94,19:7.4906,20:7.0025,21:12.0139,22:27.9,23:5.05,24:4.99,25:1.59,26:68.88,27:27.7655,28:4.6293,29:23.0027,30:2.6111,31:7.067,32:88.59}
+    },
+    vinaRH: {
+      '05/12':{1:5.0496,2:67.0496,3:8.5465,4:84.3659,5:15.9006,6:3.3153,7:4.8203,8:13.2186,9:19.5883,10:18.66,11:8.3409,12:15.56,13:10.8516,14:7.994,15:88.9721,16:53.09,17:12.7775,18:16.06,19:7.5289,20:6.9248,21:11.9337,22:27.95,23:5.16,24:5.06,25:1.65,26:68.74,27:27.8849,28:4.5374,29:23.2516,30:2.638,31:7.2717,32:89.05},
+      '05/21':{1:5.7412,2:67.262,3:8.6107,4:84.2462,5:15.8343,6:3.3032,7:4.8768,8:13.2058,9:19.4983,10:18.83,11:8.3814,12:15.16,13:11.0655,14:8.1155,15:90.396,16:53.24,17:12.737,18:15.95,19:7.4938,20:7.0451,21:11.9879,22:27.99,23:5.05,24:4.99,25:1.58,26:69.31,27:27.7785,28:4.4636,29:23.055,30:2.638,31:7.079,32:88.89}
+    }
+  },
+  br0036: {
+    name: 'BR0036 RR BRKT LH#1',
+    code: 'BR0036 L-A / R-A',
+    lastDate: '2026-05-09',
+    hasHQ: false,
+    angleNos: [10,19,20],
+    specMap: {1:19.5,2:6.0,3:2.0,4:20.0,6:6.5,7:11.9,9:9.5,10:19.0,11:9.0,12:6.2,13:12.1,14:111.0,15:15.98,16:7.65,17:7.65},
+    tolMap:  {1:0.7,2:3.0,3:0.7,4:0.4,6:0.2,7:0.4,9:0.4,10:0.7,11:0.4,12:0.7,13:0.4,14:3.0,15:0.7,16:0.5,17:0.5},
+    partNames: {1:'Y축 거리 #1',2:'거리 #1',3:'두께 (T값)',4:'X축 거리 #1',6:'X축 거리 #2',7:'Y축 거리 #2',9:'Y축 거리 #3',10:'각도 #1',11:'홀 직경',12:'X축 거리 #3',13:'Y축 거리 #4',14:'X축 거리 #4',15:'거리 #2',16:'R값 #1',17:'R값 #2'},
+    vinaAll: {
+      '04/01':{1:19.5325,2:7.3,3:2.0,4:20.1825,6:6.6186,7:11.9264,10:19.0675,11:8.9574,12:6.2568,13:12.0278,14:112.7525,15:16.2825},
+      '05/09':{1:19.63,2:7.0842,3:2.08,4:20.1114,6:6.526,7:12.0814,9:9.3784,10:19.115,11:8.8522,12:6.2414,13:12.1052,14:112.163}
+    },
+    vinaLH: {
+      '04/01':{1:19.535,4:20.215,6:6.6141,7:11.8833,10:19.075,11:8.9647,12:6.3275,13:12.0782,14:112.92,15:16.28},
+      '05/09':{1:19.65,2:7.0041,3:2.08,4:20.1253,6:6.4018,7:12.1413,9:9.4505,10:19.13,11:8.8917,12:6.1576,13:12.0602,14:112.0602}
+    },
+    vinaRH: {
+      '04/01':{1:19.53,2:7.3,3:2.0,4:20.15,6:6.6231,7:11.9694,10:19.06,11:8.9501,12:6.1861,13:11.9775,14:112.585,15:16.285},
+      '05/09':{1:19.61,2:7.1643,3:2.08,4:20.0975,6:6.6501,7:12.0215,9:9.3063,10:19.1,11:8.8126,12:6.3252,13:12.1502,14:112.2658}
+    }
+  },
+  br0037: {
+    name: 'BR0037 RR BRKT LH#2',
+    code: 'BR0037 L-A / R-A',
+    lastDate: '2026-05-08',
+    hasHQ: true,
+    angleNos: [10,11,16,18],
+    specMap: {1:19.5,2:12.0,3:8.5,4:12.0,5:24.0,6:4.0,7:9.51,8:36.1,9:5.0,10:16.5,11:2.0,12:5.0,13:2.0,14:19.5,15:18.0,16:90.0,17:19.5,18:2.5},
+    tolMap:  {1:0.5,2:0.4,3:0.2,4:0.4,5:0.5,6:0.4,7:0.5,8:0.5,9:0.2,10:3.0,11:3.0,12:0.4,13:0.5,14:0.5,15:0.5,16:3.0,17:0.5,18:3.0},
+    partNames: {1:'상단 마운팅 Y축 거리',2:'좌측 브라켓 Y축 거리',3:'하단 홀 직경 (ø8.5)',4:'중앙 브라켓 X축 거리',5:'하단 X축 거리',6:'좌측 단차 X축 거리',7:'우측 브라켓 Y축 거리',8:'우측 파이프 직경 (ø36.1)',9:'우측 상단 홀 Y축',10:'파이프 연결 각도',11:'하단 플랜지 각도',12:'파이프 X축 거리',13:'스프링 클립 두께 (T값)',14:'상단 X축 거리',15:'중앙 X축 거리',16:'좌측 플랜지 각도 (90°)',17:'하단 Y축 거리',18:'우측 파이프 각도 (2.5°)'},
+    vinaAll: {
+      '03/28':{1:19.4842,2:11.9898,3:8.6043,4:12.0184,5:23.9714,6:3.8831,7:9.6566,8:36.1120,9:4.7925,10:15.5736,11:3.0060,12:4.9150,13:1.9975,14:19.4900,15:18.0275,16:89.3651,17:19.5250,18:3.1962},
+      '04/15':{1:19.4750,2:11.9892,3:8.6125,4:11.9650,5:23.9575,6:3.9525,7:9.6375,8:36.1125,9:4.7900,10:17.0350,11:2.3300,12:4.8950,13:2.0000,14:19.5075,15:18.0300,16:89.9700,17:19.5100,18:2.8875},
+      '04/16':{1:19.4750,2:11.9950,3:8.6150,4:11.9700,5:23.9650,6:3.9650,7:9.6400,8:36.1125,9:4.7900,10:16.9270,11:2.3990,12:4.9000,13:2.0000,14:19.5100,15:18.0350,16:90.2665,17:19.5100,18:2.8400},
+      '04/25':{1:19.4750,2:11.9950,3:8.6150,4:11.9700,5:23.9650,6:3.9650,7:9.6400,8:36.1125,9:4.7800,10:16.9270,11:2.3990,12:4.9000,13:2.0000,14:19.5250,15:18.0650,16:90.2665,17:19.5450,18:2.8400},
+      '05/08':{1:19.5425,2:12.0026,3:8.5351,4:11.9851,5:24.0215,6:3.9906,7:9.6457,8:36.2050,9:4.8800,10:16.9099,11:2.3746,12:4.9400,13:2.0800,14:19.6100,15:18.1450,16:90.0154,17:19.6100,18:2.8228}
+    },
+    vinaLH: {
+      '03/28':{1:19.4552,2:11.906,3:8.6044,4:11.9584,5:23.9359,6:3.914,7:9.6974,8:36.0501,9:4.73,10:15.3254,11:3.572,12:4.88,13:2.0,14:19.485,15:18.04,16:89.5825,17:19.515,18:2.7554},
+      '04/15':{1:19.46,2:11.9635,3:8.61,4:11.96,5:23.95,6:3.93,7:9.66,8:36.085,9:4.785,10:16.72,11:2.24,12:4.895,13:2.0,14:19.51,15:18.045,16:89.6,17:19.505,18:2.86},
+      '04/16':{1:19.46,2:11.96,3:8.61,4:11.96,5:23.95,6:3.96,7:9.66,8:36.085,9:4.78,10:16.614,11:2.358,12:4.9,13:2.0,14:19.51,15:18.05,16:89.643,17:19.51,18:2.63},
+      '04/25':{1:19.46,2:11.96,3:8.61,4:11.96,5:23.95,6:3.96,7:9.66,8:36.085,9:4.78,10:16.614,11:2.358,12:4.91,13:2.0,14:19.51,15:18.09,16:89.643,17:19.54,18:2.63},
+      '05/08':{1:19.5777,2:12.043,3:8.5605,4:11.9804,5:23.995,6:3.9915,7:9.6577,8:36.2069,9:4.92,10:16.5439,11:2.4261,12:4.96,13:2.08,14:19.61,15:18.17,16:89.6461,17:19.6,18:2.6149}
+    },
+    vinaRH: {
+      '03/28':{1:19.513,2:12.0736,3:8.6042,4:12.0784,5:24.007,6:3.8522,7:9.6158,8:36.174,9:4.855,10:15.8218,11:2.44,12:4.95,13:1.995,14:19.495,15:18.015,16:89.1478,17:19.535,18:3.6369},
+      '04/15':{1:19.49,2:12.015,3:8.615,4:11.97,5:23.965,6:3.975,7:9.615,8:36.14,9:4.795,10:17.35,11:2.42,12:4.895,13:2.0,14:19.505,15:18.015,16:90.34,17:19.515,18:2.915},
+      '04/16':{1:19.49,2:12.03,3:8.62,4:11.98,5:23.98,6:3.97,7:9.62,8:36.14,9:4.8,10:17.24,11:2.44,12:4.9,13:2.0,14:19.51,15:18.02,16:90.89,17:19.51,18:3.05},
+      '04/25':{1:19.49,2:12.03,3:8.62,4:11.98,5:23.98,6:3.97,7:9.62,8:36.14,9:4.78,10:17.24,11:2.44,12:4.89,13:2.0,14:19.54,15:18.04,16:90.89,17:19.55,18:3.05},
+      '05/08':{1:19.5072,2:11.9623,3:8.5097,4:11.9898,5:24.048,6:3.9897,7:9.6337,8:36.2031,9:4.84,10:17.2759,11:2.3232,12:4.92,13:2.08,14:19.61,15:18.12,16:90.3847,17:19.62,18:3.0307}
+    }
+  },
+  br0038: {
+    name: 'BR0038 RR BRKT LH#3',
+    code: 'BR0038 L-A / R-A',
+    lastDate: '2026-05-12',
+    hasHQ: false,
+    angleNos: [14,19,20,28,30],
+    specMap: {1:84.0,2:66.8,3:14.5,4:27.5,5:24.0,6:11.0,7:6.5,8:7.0,9:3.0,10:24.9,11:13.1,12:2.5,13:8.5,14:90.0,15:19.5,16:35.8,17:57.6,18:17.5,19:5.5,20:90.0,21:13.0,22:6.5,23:22.0,24:11.3,25:13.0,26:5.0,27:5.0,28:5.0,29:2.0,30:6.5,31:19.5,32:160.4},
+    tolMap:  {1:0.5,2:0.5,3:0.5,4:0.5,5:0.5,6:0.4,7:0.2,8:0.2,9:0.2,10:0.5,11:0.4,12:0.4,13:0.2,14:3.0,15:0.5,16:0.5,17:0.5,18:0.5,19:3.0,20:3.0,21:0.4,22:0.5,23:0.5,24:0.4,25:1.0,26:0.5,27:0.2,28:3.0,29:0.5,30:3.0,31:0.5,32:3.0},
+    partNames: {1:'X축 거리 #1',2:'Y축 거리 #1',3:'거리 #1',4:'X축 거리 #2',5:'X축 거리 #3',6:'Y축 거리 #2',7:'홀 직경 #1',8:'홀 직경 #2',9:'홀 직경 #3',10:'X축 거리 #4',11:'Y축 거리 #3',12:'두께 (T값)',13:'홀 직경 #4',14:'각도 #1',15:'Y축 거리 #4',16:'X축 거리 #5',17:'Y축 거리 #5',18:'거리 #2',19:'R값 #1',20:'각도 #2',21:'거리 #3',22:'홀 직경 #5',23:'X축 거리 #6',24:'Y축 거리 #6',25:'Y축 거리 #7',26:'홀 직경 #6',27:'홀 직경 #7',28:'각도 #3',29:'두께 #2',30:'각도 #4',31:'Y축 거리 #8',32:'X축 거리 #7'},
+    vinaAll: {
+      '04/01':{1:83.5525,2:66.7562,3:14.3922,4:27.4162,5:23.851,6:10.9495,7:6.534,8:7.1042,9:3.0988,10:25.05,11:12.7718,12:2.405,13:8.6072,14:90.4098,15:19.5075,16:35.712,17:57.9128,18:17.5025,19:5.696,20:90.4192,21:12.6572,22:6.605,23:22.065,24:10.8888,25:12.7495,26:4.875,27:4.9625,28:4.682,29:2.0,30:6.3528,31:19.495,32:159.9422},
+      '05/12':{1:83.7453,2:66.72,3:14.4708,4:27.4564,5:23.9214,6:10.9401,7:6.475,8:7.0423,9:3.0671,10:25.12,11:12.9348,12:2.3674,13:8.5154,14:90.5317,15:19.615,16:35.7394,17:58.062,18:17.615,19:5.5522,20:90.3866,21:10.7006,23:22.065,24:11.3566,25:12.5969,26:4.915,27:5.095,28:4.5674,29:2.07,30:7.1298,31:19.61,32:160.0678}
+    },
+    vinaLH: {
+      '04/01':{1:83.469,2:66.884,3:14.3785,4:27.4195,6:10.9285,7:6.503,8:7.08,9:3.084,10:25.035,11:12.6475,12:2.474,13:8.61,14:90.469,15:19.495,16:35.6405,17:57.6855,18:17.515,19:5.555,20:90.405,21:12.95,22:6.6,23:22.065,24:10.6975,25:12.845,26:4.845,27:4.9625,28:4.6865,29:2.0,30:6.2225,31:19.495,32:159.91},
+      '05/12':{1:83.5843,2:66.7929,3:14.4413,4:27.4417,6:10.9221,7:6.4857,8:7.0471,9:3.0671,10:25.1225,11:12.8968,12:2.397,13:8.5129,14:90.4727,15:19.6125,16:35.7094,17:58.1013,18:17.615,19:5.5643,20:90.3866,21:10.9525,23:22.065,24:11.3258,25:12.615,26:4.9025,27:5.095,28:4.5675,29:2.07,30:7.1738,31:19.61,32:160.0678}
+    },
+    vinaRH: {
+      '04/01':{1:83.636,2:66.6285,3:14.406,4:27.413,5:23.851,6:10.9705,7:6.565,8:7.1285,9:3.1135,10:25.065,11:12.896,12:2.336,13:8.6045,14:90.3505,15:19.52,16:35.7835,17:58.14,18:17.49,19:5.5025,20:90.4334,21:12.3644,22:6.61,23:22.065,24:11.08,25:12.654,26:4.905,27:4.9625,28:4.6775,29:2.0,30:6.4831,31:19.495,32:159.9754},
+      '05/12':{1:83.906,2:66.6471,3:14.5003,4:27.4711,5:23.9214,6:10.9581,7:6.4643,8:7.0376,9:3.0671,10:25.1175,11:12.9728,12:2.3378,13:8.5179,14:90.5907,15:19.6175,16:35.7694,17:58.0227,18:17.615,19:5.54,20:90.3866,21:10.4487,23:22.065,24:11.3874,25:12.5788,26:4.9275,27:5.095,28:4.5673,29:2.07,30:7.0858,31:19.61,32:160.0678}
+    }
+  }
+};
+
+var curProduct = null;
+var curDate = 'all';
+var curSide = 'all';
+var donutChart=null,deviationChart=null,trendChart=null;
+
+// ===== 화면 전환 =====
 function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('screen-'+id).classList.add('active');}
 function updateBC(items){
   var bc=document.getElementById('breadcrumb');
@@ -333,12 +432,42 @@ function updateBC(items){
 function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 품질팀<br>업데이트: 2026-05-26';}
 function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
 function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
-function goDashboard(){
+
+function goDashboard(productId){
+  curProduct = PRODUCTS[productId];
+  curDate = 'all';
+  curSide = 'all';
   showScreen('dashboard');
-  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:'BR0037 RR BRKT LH#2'}]);
-  document.getElementById('topbarRight').innerHTML='VINA 최근 측정: 2026-05-08<br>Part: BR0037-L/R-A';
-  initCharts();
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:curProduct.name}]);
+  document.getElementById('topbarRight').innerHTML='VINA 최근: '+curProduct.lastDate+'<br>Part: '+curProduct.code;
+
+  // HQ vs VINA 탭 표시/숨김
+  var tab2 = document.getElementById('tab-hqvina');
+  tab2.style.display = curProduct.hasHQ ? '' : 'none';
+
+  // 날짜 버튼 생성
+  var dates = Object.keys(curProduct.vinaAll);
+  var dateBtns = document.getElementById('dateBtns');
+  dateBtns.innerHTML = '<button class="filter-btn active" onclick="setDate('all',this)">전체</button>';
+  dates.forEach(function(d){
+    dateBtns.innerHTML += '<button class="filter-btn" onclick="setDate(''+d+'',this)">'+d+'</button>';
+  });
+
+  // 탭 초기화
+  document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('dash1').classList.add('active');
+  document.querySelector('.tab').classList.add('active');
+
+  // 차트 초기화
+  donutChart=null;deviationChart=null;trendChart=null;
+  document.getElementById('trendLegend').innerHTML='';
+  document.getElementById('tableBody').innerHTML='';
+
+  buildTrendChart();
+  renderData();
 }
+
 function switchTab(id,el){
   document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
@@ -346,51 +475,22 @@ function switchTab(id,el){
   el.classList.add('active');
 }
 
-var ANGLE_NOS=[10,11,16,18];
-var PART_NAMES={1:'상단 마운팅 Y축 거리',2:'좌측 브라켓 Y축 거리',3:'하단 홀 직경 (ø8.5)',4:'중앙 브라켓 X축 거리',5:'하단 X축 거리',6:'좌측 단차 X축 거리',7:'우측 브라켓 Y축 거리',8:'우측 파이프 직경 (ø36.1)',9:'우측 상단 홀 Y축',10:'파이프 연결 각도',11:'하단 플랜지 각도',12:'파이프 X축 거리',13:'스프링 클립 두께 (T값)',14:'상단 X축 거리',15:'중앙 X축 거리',16:'좌측 플랜지 각도 (90°)',17:'하단 Y축 거리',18:'우측 파이프 각도 (2.5°)'};
-var VIEW_LABEL={front:'정면도',side:'측면도',back:'배면도'};
-var VIEW_MAP={1:'front',2:'front',3:'front',4:'front',5:'front',6:'front',7:'front',8:'front',9:'front',10:'side',11:'side',12:'side',13:'side',14:'back',15:'back',16:'back',17:'back',18:'back'};
-var SPEC_MAP={1:19.5,2:12.0,3:8.5,4:12.0,5:24.0,6:4.0,7:9.51,8:36.1,9:5.0,10:16.5,11:2.0,12:5.0,13:2.0,14:19.5,15:18.0,16:90.0,17:19.5,18:2.5};
-var TOL_MAP={1:0.5,2:0.4,3:0.2,4:0.4,5:0.5,6:0.4,7:0.5,8:0.5,9:0.2,10:3.0,11:3.0,12:0.4,13:0.5,14:0.5,15:0.5,16:3.0,17:0.5,18:3.0};
-var tagClass={front:'tag-f',side:'tag-s',back:'tag-b'};
-
-var VINA_ALL={
-  '03/28':{1:19.4842,2:11.9898,3:8.6043,4:12.0184,5:23.9714,6:3.8831,7:9.6566,8:36.1120,9:4.7925,10:15.5736,11:3.0060,12:4.9150,13:1.9975,14:19.4900,15:18.0275,16:89.3651,17:19.5250,18:3.1962},
-  '04/15':{1:19.4750,2:11.9892,3:8.6125,4:11.9650,5:23.9575,6:3.9525,7:9.6375,8:36.1125,9:4.7900,10:17.0350,11:2.3300,12:4.8950,13:2.0000,14:19.5075,15:18.0300,16:89.9700,17:19.5100,18:2.8875},
-  '04/16':{1:19.4750,2:11.9950,3:8.6150,4:11.9700,5:23.9650,6:3.9650,7:9.6400,8:36.1125,9:4.7900,10:16.9270,11:2.3990,12:4.9000,13:2.0000,14:19.5100,15:18.0350,16:90.2665,17:19.5100,18:2.8400},
-  '04/25':{1:19.4750,2:11.9950,3:8.6150,4:11.9700,5:23.9650,6:3.9650,7:9.6400,8:36.1125,9:4.7800,10:16.9270,11:2.3990,12:4.9000,13:2.0000,14:19.5250,15:18.0650,16:90.2665,17:19.5450,18:2.8400},
-  '05/08':{1:19.5425,2:12.0026,3:8.5351,4:11.9851,5:24.0215,6:3.9906,7:9.6457,8:36.2050,9:4.8800,10:16.9099,11:2.3746,12:4.9400,13:2.0800,14:19.6100,15:18.1450,16:90.0154,17:19.6100,18:2.8228}
-};
-var VINA_LH={
-  '03/28':{1:19.4552,2:11.906,3:8.6044,4:11.9584,5:23.9359,6:3.914,7:9.6974,8:36.0501,9:4.73,10:15.3254,11:3.572,12:4.88,13:2.0,14:19.485,15:18.04,16:89.5825,17:19.515,18:2.7554},
-  '04/15':{1:19.46,2:11.9635,3:8.61,4:11.96,5:23.95,6:3.93,7:9.66,8:36.085,9:4.785,10:16.72,11:2.24,12:4.895,13:2.0,14:19.51,15:18.045,16:89.6,17:19.505,18:2.86},
-  '04/16':{1:19.46,2:11.96,3:8.61,4:11.96,5:23.95,6:3.96,7:9.66,8:36.085,9:4.78,10:16.614,11:2.358,12:4.9,13:2.0,14:19.51,15:18.05,16:89.643,17:19.51,18:2.63},
-  '04/25':{1:19.46,2:11.96,3:8.61,4:11.96,5:23.95,6:3.96,7:9.66,8:36.085,9:4.78,10:16.614,11:2.358,12:4.91,13:2.0,14:19.51,15:18.09,16:89.643,17:19.54,18:2.63},
-  '05/08':{1:19.5777,2:12.043,3:8.5605,4:11.9804,5:23.995,6:3.9915,7:9.6577,8:36.2069,9:4.92,10:16.5439,11:2.4261,12:4.96,13:2.08,14:19.61,15:18.17,16:89.6461,17:19.6,18:2.6149}
-};
-var VINA_RH={
-  '03/28':{1:19.513,2:12.0736,3:8.6042,4:12.0784,5:24.007,6:3.8522,7:9.6158,8:36.174,9:4.855,10:15.8218,11:2.44,12:4.95,13:1.995,14:19.495,15:18.015,16:89.1478,17:19.535,18:3.6369},
-  '04/15':{1:19.49,2:12.015,3:8.615,4:11.97,5:23.965,6:3.975,7:9.615,8:36.14,9:4.795,10:17.35,11:2.42,12:4.895,13:2.0,14:19.505,15:18.015,16:90.34,17:19.515,18:2.915},
-  '04/16':{1:19.49,2:12.03,3:8.62,4:11.98,5:23.98,6:3.97,7:9.62,8:36.14,9:4.8,10:17.24,11:2.44,12:4.9,13:2.0,14:19.51,15:18.02,16:90.89,17:19.51,18:3.05},
-  '04/25':{1:19.49,2:12.03,3:8.62,4:11.98,5:23.98,6:3.97,7:9.62,8:36.14,9:4.78,10:17.24,11:2.44,12:4.89,13:2.0,14:19.54,15:18.04,16:90.89,17:19.55,18:3.05},
-  '05/08':{1:19.5072,2:11.9623,3:8.5097,4:11.9898,5:24.048,6:3.9897,7:9.6337,8:36.2031,9:4.84,10:17.2759,11:2.3232,12:4.92,13:2.08,14:19.61,15:18.12,16:90.3847,17:19.62,18:3.0307}
-};
-var DATES=Object.keys(VINA_ALL);
-var curDate='all';
-var curSide='all';
-
-function getDataSource(){return curSide==='lh'?VINA_LH:curSide==='rh'?VINA_RH:VINA_ALL;}
+function getDataSource(){
+  return curSide==='lh'?curProduct.vinaLH:curSide==='rh'?curProduct.vinaRH:curProduct.vinaAll;
+}
 
 function getSelectedData(){
   var src=getDataSource();
+  var dates=Object.keys(src);
   var result={};
   if(curDate==='all'){
-    for(var no=1;no<=18;no++){
-      var vals=DATES.map(function(d){return src[d][no];});
-      result[no]=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-    }
+    var nos=Object.keys(curProduct.specMap).map(Number);
+    nos.forEach(function(no){
+      var vals=dates.map(function(d){return src[d][no];}).filter(function(v){return v!==undefined&&v!==null;});
+      if(vals.length>0) result[no]=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+    });
   }else{
-    for(var no=1;no<=18;no++){result[no]=src[curDate][no];}
+    result=src[curDate]||{};
   }
   return result;
 }
@@ -404,34 +504,44 @@ function getStatus(val,spec,tol,isAngle){
   return{status:'🟢 정상',badgeCls:'bg',sortKey:2,color:'#1e8449'};
 }
 
-var donutChart=null,deviationChart=null,trendChart=null,chartsInited=false;
-
-function initCharts(){
-  if(chartsInited)return;
-  chartsInited=true;
-  buildTrendChart();
-  renderData();
-}
-
 function buildTrendChart(){
-  var topNos=[9,7,6,15,1];
-  var COLORS=['#e74c3c','#f39c12','#2980b9','#27ae60','#9b59b6'];
   var src=getDataSource();
+  var dates=Object.keys(src);
+  var nos=Object.keys(curProduct.specMap).map(Number).filter(function(no){
+    return curProduct.angleNos.indexOf(no)<0;
+  });
+
+  // 편차 가장 큰 상위 5개
+  var devMap={};
+  nos.forEach(function(no){
+    var spec=curProduct.specMap[no];
+    var lastDate=dates[dates.length-1];
+    var val=src[lastDate]?src[lastDate][no]:null;
+    if(val!==undefined&&val!==null) devMap[no]=Math.abs((val-spec)/curProduct.tolMap[no]*100);
+  });
+  var topNos=Object.keys(devMap).map(Number).sort(function(a,b){return devMap[b]-devMap[a];}).slice(0,5);
+  var COLORS=['#e74c3c','#f39c12','#2980b9','#27ae60','#9b59b6'];
+
   var datasets=topNos.map(function(no,i){
-    var spec=SPEC_MAP[no],tol=TOL_MAP[no];
-    var data=DATES.map(function(d){return parseFloat(((src[d][no]-spec)/tol*100).toFixed(2));});
+    var spec=curProduct.specMap[no],tol=curProduct.tolMap[no];
+    var data=dates.map(function(d){
+      var val=src[d]?src[d][no]:null;
+      return val!==undefined&&val!==null?parseFloat(((val-spec)/tol*100).toFixed(2)):null;
+    });
     return{label:'No.'+no,data:data,borderColor:COLORS[i],backgroundColor:'transparent',pointRadius:5,borderWidth:2,tension:0.3,borderDash:i>=3?[4,3]:[]};
   });
+
   var legendEl=document.getElementById('trendLegend');
   legendEl.innerHTML='';
   topNos.forEach(function(no,i){
     var span=document.createElement('span');
-    span.innerHTML='<span class="ld" style="background:'+COLORS[i]+'"></span>No.'+no+' '+PART_NAMES[no];
+    span.innerHTML='<span class="ld" style="background:'+COLORS[i]+'"></span>No.'+no+' '+(curProduct.partNames[no]||'');
     legendEl.appendChild(span);
   });
+
   if(trendChart)trendChart.destroy();
   trendChart=new Chart(document.getElementById('trendChart'),{
-    type:'line',data:{labels:DATES,datasets:datasets},
+    type:'line',data:{labels:dates,datasets:datasets},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{font:{size:11}},grid:{display:false}},
         y:{ticks:{font:{size:10},callback:function(v){return v+'%';}},
@@ -445,25 +555,34 @@ function renderData(){
   var tbody=document.getElementById('tableBody');
   tbody.innerHTML='';
   var rows=[],redCnt=0,yelCnt=0,grnCnt=0,devData=[];
-  for(var no=1;no<=18;no++){
-    var spec=SPEC_MAP[no],tol=TOL_MAP[no];
-    var isAngle=ANGLE_NOS.indexOf(no)>=0;
+  var nos=Object.keys(curProduct.specMap).map(Number);
+
+  nos.forEach(function(no){
+    var spec=curProduct.specMap[no],tol=curProduct.tolMap[no];
+    var isAngle=curProduct.angleNos.indexOf(no)>=0;
     var val=selectedData[no];
+    if(val===undefined||val===null)return;
     var st=getStatus(val,spec,tol,isAngle);
     var min=spec-tol,max=spec+tol;
+
     var src=getDataSource();
+    var dates=Object.keys(src);
     var trendTxt='<span style="color:#999">-</span>';
-    if(!isAngle){
-      var allVals=DATES.map(function(d){return src[d][no];});
-      var lastDev=Math.abs(allVals[allVals.length-1]-spec);
-      var prevDev=Math.abs(allVals[allVals.length-2]-spec);
-      if(lastDev-prevDev>0.003)trendTxt='<span class="trend-up">↗ 악화</span>';
-      else if(lastDev-prevDev<-0.003)trendTxt='<span class="trend-dn">↘ 개선</span>';
-      else trendTxt='<span class="trend-fl">→ 유지</span>';
+    if(!isAngle&&dates.length>=2){
+      var last=src[dates[dates.length-1]]?src[dates[dates.length-1]][no]:null;
+      var prev=src[dates[dates.length-2]]?src[dates[dates.length-2]][no]:null;
+      if(last!==null&&prev!==null){
+        var lastDev=Math.abs(last-spec),prevDev=Math.abs(prev-spec);
+        if(lastDev-prevDev>0.003)trendTxt='<span class="trend-up">↗ 악화</span>';
+        else if(lastDev-prevDev<-0.003)trendTxt='<span class="trend-dn">↘ 개선</span>';
+        else trendTxt='<span class="trend-fl">→ 유지</span>';
+      }
     }
+
     var devPct=isAngle?null:((val-spec)/tol*100).toFixed(1);
     var posLabel=isAngle?'-':(devPct>0?'+':'')+devPct+'%';
     var posColor=isAngle?'#ccc':Math.abs(devPct)>=70?'#c0392b':Math.abs(devPct)>=40?'#d68910':'#1e8449';
+
     if(!isAngle){
       if(st.sortKey===0)redCnt++;
       else if(st.sortKey===1)yelCnt++;
@@ -471,18 +590,17 @@ function renderData(){
       devData.push({no:no,pct:Math.abs(devPct),color:st.color});
     }
     rows.push({no:no,spec:spec,tol:tol,val:val,min:min,max:max,isAngle:isAngle,st:st,trendTxt:trendTxt,devPct:devPct,posLabel:posLabel,posColor:posColor});
-  }
+  });
+
   rows.sort(function(a,b){return a.st.sortKey-b.st.sortKey;});
   rows.forEach(function(r){
-    var view=VIEW_MAP[r.no],vLabel=VIEW_LABEL[view];
     var tr=document.createElement('tr');
     if(r.isAngle)tr.classList.add('angle-row');
     tr.innerHTML=
       '<td><strong style="color:'+(r.isAngle?'#ccc':'#222')+'">'+r.no+'</strong></td>'+
-      '<td class="left"><span class="part-name">'+PART_NAMES[r.no]+'</span>'+
-        (r.isAngle?'<span class="angle-badge">각도</span>':'')+
+      '<td class="left"><span class="part-name">'+(curProduct.partNames[r.no]||'No.'+r.no)+'</span>'+
+        (r.isAngle?'<span style="display:inline-block;background:#f0f0f0;color:#999;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:4px">각도</span>':'')+
       '</td>'+
-      '<td><span class="part-tag '+tagClass[view]+'">'+vLabel+'</span></td>'+
       '<td>'+r.spec+'</td><td>±'+r.tol+'</td>'+
       '<td style="color:'+(r.isAngle?'#ccc':'#555')+'">'+r.min.toFixed(3)+'</td>'+
       '<td style="color:'+(r.isAngle?'#ccc':'#555')+'">'+r.max.toFixed(3)+'</td>'+
@@ -492,6 +610,9 @@ function renderData(){
       '<td><span class="badge '+r.st.badgeCls+'">'+r.st.status+'</span></td>';
     tbody.appendChild(tr);
   });
+
+  var totalNos=nos.filter(function(no){return selectedData[no]!==undefined&&selectedData[no]!==null;});
+  document.getElementById('kpi-total').textContent=totalNos.length;
   document.getElementById('kpi-red').textContent=redCnt;
   document.getElementById('kpi-yellow').textContent=yelCnt;
   document.getElementById('kpi-green').textContent=grnCnt;
@@ -499,12 +620,14 @@ function renderData(){
   var sideLabel=curSide==='lh'?'LH':curSide==='rh'?'RH':'ALL';
   document.getElementById('kpi-sel').textContent=dateLabel+'·'+sideLabel;
   document.getElementById('filterLabel').textContent=(curDate==='all'?'전체 평균':curDate)+' · '+(curSide==='all'?'LH+RH':curSide.toUpperCase());
+
   if(donutChart)donutChart.destroy();
   donutChart=new Chart(document.getElementById('donutChart'),{
     type:'doughnut',
     data:{labels:['즉시수리','주의관찰','정상'],datasets:[{data:[redCnt,yelCnt,grnCnt],backgroundColor:['#e74c3c','#f39c12','#27ae60'],borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
   });
+
   devData.sort(function(a,b){return b.pct-a.pct;});
   if(deviationChart)deviationChart.destroy();
   deviationChart=new Chart(document.getElementById('deviationChart'),{
@@ -517,10 +640,7 @@ function renderData(){
 }
 
 function setDate(date,btn){
-  document.querySelectorAll('.filter-bar .filter-btn').forEach(function(b){
-    if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf('setDate')>=0)
-      b.classList.remove('active');
-  });
+  document.querySelectorAll('#dateBtns .filter-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
   curDate=date;
   buildTrendChart();
@@ -544,7 +664,7 @@ function setSide(side,btn){
 // ===== TAB2 =====
 var hqParsed={},vinaParsed={};
 function pNum(v){if(v===null||v===undefined)return null;var n=parseFloat(String(v).trim());return isNaN(n)?null:n;}
-function pInt(v){if(v===null||v===undefined)return null;var n=pNum(v);if(n===null)return null;var i=Math.round(n);return(i>=1&&i<=18&&Math.abs(n-i)<0.01)?i:null;}
+function pInt(v){if(v===null||v===undefined)return null;var n=pNum(v);if(n===null)return null;var i=Math.round(n);return(i>=1&&i<=50&&Math.abs(n-i)<0.01)?i:null;}
 
 document.getElementById('hqFile').addEventListener('change',function(){if(this.files[0])readFile('hq',this.files[0]);});
 document.getElementById('vinaFile').addEventListener('change',function(){if(this.files[0])readFile('vina',this.files[0]);});
@@ -620,12 +740,17 @@ function analyze(){
   document.getElementById('errorMsg').style.display='none';
   var cards=document.getElementById('cmpCards');
   cards.innerHTML='';
-  var rc=0,yc=0,gc=0,total=0,frontH='',sideH='',backH='';
-  for(var no=1;no<=18;no++){
+  var rc=0,yc=0,gc=0,total=0;
+  var specMap=curProduct?curProduct.specMap:{};
+  var tolMap=curProduct?curProduct.tolMap:{};
+  var partNames=curProduct?curProduct.partNames:{};
+  var angleNos=curProduct?curProduct.angleNos:[];
+  var allNos=Object.keys(hqParsed).map(Number).filter(function(no){return vinaParsed[no];});
+
+  allNos.forEach(function(no){
     var hq=hqParsed[no],vina=vinaParsed[no];
-    if(!hq||!vina)continue;
-    var spec=hq.spec||SPEC_MAP[no]||0,tol=TOL_MAP[no]||0.5;
-    var isAngle=ANGLE_NOS.indexOf(no)>=0;
+    var spec=hq.spec||specMap[no]||0,tol=tolMap[no]||0.5;
+    var isAngle=angleNos.indexOf(no)>=0;
     var gap=Math.abs(hq.avg-vina.avg);
     total++;
     var cls,badge,badgeTxt,gapColor,gapTxt;
@@ -638,13 +763,12 @@ function analyze(){
     var sL=toP(min,vMin,vRange),sR=toP(max,vMin,vRange);
     var nomP=toP(spec,vMin,vRange),hqP=toP(hq.avg,vMin,vRange),vinaP=toP(vina.avg,vMin,vRange);
     var hqOut=hq.avg<min||hq.avg>max,vinaOut=vina.avg<min||vina.avg>max;
-    var vl=VIEW_LABEL[VIEW_MAP[no]]||'';
-    var card=
+    cards.innerHTML+=
       '<div class="cmp-card '+cls+'">'+
         '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">'+
           '<div style="width:28px;height:28px;border-radius:50%;background:#1a1a2e;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+no+'</div>'+
           '<div>'+
-            '<div style="font-size:13px;font-weight:700">'+(PART_NAMES[no]||'No.'+no)+' <small style="color:#aaa;font-weight:400">'+vl+'</small></div>'+
+            '<div style="font-size:13px;font-weight:700">'+(partNames[no]||'No.'+no)+'</div>'+
             '<div style="font-size:11px;color:#888">Spec: '+spec+' ± '+tol+' &nbsp; 범위: '+min.toFixed(3)+' ~ '+max.toFixed(3)+'</div>'+
           '</div>'+
           '<div style="display:flex;gap:14px;font-size:11px;flex-wrap:wrap;margin-left:auto">'+
@@ -665,12 +789,8 @@ function analyze(){
           '<div class="sp-lbl" style="left:'+sR+'%">'+max.toFixed(2)+'</div>'+
         '</div>'+
       '</div>';
-    var v=VIEW_MAP[no];
-    if(v==='front')frontH+=card;
-    else if(v==='side')sideH+=card;
-    else backH+=card;
-  }
-  cards.innerHTML='<div class="sec-div">정면도 항목 (No.1~9)</div>'+frontH+'<div class="sec-div">측면도 항목 (No.10~13)</div>'+sideH+'<div class="sec-div">배면도 항목 (No.14~18)</div>'+backH;
+  });
+
   document.getElementById('c-total').textContent=total;
   document.getElementById('c-red').textContent=rc;
   document.getElementById('c-yellow').textContent=yc;
