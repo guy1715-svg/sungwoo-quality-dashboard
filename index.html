@@ -459,8 +459,10 @@ function goDashboard(productId){
   document.getElementById('dash1').classList.add('active');
   document.querySelector('.tab').classList.add('active');
 
-  // 차트 초기화
-  donutChart=null;deviationChart=null;trendChart=null;
+  // 차트 완전 초기화
+  if(donutChart){donutChart.destroy();donutChart=null;}
+  if(deviationChart){deviationChart.destroy();deviationChart=null;}
+  if(trendChart){trendChart.destroy();trendChart=null;}
   document.getElementById('trendLegend').innerHTML='';
   document.getElementById('tableBody').innerHTML='';
 
