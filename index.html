@@ -57,7 +57,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .kpi-sub{font-size:11px;color:#aaa;margin-top:3px;}
 .red{color:#c0392b;}.yellow{color:#d68910;}.green{color:#1e8449;}.blue{color:#1a1a2e;}.gray{color:#888;}
 .row2{display:grid;grid-template-columns:220px 1fr;gap:14px;margin-bottom:14px;}
-.row3{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
 .card{background:#fff;border-radius:10px;padding:18px;border:1px solid #e4e4e4;margin-bottom:12px;}
 .card-title{font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
 .legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;font-size:11px;color:#666;}
@@ -79,10 +78,13 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 .angle-badge{display:inline-block;background:#f0f0f0;color:#999;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:4px;}
 .notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 16px;font-size:11px;color:#92400e;margin-bottom:14px;}
 .gap-info{background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;font-size:11px;color:#1e40af;margin-bottom:14px;}
-.date-filter{background:#fff;border-radius:10px;padding:12px 16px;border:1px solid #e4e4e4;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.date-btn{padding:5px 12px;border:1px solid #e4e4e4;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#555;transition:all 0.2s;}
-.date-btn:hover{border-color:#1a1a2e;color:#1a1a2e;}
-.date-btn.active{background:#1a1a2e;color:#fff;border-color:#1a1a2e;}
+.filter-bar{background:#fff;border-radius:10px;padding:12px 16px;border:1px solid #e4e4e4;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.filter-btn{padding:5px 12px;border:1px solid #e4e4e4;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#555;transition:all 0.2s;}
+.filter-btn:hover{border-color:#1a1a2e;color:#1a1a2e;}
+.filter-btn.active{background:#1a1a2e;color:#fff;border-color:#1a1a2e;}
+.filter-btn.lh-active{background:#2980b9;color:#fff;border-color:#2980b9;}
+.filter-btn.rh-active{background:#e74c3c;color:#fff;border-color:#e74c3c;}
+.filter-sep{width:1px;height:24px;background:#e4e4e4;margin:0 4px;}
 .popup-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);z-index:1000;justify-content:center;align-items:center;}
 .popup-overlay.active{display:flex;}
 .popup-box{background:#fff;border-radius:14px;padding:24px;max-width:560px;width:92%;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
@@ -120,7 +122,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 .sp-lbl{position:absolute;bottom:0;font-size:9px;color:#aaa;transform:translateX(-50%);}
 .sp-lbl-c{color:#3b82f6;font-weight:600;}
 .footer{text-align:center;font-size:11px;color:#bbb;padding:16px 0;border-top:1px solid #e8e8e8;margin-top:16px;}
-@media(max-width:800px){.kpi-grid{grid-template-columns:repeat(2,1fr);}.row2,.row3{grid-template-columns:1fr;}.upload-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:800px){.kpi-grid{grid-template-columns:repeat(2,1fr);}.row2{grid-template-columns:1fr;}.upload-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
 <body>
@@ -237,16 +239,21 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div class="notice">📐 <strong>각도 항목 (No.10, 11, 16, 18)</strong>은 측정 오차 특성상 참고치수로만 표시됩니다.</div>
       <div class="gap-info">📊 <strong>판정 기준:</strong> VINA 측정값이 Spec 허용범위 대비 위치로 판정 · 정상: 범위 내 중앙 70% · 주의: 경계 30% · 즉시수리: 범위 초과</div>
 
-      <!-- 날짜 필터 -->
-      <div class="date-filter">
-        <span style="font-size:12px;font-weight:700;color:#555">📅 날짜 선택:</span>
-        <button class="date-btn active" onclick="filterDate('all',this)">전체 평균</button>
-        <button class="date-btn" onclick="filterDate('03/28',this)">03/28</button>
-        <button class="date-btn" onclick="filterDate('04/15',this)">04/15</button>
-        <button class="date-btn" onclick="filterDate('04/16',this)">04/16</button>
-        <button class="date-btn" onclick="filterDate('04/25',this)">04/25</button>
-        <button class="date-btn" onclick="filterDate('05/08',this)">05/08 (최근)</button>
-        <span id="dateLabel" style="font-size:11px;color:#888;margin-left:4px">전체 날짜 평균값</span>
+      <!-- 필터 바 -->
+      <div class="filter-bar">
+        <span style="font-size:12px;font-weight:700;color:#555">📅 날짜:</span>
+        <button class="filter-btn active" onclick="setDate('all',this)">전체</button>
+        <button class="filter-btn" onclick="setDate('03/28',this)">03/28</button>
+        <button class="filter-btn" onclick="setDate('04/15',this)">04/15</button>
+        <button class="filter-btn" onclick="setDate('04/16',this)">04/16</button>
+        <button class="filter-btn" onclick="setDate('04/25',this)">04/25</button>
+        <button class="filter-btn" onclick="setDate('05/08',this)">05/08</button>
+        <div class="filter-sep"></div>
+        <span style="font-size:12px;font-weight:700;color:#555">🔧 구분:</span>
+        <button class="filter-btn active" onclick="setSide('all',this)">LH+RH</button>
+        <button class="filter-btn" onclick="setSide('lh',this)">LH</button>
+        <button class="filter-btn" onclick="setSide('rh',this)">RH</button>
+        <span id="filterLabel" style="font-size:11px;color:#888;margin-left:4px">전체 평균 · LH+RH</span>
       </div>
 
       <div class="kpi-grid">
@@ -254,7 +261,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
         <div class="kpi"><div class="kpi-label">즉시수리</div><div class="kpi-val red" id="kpi-red">-</div><div class="kpi-sub">범위 초과</div></div>
         <div class="kpi"><div class="kpi-label">주의관찰</div><div class="kpi-val yellow" id="kpi-yellow">-</div><div class="kpi-sub">경계 근접</div></div>
         <div class="kpi"><div class="kpi-label">정상</div><div class="kpi-val green" id="kpi-green">-</div><div class="kpi-sub">범위 내 안정</div></div>
-        <div class="kpi"><div class="kpi-label">선택 날짜</div><div class="kpi-val blue" style="font-size:16px" id="kpi-date">전체</div><div class="kpi-sub">2026년</div></div>
+        <div class="kpi"><div class="kpi-label">선택</div><div class="kpi-val blue" style="font-size:14px" id="kpi-sel">전체·ALL</div><div class="kpi-sub">날짜·구분</div></div>
       </div>
 
       <div class="row2">
@@ -270,7 +277,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       </div>
 
       <div class="card" style="margin-bottom:14px">
-        <div class="card-title">날짜별 VINA 측정값 추이 — 주요 항목 (Spec 중앙 대비 편차%)</div>
+        <div class="card-title">날짜별 VINA 측정값 추이 — 주요 항목 <span id="trendSideLabel" style="color:#2980b9">(LH+RH 평균)</span></div>
         <div class="legend" id="trendLegend"></div>
         <div style="position:relative;height:220px"><canvas id="trendChart"></canvas></div>
       </div>
@@ -385,14 +392,53 @@ var SPEC_MAP={1:19.5,2:12.0,3:8.5,4:12.0,5:24.0,6:4.0,7:9.51,8:36.1,9:5.0,10:16.
 var TOL_MAP={1:0.5,2:0.4,3:0.2,4:0.4,5:0.5,6:0.4,7:0.5,8:0.5,9:0.2,10:3.0,11:3.0,12:0.4,13:0.5,14:0.5,15:0.5,16:3.0,17:0.5,18:3.0};
 var tagClass={front:'tag-f',side:'tag-s',back:'tag-b'};
 
-var VINA_DATA={
+// ===== VINA 데이터 (LH/RH 분리) =====
+var VINA_ALL={
   '03/28':{1:19.4842,2:11.9898,3:8.6043,4:12.0184,5:23.9714,6:3.8831,7:9.6566,8:36.1120,9:4.7925,10:15.5736,11:3.0060,12:4.9150,13:1.9975,14:19.4900,15:18.0275,16:89.3651,17:19.5250,18:3.1962},
   '04/15':{1:19.4750,2:11.9892,3:8.6125,4:11.9650,5:23.9575,6:3.9525,7:9.6375,8:36.1125,9:4.7900,10:17.0350,11:2.3300,12:4.8950,13:2.0000,14:19.5075,15:18.0300,16:89.9700,17:19.5100,18:2.8875},
   '04/16':{1:19.4750,2:11.9950,3:8.6150,4:11.9700,5:23.9650,6:3.9650,7:9.6400,8:36.1125,9:4.7900,10:16.9270,11:2.3990,12:4.9000,13:2.0000,14:19.5100,15:18.0350,16:90.2665,17:19.5100,18:2.8400},
   '04/25':{1:19.4750,2:11.9950,3:8.6150,4:11.9700,5:23.9650,6:3.9650,7:9.6400,8:36.1125,9:4.7800,10:16.9270,11:2.3990,12:4.9000,13:2.0000,14:19.5250,15:18.0650,16:90.2665,17:19.5450,18:2.8400},
   '05/08':{1:19.5425,2:12.0026,3:8.5351,4:11.9851,5:24.0215,6:3.9906,7:9.6457,8:36.2050,9:4.8800,10:16.9099,11:2.3746,12:4.9400,13:2.0800,14:19.6100,15:18.1450,16:90.0154,17:19.6100,18:2.8228}
 };
-var DATES=Object.keys(VINA_DATA);
+
+var VINA_LH={
+  '03/28':{1:19.4552,2:11.906,3:8.6044,4:11.9584,5:23.9359,6:3.914,7:9.6974,8:36.0501,9:4.73,10:15.3254,11:3.572,12:4.88,13:2.0,14:19.485,15:18.04,16:89.5825,17:19.515,18:2.7554},
+  '04/15':{1:19.46,2:11.9635,3:8.61,4:11.96,5:23.95,6:3.93,7:9.66,8:36.085,9:4.785,10:16.72,11:2.24,12:4.895,13:2.0,14:19.51,15:18.045,16:89.6,17:19.505,18:2.86},
+  '04/16':{1:19.46,2:11.96,3:8.61,4:11.96,5:23.95,6:3.96,7:9.66,8:36.085,9:4.78,10:16.614,11:2.358,12:4.9,13:2.0,14:19.51,15:18.05,16:89.643,17:19.51,18:2.63},
+  '04/25':{1:19.46,2:11.96,3:8.61,4:11.96,5:23.95,6:3.96,7:9.66,8:36.085,9:4.78,10:16.614,11:2.358,12:4.91,13:2.0,14:19.51,15:18.09,16:89.643,17:19.54,18:2.63},
+  '05/08':{1:19.5777,2:12.043,3:8.5605,4:11.9804,5:23.995,6:3.9915,7:9.6577,8:36.2069,9:4.92,10:16.5439,11:2.4261,12:4.96,13:2.08,14:19.61,15:18.17,16:89.6461,17:19.6,18:2.6149}
+};
+
+var VINA_RH={
+  '03/28':{1:19.513,2:12.0736,3:8.6042,4:12.0784,5:24.007,6:3.8522,7:9.6158,8:36.174,9:4.855,10:15.8218,11:2.44,12:4.95,13:1.995,14:19.495,15:18.015,16:89.1478,17:19.535,18:3.6369},
+  '04/15':{1:19.49,2:12.015,3:8.615,4:11.97,5:23.965,6:3.975,7:9.615,8:36.14,9:4.795,10:17.35,11:2.42,12:4.895,13:2.0,14:19.505,15:18.015,16:90.34,17:19.515,18:2.915},
+  '04/16':{1:19.49,2:12.03,3:8.62,4:11.98,5:23.98,6:3.97,7:9.62,8:36.14,9:4.8,10:17.24,11:2.44,12:4.9,13:2.0,14:19.51,15:18.02,16:90.89,17:19.51,18:3.05},
+  '04/25':{1:19.49,2:12.03,3:8.62,4:11.98,5:23.98,6:3.97,7:9.62,8:36.14,9:4.78,10:17.24,11:2.44,12:4.89,13:2.0,14:19.54,15:18.04,16:90.89,17:19.55,18:3.05},
+  '05/08':{1:19.5072,2:11.9623,3:8.5097,4:11.9898,5:24.048,6:3.9897,7:9.6337,8:36.2031,9:4.84,10:17.2759,11:2.3232,12:4.92,13:2.08,14:19.61,15:18.12,16:90.3847,17:19.62,18:3.0307}
+};
+
+var DATES=Object.keys(VINA_ALL);
+var curDate='all';
+var curSide='all';
+
+function getDataSource(){
+  var src = curSide==='lh' ? VINA_LH : curSide==='rh' ? VINA_RH : VINA_ALL;
+  return src;
+}
+
+function getSelectedData(){
+  var src=getDataSource();
+  var result={};
+  if(curDate==='all'){
+    for(var no=1;no<=18;no++){
+      var vals=DATES.map(function(d){return src[d][no];});
+      result[no]=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+    }
+  }else{
+    for(var no=1;no<=18;no++){result[no]=src[curDate][no];}
+  }
+  return result;
+}
 
 function getStatus(val,spec,tol,isAngle){
   if(isAngle)return{status:'참고치수',badgeCls:'bk',sortKey:3,color:'#ccc'};
@@ -403,57 +449,50 @@ function getStatus(val,spec,tol,isAngle){
   return{status:'🟢 정상',badgeCls:'bg',sortKey:2,color:'#1e8449'};
 }
 
-// ===== 차트 변수 =====
 var donutChart=null,deviationChart=null,trendChart=null;
 var chartsInited=false;
 
 function initCharts(){
   if(chartsInited)return;
   chartsInited=true;
+  buildTrendChart();
+  renderData();
+}
 
-  // 추세 차트 (한번만 그림)
+function buildTrendChart(){
   var topNos=[9,7,6,15,1];
   var COLORS=['#e74c3c','#f39c12','#2980b9','#27ae60','#9b59b6'];
-  var trendDatasets=topNos.map(function(no,i){
+  var src=getDataSource();
+  var datasets=topNos.map(function(no,i){
     var spec=SPEC_MAP[no],tol=TOL_MAP[no];
-    var data=DATES.map(function(d){return parseFloat(((VINA_DATA[d][no]-spec)/tol*100).toFixed(2));});
+    var data=DATES.map(function(d){return parseFloat(((src[d][no]-spec)/tol*100).toFixed(2));});
     return{label:'No.'+no,data:data,borderColor:COLORS[i],backgroundColor:'transparent',pointRadius:5,borderWidth:2,tension:0.3,borderDash:i>=3?[4,3]:[]};
   });
+
   var legendEl=document.getElementById('trendLegend');
+  legendEl.innerHTML='';
   topNos.forEach(function(no,i){
     var span=document.createElement('span');
     span.innerHTML='<span class="ld" style="background:'+COLORS[i]+'"></span>No.'+no+' '+PART_NAMES[no];
     legendEl.appendChild(span);
   });
+
+  if(trendChart)trendChart.destroy();
   trendChart=new Chart(document.getElementById('trendChart'),{
-    type:'line',data:{labels:DATES,datasets:trendDatasets},
+    type:'line',data:{labels:DATES,datasets:datasets},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{font:{size:11}},grid:{display:false}},
-        y:{ticks:{font:{size:10},callback:function(v){return v+'%';}},grid:{color:'rgba(0,0,0,0.05)'},
+        y:{ticks:{font:{size:10},callback:function(v){return v+'%';}},
+          grid:{color:'rgba(0,0,0,0.05)'},
           title:{display:true,text:'Spec 중앙 대비 편차(%)',font:{size:10},color:'#888'}}}}
   });
-
-  // 초기 데이터로 테이블+차트 렌더
-  renderData('all');
 }
 
-function renderData(date){
-  // 선택된 날짜 데이터
-  var selectedData={};
-  if(date==='all'){
-    for(var no=1;no<=18;no++){
-      var vals=DATES.map(function(d){return VINA_DATA[d][no];});
-      selectedData[no]=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-    }
-  }else{
-    for(var no=1;no<=18;no++){selectedData[no]=VINA_DATA[date][no];}
-  }
-
-  // 테이블
+function renderData(){
+  var selectedData=getSelectedData();
   var tbody=document.getElementById('tableBody');
   tbody.innerHTML='';
-  var rows=[],redCnt=0,yelCnt=0,grnCnt=0;
-  var devData=[];
+  var rows=[],redCnt=0,yelCnt=0,grnCnt=0,devData=[];
 
   for(var no=1;no<=18;no++){
     var spec=SPEC_MAP[no],tol=TOL_MAP[no];
@@ -462,9 +501,10 @@ function renderData(date){
     var st=getStatus(val,spec,tol,isAngle);
     var min=spec-tol,max=spec+tol;
 
+    var src=getDataSource();
     var trendTxt='<span style="color:#999">-</span>';
     if(!isAngle){
-      var allVals=DATES.map(function(d){return VINA_DATA[d][no];});
+      var allVals=DATES.map(function(d){return src[d][no];});
       var lastDev=Math.abs(allVals[allVals.length-1]-spec);
       var prevDev=Math.abs(allVals[allVals.length-2]-spec);
       if(lastDev-prevDev>0.003)trendTxt='<span class="trend-up">↗ 악화</span>';
@@ -507,12 +547,15 @@ function renderData(date){
     tbody.appendChild(tr);
   });
 
-  // KPI 업데이트
   document.getElementById('kpi-red').textContent=redCnt;
   document.getElementById('kpi-yellow').textContent=yelCnt;
   document.getElementById('kpi-green').textContent=grnCnt;
 
-  // 도넛 차트
+  var dateLabel=curDate==='all'?'전체':curDate;
+  var sideLabel=curSide==='lh'?'LH':curSide==='rh'?'RH':'ALL';
+  document.getElementById('kpi-sel').textContent=dateLabel+'·'+sideLabel;
+  document.getElementById('filterLabel').textContent=(curDate==='all'?'전체 평균':curDate)+' · '+(curSide==='all'?'LH+RH':curSide.toUpperCase());
+
   if(donutChart)donutChart.destroy();
   donutChart=new Chart(document.getElementById('donutChart'),{
     type:'doughnut',
@@ -520,7 +563,6 @@ function renderData(date){
     options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}
   });
 
-  // 편차 바차트
   devData.sort(function(a,b){return b.pct-a.pct;});
   if(deviationChart)deviationChart.destroy();
   deviationChart=new Chart(document.getElementById('deviationChart'),{
@@ -532,12 +574,37 @@ function renderData(date){
   });
 }
 
-function filterDate(date,btn){
-  document.querySelectorAll('.date-btn').forEach(function(b){b.classList.remove('active');});
+function setDate(date,btn){
+  document.querySelectorAll('.filter-bar .filter-btn').forEach(function(b){
+    if(['전체','03/28','04/15','04/16','04/25','05/08'].indexOf(b.textContent)>=0||b.textContent==='전체')
+      b.classList.remove('active');
+  });
+  // 날짜 버튼만 active 처리
+  var dateBtns=document.querySelectorAll('.filter-bar .filter-btn');
+  dateBtns.forEach(function(b){
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf('setDate')>=0)
+      b.classList.remove('active');
+  });
   btn.classList.add('active');
-  document.getElementById('dateLabel').textContent=date==='all'?'전체 날짜 평균값':date+' 측정값';
-  document.getElementById('kpi-date').textContent=date==='all'?'전체':date;
-  renderData(date);
+  curDate=date;
+  buildTrendChart();
+  renderData();
+}
+
+function setSide(side,btn){
+  document.querySelectorAll('.filter-bar .filter-btn').forEach(function(b){
+    if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf('setSide')>=0){
+      b.classList.remove('active','lh-active','rh-active');
+    }
+  });
+  if(side==='lh') btn.classList.add('lh-active');
+  else if(side==='rh') btn.classList.add('rh-active');
+  else btn.classList.add('active');
+  curSide=side;
+  var sideLabel=side==='lh'?'(LH)':side==='rh'?'(RH)':'(LH+RH 평균)';
+  document.getElementById('trendSideLabel').textContent=sideLabel;
+  buildTrendChart();
+  renderData();
 }
 
 // ===== TAB2 파일 업로드 =====
