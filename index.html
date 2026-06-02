@@ -459,9 +459,7 @@ function goDashboard(productId){
   updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:curProduct.name}]);
   document.getElementById('topbarRight').innerHTML='VINA 최근: '+curProduct.lastDate+'<br>Part: '+curProduct.code;
 
-  // HQ vs VINA 탭 항상 표시
-  var tab2 = document.getElementById('tab-hqvina');
-  tab2.style.display = '';
+  // HQ vs VINA 탭 별도 화면으로 이동됨
 
   // 날짜 버튼 생성
   var dates = Object.keys(curProduct.vinaAll);
