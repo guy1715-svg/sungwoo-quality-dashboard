@@ -228,7 +228,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
         <div>
           <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품</div>
-          <select id="approvalProduct" style="width:100%;padding:8px;border:1px solid #e4e4e4;border-radius:6px;font-size:13px">
+          <select id="approvalProduct" onchange="renderSchedule(this.value)" style="width:100%;padding:8px;border:1px solid #e4e4e4;border-radius:6px;font-size:13px">
             <option value="br0035">BR0035 - FRT BRKT LH#1</option>
             <option value="br0036">BR0036 - RR BRKT LH#1</option>
             <option value="br0037" selected>BR0037 - RR BRKT LH#2</option>
@@ -257,6 +257,12 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
         </div>
       </div>
       <button class="run-btn" id="approvalRunBtn" onclick="runApproval()" disabled style="background:#27ae60;margin-top:12px">📋 출하검사 판정 시작</button>
+    </div>
+
+    <!-- 납품 일정 -->
+    <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e4e4e4;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:16px">📅 납품 일정 현황</div>
+      <div id="scheduleArea"></div>
     </div>
 
     <div id="approvalResult" style="display:none">
@@ -353,7 +359,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
         <div>
           <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품</div>
-          <select id="approvalProduct" style="width:100%;padding:8px;border:1px solid #e4e4e4;border-radius:6px;font-size:13px">
+          <select id="approvalProduct" onchange="renderSchedule(this.value)" style="width:100%;padding:8px;border:1px solid #e4e4e4;border-radius:6px;font-size:13px">
             <option value="br0035">BR0035 - FRT BRKT LH#1</option>
             <option value="br0036">BR0036 - RR BRKT LH#1</option>
             <option value="br0037" selected>BR0037 - RR BRKT LH#2</option>
@@ -382,6 +388,12 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
         </div>
       </div>
       <button class="run-btn" id="approvalRunBtn" onclick="runApproval()" disabled style="background:#27ae60;margin-top:12px">📋 출하검사 판정 시작</button>
+    </div>
+
+    <!-- 납품 일정 -->
+    <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e4e4e4;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:16px">📅 납품 일정 현황</div>
+      <div id="scheduleArea"></div>
     </div>
 
     <div id="approvalResult" style="display:none">
@@ -718,6 +730,92 @@ function goApproval(){
   document.getElementById('approvalFileName').textContent='파일을 선택하세요';
   document.getElementById('approvalBox').classList.remove('done');
   document.getElementById('approvalRunBtn').disabled=true;
+  renderSchedule(document.getElementById('approvalProduct').value);
+}
+
+var SCHEDULES = {
+  br0035: {
+    name: 'BR0035 FRT BRKT LH#1',
+    steps: [
+      {label:'샘플 제작', date:'2026-05-01', status:'done'},
+      {label:'VINA 납품', date:'2026-05-12', status:'done'},
+      {label:'출하검사', date:'2026-05-21', status:'done'},
+      {label:'승인 완료', date:'-', status:'pending'},
+      {label:'양산 시작', date:'-', status:'pending'},
+    ]
+  },
+  br0036: {
+    name: 'BR0036 RR BRKT LH#1',
+    steps: [
+      {label:'샘플 제작', date:'2026-03-15', status:'done'},
+      {label:'VINA 납품', date:'2026-04-01', status:'done'},
+      {label:'출하검사', date:'2026-05-09', status:'done'},
+      {label:'승인 완료', date:'-', status:'pending'},
+      {label:'양산 시작', date:'-', status:'pending'},
+    ]
+  },
+  br0037: {
+    name: 'BR0037 RR BRKT LH#2',
+    steps: [
+      {label:'샘플 제작', date:'2026-03-10', status:'done'},
+      {label:'VINA 납품', date:'2026-03-28', status:'done'},
+      {label:'출하검사', date:'2026-05-14', status:'done'},
+      {label:'승인 완료', date:'2026-05-19', status:'done'},
+      {label:'양산 시작', date:'2026-06-01', status:'progress'},
+    ]
+  },
+  br0038: {
+    name: 'BR0038 RR BRKT LH#3',
+    steps: [
+      {label:'샘플 제작', date:'2026-03-20', status:'done'},
+      {label:'VINA 납품', date:'2026-04-01', status:'done'},
+      {label:'출하검사', date:'2026-05-12', status:'done'},
+      {label:'승인 완료', date:'-', status:'pending'},
+      {label:'양산 시작', date:'-', status:'pending'},
+    ]
+  }
+};
+
+function renderSchedule(productId){
+  var sch = SCHEDULES[productId];
+  if(!sch) return;
+  var html = '<div style="font-size:12px;color:#888;margin-bottom:12px">'+sch.name+'</div>';
+  html += '<div style="display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px">';
+
+  sch.steps.forEach(function(step, i){
+    var color = step.status==='done'?'#27ae60':step.status==='progress'?'#f39c12':'#ccc';
+    var bg = step.status==='done'?'#eafaf1':step.status==='progress'?'#fef9e7':'#f8f8f8';
+    var icon = step.status==='done'?'✅':step.status==='progress'?'🔄':'⏳';
+    var textColor = step.status==='pending'?'#aaa':'#222';
+
+    html += '<div style="display:flex;align-items:center;gap:0">';
+    html += '<div style="text-align:center;min-width:120px">';
+    html += '<div style="width:40px;height:40px;border-radius:50%;background:'+color+';color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">'+icon+'</div>';
+    html += '<div style="font-size:12px;font-weight:700;color:'+textColor+'">'+step.label+'</div>';
+    html += '<div style="font-size:11px;color:#888;margin-top:2px">'+step.date+'</div>';
+    html += '</div>';
+
+    if(i < sch.steps.length-1){
+      var lineColor = sch.steps[i+1].status==='pending'?'#e4e4e4':'#27ae60';
+      html += '<div style="flex:1;height:3px;background:'+lineColor+';min-width:40px;margin-bottom:28px"></div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 진행률
+  var done = sch.steps.filter(function(s){return s.status==='done';}).length;
+  var progress = sch.steps.filter(function(s){return s.status==='progress';}).length;
+  var total = sch.steps.length;
+  var pct = Math.round((done + progress*0.5) / total * 100);
+
+  html += '<div style="margin-top:12px">';
+  html += '<div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:4px"><span>진행률</span><span>'+pct+'%</span></div>';
+  html += '<div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden">';
+  html += '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#27ae60,#2ecc71);border-radius:3px;transition:width 0.5s"></div>';
+  html += '</div></div>';
+
+  document.getElementById('scheduleArea').innerHTML = html;
 }
 
 var approvalData = null;
@@ -739,16 +837,25 @@ function loadApprovalFile(file){
         var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
         arr.forEach(function(row){
           if(!row||!row.length) return;
-          var no = pInt(row[2]);
-          if(no && no<=50){
+          // No 파싱 - 문자열/숫자 모두 처리
+          var noRaw = row[2];
+          var no = null;
+          if(noRaw !== null && noRaw !== undefined){
+            var n = parseFloat(String(noRaw).trim());
+            if(!isNaN(n) && n>=1 && n<=50 && Math.abs(n-Math.round(n))<0.01){
+              no = Math.round(n);
+            }
+          }
+          if(no){
             var spec = pNum(row[5]);
             var tolPlus = pNum(row[6]);
             var tolMinus = pNum(row[7]);
+            if(spec===null) return;
             // 측정값 열8부터
             var vals = [];
             for(var c=8;c<row.length;c++){
               var v = pNum(row[c]);
-              if(v!==null && v!==0) vals.push(v);
+              if(v!==null && v!==0 && !isNaN(v)) vals.push(v);
             }
             if(vals.length>0){
               if(!result[no]) result[no]={spec:spec,tolPlus:tolPlus,tolMinus:tolMinus,vals:[]};
@@ -758,9 +865,11 @@ function loadApprovalFile(file){
         });
       });
       approvalData = result;
-      document.getElementById('approvalFileName').textContent = '✅ '+file.name+' ('+Object.keys(result).length+'개 항목)';
+      var cnt = Object.keys(result).length;
+      document.getElementById('approvalFileName').textContent = '✅ '+file.name+' ('+cnt+'개 항목)';
       document.getElementById('approvalBox').classList.add('done');
-      document.getElementById('approvalRunBtn').disabled = false;
+      if(cnt>0) document.getElementById('approvalRunBtn').disabled = false;
+      else document.getElementById('approvalFileName').textContent = '⚠️ 데이터를 읽지 못했습니다: '+file.name;
     }catch(err){
       alert('파일 읽기 오류: '+err.message);
     }
@@ -863,6 +972,92 @@ function goApproval(){
   document.getElementById('approvalFileName').textContent='파일을 선택하세요';
   document.getElementById('approvalBox').classList.remove('done');
   document.getElementById('approvalRunBtn').disabled=true;
+  renderSchedule(document.getElementById('approvalProduct').value);
+}
+
+var SCHEDULES = {
+  br0035: {
+    name: 'BR0035 FRT BRKT LH#1',
+    steps: [
+      {label:'샘플 제작', date:'2026-05-01', status:'done'},
+      {label:'VINA 납품', date:'2026-05-12', status:'done'},
+      {label:'출하검사', date:'2026-05-21', status:'done'},
+      {label:'승인 완료', date:'-', status:'pending'},
+      {label:'양산 시작', date:'-', status:'pending'},
+    ]
+  },
+  br0036: {
+    name: 'BR0036 RR BRKT LH#1',
+    steps: [
+      {label:'샘플 제작', date:'2026-03-15', status:'done'},
+      {label:'VINA 납품', date:'2026-04-01', status:'done'},
+      {label:'출하검사', date:'2026-05-09', status:'done'},
+      {label:'승인 완료', date:'-', status:'pending'},
+      {label:'양산 시작', date:'-', status:'pending'},
+    ]
+  },
+  br0037: {
+    name: 'BR0037 RR BRKT LH#2',
+    steps: [
+      {label:'샘플 제작', date:'2026-03-10', status:'done'},
+      {label:'VINA 납품', date:'2026-03-28', status:'done'},
+      {label:'출하검사', date:'2026-05-14', status:'done'},
+      {label:'승인 완료', date:'2026-05-19', status:'done'},
+      {label:'양산 시작', date:'2026-06-01', status:'progress'},
+    ]
+  },
+  br0038: {
+    name: 'BR0038 RR BRKT LH#3',
+    steps: [
+      {label:'샘플 제작', date:'2026-03-20', status:'done'},
+      {label:'VINA 납품', date:'2026-04-01', status:'done'},
+      {label:'출하검사', date:'2026-05-12', status:'done'},
+      {label:'승인 완료', date:'-', status:'pending'},
+      {label:'양산 시작', date:'-', status:'pending'},
+    ]
+  }
+};
+
+function renderSchedule(productId){
+  var sch = SCHEDULES[productId];
+  if(!sch) return;
+  var html = '<div style="font-size:12px;color:#888;margin-bottom:12px">'+sch.name+'</div>';
+  html += '<div style="display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px">';
+
+  sch.steps.forEach(function(step, i){
+    var color = step.status==='done'?'#27ae60':step.status==='progress'?'#f39c12':'#ccc';
+    var bg = step.status==='done'?'#eafaf1':step.status==='progress'?'#fef9e7':'#f8f8f8';
+    var icon = step.status==='done'?'✅':step.status==='progress'?'🔄':'⏳';
+    var textColor = step.status==='pending'?'#aaa':'#222';
+
+    html += '<div style="display:flex;align-items:center;gap:0">';
+    html += '<div style="text-align:center;min-width:120px">';
+    html += '<div style="width:40px;height:40px;border-radius:50%;background:'+color+';color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">'+icon+'</div>';
+    html += '<div style="font-size:12px;font-weight:700;color:'+textColor+'">'+step.label+'</div>';
+    html += '<div style="font-size:11px;color:#888;margin-top:2px">'+step.date+'</div>';
+    html += '</div>';
+
+    if(i < sch.steps.length-1){
+      var lineColor = sch.steps[i+1].status==='pending'?'#e4e4e4':'#27ae60';
+      html += '<div style="flex:1;height:3px;background:'+lineColor+';min-width:40px;margin-bottom:28px"></div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 진행률
+  var done = sch.steps.filter(function(s){return s.status==='done';}).length;
+  var progress = sch.steps.filter(function(s){return s.status==='progress';}).length;
+  var total = sch.steps.length;
+  var pct = Math.round((done + progress*0.5) / total * 100);
+
+  html += '<div style="margin-top:12px">';
+  html += '<div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:4px"><span>진행률</span><span>'+pct+'%</span></div>';
+  html += '<div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden">';
+  html += '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#27ae60,#2ecc71);border-radius:3px;transition:width 0.5s"></div>';
+  html += '</div></div>';
+
+  document.getElementById('scheduleArea').innerHTML = html;
 }
 
 var approvalData = null;
@@ -884,16 +1079,25 @@ function loadApprovalFile(file){
         var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
         arr.forEach(function(row){
           if(!row||!row.length) return;
-          var no = pInt(row[2]);
-          if(no && no<=50){
+          // No 파싱 - 문자열/숫자 모두 처리
+          var noRaw = row[2];
+          var no = null;
+          if(noRaw !== null && noRaw !== undefined){
+            var n = parseFloat(String(noRaw).trim());
+            if(!isNaN(n) && n>=1 && n<=50 && Math.abs(n-Math.round(n))<0.01){
+              no = Math.round(n);
+            }
+          }
+          if(no){
             var spec = pNum(row[5]);
             var tolPlus = pNum(row[6]);
             var tolMinus = pNum(row[7]);
+            if(spec===null) return;
             // 측정값 열8부터
             var vals = [];
             for(var c=8;c<row.length;c++){
               var v = pNum(row[c]);
-              if(v!==null && v!==0) vals.push(v);
+              if(v!==null && v!==0 && !isNaN(v)) vals.push(v);
             }
             if(vals.length>0){
               if(!result[no]) result[no]={spec:spec,tolPlus:tolPlus,tolMinus:tolMinus,vals:[]};
@@ -903,9 +1107,11 @@ function loadApprovalFile(file){
         });
       });
       approvalData = result;
-      document.getElementById('approvalFileName').textContent = '✅ '+file.name+' ('+Object.keys(result).length+'개 항목)';
+      var cnt = Object.keys(result).length;
+      document.getElementById('approvalFileName').textContent = '✅ '+file.name+' ('+cnt+'개 항목)';
       document.getElementById('approvalBox').classList.add('done');
-      document.getElementById('approvalRunBtn').disabled = false;
+      if(cnt>0) document.getElementById('approvalRunBtn').disabled = false;
+      else document.getElementById('approvalFileName').textContent = '⚠️ 데이터를 읽지 못했습니다: '+file.name;
     }catch(err){
       alert('파일 읽기 오류: '+err.message);
     }
