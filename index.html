@@ -109,6 +109,13 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 .sp-lbl{position:absolute;bottom:0;font-size:9px;color:#aaa;transform:translateX(-50%);}
 .sp-lbl-c{color:#3b82f6;font-weight:600;}
 .footer{text-align:center;font-size:11px;color:#bbb;padding:16px 0;border-top:1px solid #e8e8e8;margin-top:16px;}
+@media print{
+  .topbar,.breadcrumb,.pdf-btn,#approvalBox,.run-btn,button:not(.print-hide){display:none!important;}
+  .screen{display:block!important;}
+  #screen-approval{display:block!important;}
+  #approvalResult{display:block!important;}
+  body{background:#fff;}
+}
 @media(max-width:800px){.kpi-grid{grid-template-columns:repeat(2,1fr);}.row2{grid-template-columns:1fr;}.upload-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
@@ -167,7 +174,10 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
   <div id="screen-product" class="screen">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div class="sec-title" style="margin-bottom:0">제품 선택 — MX5A EREV</div>
-      <button onclick="goCompare()" style="padding:10px 20px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 HQ vs VINA 파일 비교</button>
+      <div style="display:flex;gap:10px">
+        <button onclick="goApproval()" style="padding:10px 20px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📋 출하검사 승인</button>
+        <button onclick="goCompare()" style="padding:10px 20px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 HQ vs VINA 파일 비교</button>
+      </div>
     </div>
     <div class="product-grid">
       <div class="product-card" onclick="goDashboard('br0035')">
@@ -202,6 +212,131 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-12</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
       </div>
+    </div>
+  </div>
+
+  <!-- 승인 화면 -->
+  <div id="screen-approval" class="screen">
+    <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e4e4e4;margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품</div>
+          <select id="approvalProduct" style="width:100%;padding:8px;border:1px solid #e4e4e4;border-radius:6px;font-size:13px">
+            <option value="br0035">BR0035 - FRT BRKT LH#1</option>
+            <option value="br0036">BR0036 - RR BRKT LH#1</option>
+            <option value="br0037" selected>BR0037 - RR BRKT LH#2</option>
+            <option value="br0038">BR0038 - RR BRKT LH#3</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">검사일</div>
+          <input type="date" id="approvalDate" style="width:100%;padding:8px;border:1px solid #e4e4e4;border-radius:6px;font-size:13px">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">검사자</div>
+          <input type="text" id="approvalInspector" placeholder="검사자 이름" style="width:100%;padding:8px;border:1px solid #e4e4e4;border-radius:6px;font-size:13px">
+        </div>
+      </div>
+      <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;font-size:11px;color:#1e40af;margin-bottom:16px">
+        📂 <strong>측정 파일 업로드:</strong> VINA 측정 엑셀 파일을 업로드하면 Spec 대비 자동 판정합니다.
+      </div>
+      <div class="upload-grid" style="grid-template-columns:1fr;">
+        <div class="upload-box" id="approvalBox">
+          <input type="file" class="upload-input" id="approvalFile" accept=".xlsx,.xls">
+          <div class="upload-icon">📊</div>
+          <div class="upload-title" style="color:#27ae60">VINA 측정 파일</div>
+          <div class="upload-sub">Measurement Data_....xlsx</div>
+          <div class="upload-filename" id="approvalFileName">파일을 선택하세요</div>
+        </div>
+      </div>
+      <button class="run-btn" id="approvalRunBtn" onclick="runApproval()" disabled style="background:#27ae60;margin-top:12px">📋 출하검사 판정 시작</button>
+    </div>
+
+    <div id="approvalResult" style="display:none">
+      <!-- 승인 결과 헤더 -->
+      <div id="approvalHeader" style="background:#fff;border-radius:12px;padding:24px;border:2px solid #e4e4e4;margin-bottom:16px;text-align:center;">
+        <div style="font-size:13px;color:#888;margin-bottom:8px">성우전자 글로벌 품질관리 시스템</div>
+        <div style="font-size:22px;font-weight:700;color:#1a1a2e;margin-bottom:4px">출하검사 성적서</div>
+        <div style="font-size:12px;color:#888">SUNGWOO ELECTRONICS · Outgoing Inspection Report</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;text-align:left;">
+          <div style="background:#f8f8f8;padding:12px;border-radius:8px">
+            <div style="font-size:10px;color:#888;margin-bottom:4px">제품코드</div>
+            <div style="font-size:13px;font-weight:700" id="rpt-code">-</div>
+          </div>
+          <div style="background:#f8f8f8;padding:12px;border-radius:8px">
+            <div style="font-size:10px;color:#888;margin-bottom:4px">검사일</div>
+            <div style="font-size:13px;font-weight:700" id="rpt-date">-</div>
+          </div>
+          <div style="background:#f8f8f8;padding:12px;border-radius:8px">
+            <div style="font-size:10px;color:#888;margin-bottom:4px">검사자</div>
+            <div style="font-size:13px;font-weight:700" id="rpt-inspector">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+        <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e4e4e4;text-align:center;">
+          <div style="font-size:11px;color:#888;margin-bottom:6px">전체 항목</div>
+          <div style="font-size:28px;font-weight:700;color:#1a1a2e" id="apr-total">-</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e4e4e4;text-align:center;">
+          <div style="font-size:11px;color:#888;margin-bottom:6px">합격 (PASS)</div>
+          <div style="font-size:28px;font-weight:700;color:#1e8449" id="apr-pass">-</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e4e4e4;text-align:center;">
+          <div style="font-size:11px;color:#888;margin-bottom:6px">불합격 (FAIL)</div>
+          <div style="font-size:28px;font-weight:700;color:#c0392b" id="apr-fail">-</div>
+        </div>
+        <div id="apr-verdict-box" style="border-radius:10px;padding:16px;text-align:center;border:2px solid #e4e4e4;">
+          <div style="font-size:11px;color:#888;margin-bottom:6px">최종 판정</div>
+          <div style="font-size:24px;font-weight:700" id="apr-verdict">-</div>
+        </div>
+      </div>
+
+      <!-- 결과 테이블 -->
+      <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e4e4e4;margin-bottom:16px;">
+        <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">
+          항목별 검사 결과 &nbsp;<span style="font-size:10px;color:#e74c3c">🔴 불합격 항목 상단 정렬</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>No.</th>
+              <th style="text-align:left">측정 항목</th>
+              <th>Spec</th>
+              <th>TOL(+)</th>
+              <th>TOL(-)</th>
+              <th>상한</th>
+              <th>하한</th>
+              <th>측정값 평균</th>
+              <th>편차</th>
+              <th>판정</th>
+            </tr></thead>
+            <tbody id="approvalTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 서명란 -->
+      <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e4e4e4;margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center;">
+          <div style="border:1px solid #e4e4e4;border-radius:8px;padding:16px;">
+            <div style="font-size:11px;color:#888;margin-bottom:40px">검사자 (Inspector)</div>
+            <div style="border-top:1px solid #ccc;padding-top:8px;font-size:12px;color:#555" id="sign-inspector">-</div>
+          </div>
+          <div style="border:1px solid #e4e4e4;border-radius:8px;padding:16px;">
+            <div style="font-size:11px;color:#888;margin-bottom:40px">품질팀장 (QA Manager)</div>
+            <div style="border-top:1px solid #ccc;padding-top:8px;font-size:12px;color:#555">&nbsp;</div>
+          </div>
+          <div style="border:1px solid #e4e4e4;border-radius:8px;padding:16px;">
+            <div style="font-size:11px;color:#888;margin-bottom:40px">승인자 (Approver)</div>
+            <div style="border-top:1px solid #ccc;padding-top:8px;font-size:12px;color:#555">&nbsp;</div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="window.print()" style="width:100%;padding:14px;background:#1a1a2e;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">🖨️ 승인서 출력 (PDF)</button>
     </div>
   </div>
 
@@ -436,6 +571,151 @@ function updateBC(items){
 function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 품질팀<br>업데이트: 2026-05-26';}
 function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
 function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
+
+function goApproval(){
+  showScreen('approval');
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:'출하검사 승인'}]);
+  document.getElementById('topbarRight').innerHTML='출하검사 승인 시스템<br>SUNGWOO ELECTRONICS';
+  // 날짜 기본값 오늘
+  var today = new Date();
+  var yyyy = today.getFullYear();
+  var mm = String(today.getMonth()+1).padStart(2,'0');
+  var dd = String(today.getDate()).padStart(2,'0');
+  document.getElementById('approvalDate').value = yyyy+'-'+mm+'-'+dd;
+  document.getElementById('approvalResult').style.display='none';
+  document.getElementById('approvalFileName').textContent='파일을 선택하세요';
+  document.getElementById('approvalBox').classList.remove('done');
+  document.getElementById('approvalRunBtn').disabled=true;
+}
+
+var approvalData = null;
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('approvalFile').addEventListener('change', function(){
+    if(this.files[0]) loadApprovalFile(this.files[0]);
+  });
+});
+
+function loadApprovalFile(file){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var wb = XLSX.read(e.target.result, {type:'array'});
+      var result = {};
+      wb.SheetNames.forEach(function(sname){
+        var ws = wb.Sheets[sname];
+        var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+        arr.forEach(function(row){
+          if(!row||!row.length) return;
+          var no = pInt(row[2]);
+          if(no && no<=50){
+            var spec = pNum(row[5]);
+            var tolPlus = pNum(row[6]);
+            var tolMinus = pNum(row[7]);
+            // 측정값 열8부터
+            var vals = [];
+            for(var c=8;c<row.length;c++){
+              var v = pNum(row[c]);
+              if(v!==null && v!==0) vals.push(v);
+            }
+            if(vals.length>0){
+              if(!result[no]) result[no]={spec:spec,tolPlus:tolPlus,tolMinus:tolMinus,vals:[]};
+              result[no].vals = result[no].vals.concat(vals);
+            }
+          }
+        });
+      });
+      approvalData = result;
+      document.getElementById('approvalFileName').textContent = '✅ '+file.name+' ('+Object.keys(result).length+'개 항목)';
+      document.getElementById('approvalBox').classList.add('done');
+      document.getElementById('approvalRunBtn').disabled = false;
+    }catch(err){
+      alert('파일 읽기 오류: '+err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function runApproval(){
+  if(!approvalData) return;
+  var productId = document.getElementById('approvalProduct').value;
+  var product = PRODUCTS[productId];
+  var date = document.getElementById('approvalDate').value;
+  var inspector = document.getElementById('approvalInspector').value || '-';
+
+  // 헤더 정보
+  document.getElementById('rpt-code').textContent = product.code;
+  document.getElementById('rpt-date').textContent = date;
+  document.getElementById('rpt-inspector').textContent = inspector;
+  document.getElementById('sign-inspector').textContent = inspector;
+
+  var tbody = document.getElementById('approvalTableBody');
+  tbody.innerHTML = '';
+  var rows = [];
+  var passCnt=0, failCnt=0;
+
+  Object.keys(approvalData).forEach(function(no){
+    no = parseInt(no);
+    var d = approvalData[no];
+    if(!d.vals.length) return;
+    var avg = d.vals.reduce(function(a,b){return a+b;},0)/d.vals.length;
+    var spec = d.spec || (product.specMap[no]||0);
+    var tolPlus = d.tolPlus || (product.tolMap[no]||0.5);
+    var tolMinus = d.tolMinus || (product.tolMap[no]||0.5);
+    var upper = spec + tolPlus;
+    var lower = spec - tolMinus;
+    var pass = avg >= lower && avg <= upper;
+    var dev = avg - spec;
+    if(pass) passCnt++; else failCnt++;
+    rows.push({no:no,spec:spec,tolPlus:tolPlus,tolMinus:tolMinus,upper:upper,lower:lower,avg:avg,dev:dev,pass:pass});
+  });
+
+  // 불합격 상단 정렬
+  rows.sort(function(a,b){
+    if(!a.pass && b.pass) return -1;
+    if(a.pass && !b.pass) return 1;
+    return a.no - b.no;
+  });
+
+  rows.forEach(function(r){
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><strong style="color:'+(r.pass?'#222':'#c0392b')+'">'+r.no+'</strong></td>'+
+      '<td class="left">'+(product.partNames[r.no]||'No.'+r.no)+'</td>'+
+      '<td>'+r.spec+'</td>'+
+      '<td>+'+r.tolPlus+'</td>'+
+      '<td>-'+r.tolMinus+'</td>'+
+      '<td>'+r.upper.toFixed(3)+'</td>'+
+      '<td>'+r.lower.toFixed(3)+'</td>'+
+      '<td><strong style="color:'+(r.pass?'#1e8449':'#c0392b')+'">'+r.avg.toFixed(4)+'</strong></td>'+
+      '<td style="color:'+(Math.abs(r.dev)>0.1?'#c0392b':'#555')+'">'+(r.dev>=0?'+':'')+r.dev.toFixed(4)+'</td>'+
+      '<td><span class="badge '+(r.pass?'bg':'br')+'">'+(r.pass?'✅ PASS':'❌ FAIL')+'</span></td>';
+    tbody.appendChild(tr);
+  });
+
+  var total = passCnt + failCnt;
+  var allPass = failCnt === 0;
+  document.getElementById('apr-total').textContent = total;
+  document.getElementById('apr-pass').textContent = passCnt;
+  document.getElementById('apr-fail').textContent = failCnt;
+
+  var verdictBox = document.getElementById('apr-verdict-box');
+  var verdictEl = document.getElementById('apr-verdict');
+  if(allPass){
+    verdictBox.style.background = '#eafaf1';
+    verdictBox.style.borderColor = '#27ae60';
+    verdictEl.textContent = '✅ 승인';
+    verdictEl.style.color = '#1e8449';
+  } else {
+    verdictBox.style.background = '#fdedec';
+    verdictBox.style.borderColor = '#e74c3c';
+    verdictEl.textContent = '❌ 보류';
+    verdictEl.style.color = '#c0392b';
+  }
+
+  document.getElementById('approvalResult').style.display = 'block';
+  document.getElementById('approvalResult').scrollIntoView({behavior:'smooth'});
+}
 
 function goCompare(){
   showScreen('compare');
