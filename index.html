@@ -448,9 +448,9 @@ function goDashboard(productId){
   // 날짜 버튼 생성
   var dates = Object.keys(curProduct.vinaAll);
   var dateBtns = document.getElementById('dateBtns');
-  dateBtns.innerHTML = '<button class="filter-btn active" onclick="setDate('all',this)">전체</button>';
+  dateBtns.innerHTML = "<button class='filter-btn active' onclick='setDate(\"all\",this)'>전체</button>";
   dates.forEach(function(d){
-    dateBtns.innerHTML += '<button class="filter-btn" onclick="setDate(''+d+'',this)">'+d+'</button>';
+    dateBtns.innerHTML += "<button class='filter-btn' onclick='setDate(\""+d+"\"  ,this)'>" + d + "</button>";
   });
 
   // 탭 초기화
