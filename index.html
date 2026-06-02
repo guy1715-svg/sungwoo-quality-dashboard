@@ -145,7 +145,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div class="stat-box"><div class="stat-val blue">1</div><div class="stat-label">고객사</div></div>
       <div class="stat-box"><div class="stat-val" style="color:#3b82f6">1</div><div class="stat-label">관리 모델</div></div>
       <div class="stat-box"><div class="stat-val green">4</div><div class="stat-label">관리 제품</div></div>
-      <div class="stat-box"><div class="stat-val red">4</div><div class="stat-label">대시보드 완성</div></div>
+      <div class="stat-box"><div class="stat-val green">1</div><div class="stat-label">승인 완료</div></div>
     </div>
     <div class="sec-title">고객사 선택</div>
     <div class="customer-grid">
@@ -181,41 +181,51 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
   <div id="screen-product" class="screen">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div class="sec-title" style="margin-bottom:0">제품 선택 — MX5A EREV</div>
-      <div style="display:flex;gap:10px">
-        <button onclick="goApproval()" style="padding:10px 20px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📋 출하검사 승인</button>
-        <button onclick="goCompare()" style="padding:10px 20px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 HQ vs VINA 파일 비교</button>
-      </div>
+      <button onclick="goCompare()" style="padding:10px 20px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 HQ vs VINA 파일 비교</button>
     </div>
     <div class="product-grid">
       <div class="product-card" onclick="goDashboard('br0035')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0035 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">FRT BRKT LH#1</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <span class="p-tag tag-vina">VINA ✓</span>
+          <span class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인 대기</span>
+        </div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:75%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-21</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
       </div>
       <div class="product-card" onclick="goDashboard('br0036')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0036 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#1</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <span class="p-tag tag-vina">VINA ✓</span>
+          <span class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인 대기</span>
+        </div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:75%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-09</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
       </div>
-      <div class="product-card" onclick="goDashboard('br0037')">
+      <div class="product-card" onclick="goDashboard('br0037')" style="border-color:#27ae60;">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0037 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#2</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-hq">본사 ✓</span><span class="p-tag tag-vina">VINA ✓</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <span class="p-tag tag-hq">본사 ✓</span>
+          <span class="p-tag tag-vina">VINA ✓</span>
+          <span class="p-tag" style="background:#d1fae5;color:#065f46">✅ 승인완료</span>
+        </div>
         <div class="p-bar"><div class="p-bar-fill" style="width:100%;background:#27ae60"></div></div>
-        <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>대시보드 완성</span><span>2026-05-26</span></div>
+        <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>승인완료 2026-05-19</span><span>검사자: 강병민</span></div>
         <span class="p-arrow" style="color:#27ae60">→</span>
       </div>
       <div class="product-card" onclick="goDashboard('br0038')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0038 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#3</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <span class="p-tag tag-vina">VINA ✓</span>
+          <span class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인 대기</span>
+        </div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:75%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-12</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
       </div>
@@ -529,6 +539,16 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 
   <!-- 대시보드 -->
   <div id="screen-dashboard" class="screen">
+    <div id="approvalBanner" style="display:none;background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:12px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:24px">✅</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#065f46">승인 완료 (Approved)</div>
+          <div style="font-size:12px;color:#047857">승인일: 2026-05-19 &nbsp;|&nbsp; 검사자: 강병민 &nbsp;|&nbsp; 승인자: 품질팀장</div>
+        </div>
+      </div>
+      <span class="p-tag" style="background:#065f46;color:#fff;font-size:12px;padding:4px 12px">BR0037 L-A / R-A</span>
+    </div>
     <button class="pdf-btn" onclick="window.print()">🖨️ PDF 출력</button>
     <div style="clear:both;margin-bottom:8px"></div>
     <div class="tabs" id="dashTabs">
@@ -1224,6 +1244,13 @@ function goCompare(){
 
 function goDashboard(productId){
   curProduct = PRODUCTS[productId];
+  // 승인완료 배너
+  var banner = document.getElementById('approvalBanner');
+  if(productId === 'br0037'){
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
   curDate = 'all';
   curSide = 'all';
   showScreen('dashboard');
