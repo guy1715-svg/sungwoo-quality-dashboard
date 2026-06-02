@@ -165,7 +165,10 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 
   <!-- 제품 -->
   <div id="screen-product" class="screen">
-    <div class="sec-title">제품 선택 — MX5A EREV</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="sec-title" style="margin-bottom:0">제품 선택 — MX5A EREV</div>
+      <button onclick="goCompare()" style="padding:10px 20px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 HQ vs VINA 파일 비교</button>
+    </div>
     <div class="product-grid">
       <div class="product-card" onclick="goDashboard('br0035')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0035 L-A / R-A</div>
@@ -202,13 +205,56 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
     </div>
   </div>
 
+  <!-- 비교 화면 -->
+  <div id="screen-compare" class="screen">
+    <div class="gap-info" style="margin-bottom:16px">📂 <strong>사용법:</strong> 본사(HQ) 엑셀과 VINA 엑셀을 각각 업로드하면 자동으로 Spec 범위 내 실측값을 비교합니다.</div>
+    <div class="upload-grid">
+      <div class="upload-box" id="hqBox">
+        <input type="file" class="upload-input" id="hqFile" accept=".xlsx,.xls">
+        <div class="upload-icon">🏢</div>
+        <div class="upload-title" style="color:#2980b9">본사(HQ) 파일</div>
+        <div class="upload-sub">HQ_37번_... DATA.xlsx</div>
+        <div class="upload-filename" id="hqName">파일을 선택하세요</div>
+      </div>
+      <div class="upload-box" id="vinaBox">
+        <input type="file" class="upload-input" id="vinaFile" accept=".xlsx,.xls">
+        <div class="upload-icon">🌏</div>
+        <div class="upload-title" style="color:#e74c3c">VINA 파일</div>
+        <div class="upload-sub">Measurement Data_....xlsx</div>
+        <div class="upload-filename" id="vinaName">파일을 선택하세요</div>
+      </div>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="run-btn" id="runBtn" onclick="analyze()" disabled>📊 비교 분석 시작</button>
+    <div id="cmpSummary" style="display:none">
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi"><div class="kpi-label">전체 항목</div><div class="kpi-val blue" id="c-total">-</div></div>
+        <div class="kpi"><div class="kpi-label">즉시수리</div><div class="kpi-val red" id="c-red">-</div></div>
+        <div class="kpi"><div class="kpi-label">주의관찰</div><div class="kpi-val yellow" id="c-yellow">-</div></div>
+        <div class="kpi"><div class="kpi-label">정상</div><div class="kpi-val green" id="c-green">-</div></div>
+      </div>
+      <div class="legend-bar">
+        <strong>범례</strong>
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:12px;height:12px;border-radius:50%;background:#2980b9;display:inline-block"></span>본사(HQ)</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:12px;height:12px;border-radius:50%;background:#e74c3c;display:inline-block"></span>VINA</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:24px;height:8px;background:#dbeafe;border:1px solid #93c5fd;border-radius:2px;display:inline-block"></span>Spec 허용범위</div>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <span class="badge bg">정상 &lt;0.05</span>
+          <span class="badge by">주의 0.05~0.1</span>
+          <span class="badge br">즉시수리 ≥0.1</span>
+        </div>
+      </div>
+      <div id="cmpCards"></div>
+    </div>
+  </div>
+
   <!-- 대시보드 -->
   <div id="screen-dashboard" class="screen">
     <button class="pdf-btn" onclick="window.print()">🖨️ PDF 출력</button>
     <div style="clear:both;margin-bottom:8px"></div>
     <div class="tabs" id="dashTabs">
       <div class="tab active" onclick="switchTab('dash1',this)">📊 VINA 예지보전 대시보드</div>
-      <div class="tab" id="tab-hqvina" onclick="switchTab('dash2',this)">📂 HQ vs VINA 파일 비교</div>
+
     </div>
 
     <!-- 탭1 -->
@@ -265,48 +311,6 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       </div>
     </div>
 
-    <!-- 탭2 -->
-    <div id="dash2" class="tab-content">
-      <div class="gap-info" style="margin-bottom:16px">📂 <strong>사용법:</strong> 본사(HQ) 엑셀과 VINA 엑셀을 각각 업로드하면 자동으로 Spec 범위 내 실측값을 비교합니다.</div>
-      <div class="upload-grid">
-        <div class="upload-box" id="hqBox">
-          <input type="file" class="upload-input" id="hqFile" accept=".xlsx,.xls">
-          <div class="upload-icon">🏢</div>
-          <div class="upload-title" style="color:#2980b9">본사(HQ) 파일</div>
-          <div class="upload-sub">HQ_37번_... DATA.xlsx</div>
-          <div class="upload-filename" id="hqName">파일을 선택하세요</div>
-        </div>
-        <div class="upload-box" id="vinaBox">
-          <input type="file" class="upload-input" id="vinaFile" accept=".xlsx,.xls">
-          <div class="upload-icon">🌏</div>
-          <div class="upload-title" style="color:#e74c3c">VINA 파일</div>
-          <div class="upload-sub">Measurement Data_....xlsx</div>
-          <div class="upload-filename" id="vinaName">파일을 선택하세요</div>
-        </div>
-      </div>
-      <div class="error-msg" id="errorMsg"></div>
-      <button class="run-btn" id="runBtn" onclick="analyze()" disabled>📊 비교 분석 시작</button>
-      <div id="cmpSummary" style="display:none">
-        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-          <div class="kpi"><div class="kpi-label">전체 항목</div><div class="kpi-val blue" id="c-total">-</div></div>
-          <div class="kpi"><div class="kpi-label">즉시수리</div><div class="kpi-val red" id="c-red">-</div></div>
-          <div class="kpi"><div class="kpi-label">주의관찰</div><div class="kpi-val yellow" id="c-yellow">-</div></div>
-          <div class="kpi"><div class="kpi-label">정상</div><div class="kpi-val green" id="c-green">-</div></div>
-        </div>
-        <div class="legend-bar">
-          <strong>범례</strong>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:12px;height:12px;border-radius:50%;background:#2980b9;display:inline-block"></span>본사(HQ)</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:12px;height:12px;border-radius:50%;background:#e74c3c;display:inline-block"></span>VINA</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:12px"><span style="width:24px;height:8px;background:#dbeafe;border:1px solid #93c5fd;border-radius:2px;display:inline-block"></span>Spec 허용범위</div>
-          <div style="margin-left:auto;display:flex;gap:6px">
-            <span class="badge bg">정상 &lt;0.05</span>
-            <span class="badge by">주의 0.05~0.1</span>
-            <span class="badge br">즉시수리 ≥0.1</span>
-          </div>
-        </div>
-        <div id="cmpCards"></div>
-      </div>
-    </div>
   </div>
 
   <div class="footer">성우전자 글로벌 품질관리 시스템 &nbsp;·&nbsp; SUNGWOO ELECTRONICS &nbsp;·&nbsp; 2026</div>
@@ -432,6 +436,20 @@ function updateBC(items){
 function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 품질팀<br>업데이트: 2026-05-26';}
 function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
 function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
+
+function goCompare(){
+  showScreen('compare');
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:'HQ vs VINA 비교'}]);
+  // 파일 업로드 초기화
+  hqParsed={};vinaParsed={};
+  document.getElementById('hqName').textContent='파일을 선택하세요';
+  document.getElementById('vinaName').textContent='파일을 선택하세요';
+  document.getElementById('hqBox').classList.remove('done');
+  document.getElementById('vinaBox').classList.remove('done');
+  document.getElementById('runBtn').disabled=true;
+  document.getElementById('cmpSummary').style.display='none';
+  document.getElementById('errorMsg').style.display='none';
+}
 
 function goDashboard(productId){
   curProduct = PRODUCTS[productId];
