@@ -1075,9 +1075,9 @@ function parseDimensionFile(wb){
         var v = arr[i][j];
         if(!v) continue;
         var vs = String(v);
-        // 'Date : 25/04/2026' 형식 (DD/MM/YYYY)
+        // 'Date : 25/04/2026' 형식 (DD/MM/YYYY) → MM/DD로 저장
         var m1 = vs.match(/Date\s*:\s*(\d{2})\/(\d{2})\/(\d{4})/);
-        if(m1){ dateLabel = m1[1]+'/'+m1[2]; break; }
+        if(m1){ dateLabel = m1[2]+'/'+m1[1]; break; }
         // 'Date : 2026-05-08' 형식
         var m2 = vs.match(/Date\s*:\s*\d{4}-(\d{2})-(\d{2})/);
         if(m2){ dateLabel = m2[1]+'/'+m2[2]; break; }
