@@ -119,7 +119,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
     <h1>성우전자 &nbsp;|&nbsp; 글로벌 품질관리 시스템</h1>
     <p>SUNGWOO ELECTRONICS · Global Quality Management · 예지보전 대시보드</p>
   </div>
-  <div class="topbar-right" id="topbarRight">관리자: 성우전자 품질팀<br>업데이트: 2026-05-26</div>
+  <div class="topbar-right" id="topbarRight">관리자: 성우전자 개발팀<br>업데이트: 2026-05-26</div>
 </div>
 
 <div class="container">
@@ -776,14 +776,14 @@ function updateBC(items){
       :'<span class="bc-active">'+item.label+'</span>';
   }).join('');
 }
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 품질팀<br>업데이트: 2026-05-26';}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';}
 function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
 function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
 
 function goModelAM(){
   showScreen('model-am');
   updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사'}]);
-  document.getElementById('topbarRight').innerHTML='관리자: 성우전자 품질팀<br>고객사: AM Corporation';
+  document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>고객사: AM Corporation';
 }
 
 function goProductAM(){
