@@ -710,6 +710,11 @@ function loadMeasData(productId, callback){
 function loadProductDataFromFirebase(productId){
   loadMeasData(productId, function(data){
     var updated = false;
+    var fbDateLabels = Object.keys(data).map(function(k){ return k.replace('_', '/'); });
+    // curFbDates 갱신 (삭제 버튼 표시에 사용)
+    curFbDates = fbDateLabels.slice();
+    window._fbDates = fbDateLabels.slice();
+
     Object.keys(data).forEach(function(dateKey){
       var dateLabel = dateKey.replace('_', '/');
       if(!PRODUCTS[productId].vinaAll[dateLabel]){
@@ -719,43 +724,12 @@ function loadProductDataFromFirebase(productId){
         updated = true;
       }
     });
+    // 항상 날짜 버튼 재생성 (삭제 버튼 포함)
+    rebuildDateBtns(productId, fbDateLabels);
     if(updated){
-      // 날짜 버튼 재생성
-      var dates = Object.keys(PRODUCTS[productId].vinaAll);
-      var dateBtns = document.getElementById('dateBtns');
-      if(dateBtns){
-        dateBtns.innerHTML = '';
-        var allBtn = document.createElement('button');
-        allBtn.className = 'filter-btn active';
-        allBtn.textContent = '전체';
-        allBtn.onclick = function(){ setDate('all', this); };
-        dateBtns.appendChild(allBtn);
-        dates.forEach(function(d){
-          var wrap = document.createElement('span');
-          wrap.style.display = 'inline-flex';
-          wrap.style.alignItems = 'center';
-          wrap.style.gap = '2px';
-          var btn = document.createElement('button');
-          btn.className = 'filter-btn';
-          btn.textContent = d;
-          btn.onclick = (function(date){ return function(){ setDate(date, this); }; })(d);
-          wrap.appendChild(btn);
-          // Firebase 저장 데이터만 삭제 버튼 표시
-          var fbDates = window._fbDates || [];
-          if(fbDates.indexOf(d) >= 0){
-            var delBtn = document.createElement('button');
-            delBtn.textContent = '✕';
-            delBtn.title = d + ' 삭제';
-            delBtn.style.cssText = 'padding:2px 5px;background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:4px;font-size:10px;cursor:pointer;';
-            delBtn.onclick = (function(date){ return function(e){ e.stopPropagation(); deleteMeasData(curProduct.code.split(" ")[0].toLowerCase(), date); }; })(d);
-            wrap.appendChild(delBtn);
-          }
-          dateBtns.appendChild(wrap);
-        });
-        curDate = 'all';
-        buildTrendChart();
-        renderData();
-      }
+      curDate = 'all';
+      buildTrendChart();
+      renderData();
     }
   });
 }
@@ -1002,25 +976,75 @@ function saveCustomer(){
     alert('✅ ' + name + ' 고객사가 추가되었습니다!');
     closeModal();
     // 홈화면 카드 추가
-    addCustomerCard(customer);
+    addCustomerCard(customer, []);
     // KPI 업데이트
-    updateHomeKPI();
+    refreshHomeKPI();
   }).catch(function(err){
     alert('❌ 저장 실패: ' + err.message);
   });
 }
 
-function addCustomerCard(customer){
+function addCustomerCard(customer, products){
   var grid = document.querySelector('#screen-home [style*="grid-template-columns"]');
   if(!grid) return;
-  // 추가 카드 앞에 새 카드 삽입
+  // 이미 존재하는 카드 중복 방지
+  if(document.getElementById('customer_' + customer.id)) return;
+
+  products = products || [];
   var addCard = grid.lastElementChild;
   var card = document.createElement('div');
   card.id = 'customer_' + customer.id;
   card.style.cssText = 'background:#fff;border-radius:14px;border:1px solid #e4e4e4;overflow:hidden;cursor:pointer;transition:all 0.2s';
   card.onmouseover = function(){ this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)';this.style.transform='translateY(-2px)'; };
-  card.onmouseout = function(){ this.style.boxShadow='none';this.style.transform='translateY(0)'; };
-  card.onclick = function(){ openAddModel(customer); };
+  card.onmouseout  = function(){ this.style.boxShadow='none';this.style.transform='translateY(0)'; };
+
+  // 고객사 클릭 시 동적 모델/제품 화면으로 이동
+  card.onclick = function(){ goCustomerDynamic(customer, products); };
+
+  // 모델별 제품 그룹핑
+  var modelMap = {}; // modelName -> [product]
+  products.forEach(function(p){
+    if(!modelMap[p.modelName]) modelMap[p.modelName] = [];
+    modelMap[p.modelName].push(p);
+  });
+  var modelCount = Object.keys(modelMap).length;
+  var approvedCount = products.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
+
+  // 제품 미리보기 HTML (최대 4개)
+  var previewHtml = '';
+  if(products.length === 0){
+    previewHtml = '<div style="font-size:12px;color:#888;margin-bottom:10px">등록된 모델/제품이 없습니다</div>';
+  } else {
+    previewHtml = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">';
+    products.slice(0,4).forEach(function(p){
+      var isApproved = p.approvalStatus === 'approved';
+      previewHtml +=
+        '<div style="background:'+(isApproved?'#eafaf1':'#f8f8f8')+';border-radius:8px;padding:10px 12px;border-left:3px solid '+(isApproved?'#27ae60':'#3b82f6')+'">'+
+          '<div style="font-size:10px;color:#888;margin-bottom:2px">'+p.productCode+'</div>'+
+          '<div style="font-size:12px;font-weight:700;color:#1a1a2e">'+p.productName+'</div>'+
+          '<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">'+
+            '<span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-weight:600">VINA ✓</span>'+
+            (isApproved
+              ? '<span style="font-size:10px;background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:3px;font-weight:600">✅ 승인완료</span>'
+              : '<span style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 6px;border-radius:3px;font-weight:600">⏳ 승인대기</span>')+
+          '</div>'+
+        '</div>';
+    });
+    if(products.length > 4){
+      previewHtml += '<div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;border-left:3px solid #e4e4e4;display:flex;align-items:center;justify-content:center"><div style="font-size:12px;color:#888;font-weight:600">+' + (products.length-4) + '개 더보기</div></div>';
+    }
+    previewHtml += '</div>';
+    // 승인 진행률
+    var pct = products.length > 0 ? Math.round(approvedCount/products.length*100) : 0;
+    previewHtml +=
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:4px">'+
+        '<span>승인 진행률</span><span style="color:#27ae60;font-weight:600">'+pct+'% ('+approvedCount+'/'+products.length+')</span>'+
+      '</div>'+
+      '<div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden">'+
+        '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#27ae60,#2ecc71);border-radius:3px"></div>'+
+      '</div>';
+  }
+
   card.innerHTML =
     '<div style="background:'+customer.color+';padding:16px 20px;display:flex;align-items:center;justify-content:space-between">'+
       '<div>'+
@@ -1028,15 +1052,124 @@ function addCustomerCard(customer){
         '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">'+customer.eng+'</div>'+
       '</div>'+
       '<div style="text-align:right">'+
-        '<div style="font-size:11px;color:rgba(255,255,255,0.5)">모델 0개 · 제품 0종</div>'+
-        '<div style="font-size:11px;color:#fbbf24;margin-top:2px">승인완료 0 / 0</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.5)">모델 '+modelCount+'개 · 제품 '+products.length+'종</div>'+
+        '<div style="font-size:11px;color:#6ee7b7;margin-top:2px">승인완료 '+approvedCount+' / '+products.length+'</div>'+
       '</div>'+
     '</div>'+
     '<div style="padding:16px 20px">'+
-      '<div style="font-size:12px;color:#888;margin-bottom:10px">등록된 모델/제품이 없습니다</div>'+
-      '<button onclick="event.stopPropagation();openAddModel('+JSON.stringify(customer)+')" style="width:100%;padding:8px;background:#f0f7ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">+ 모델/제품 추가</button>'+
-    '</div>';
+      (modelCount > 0 ? '<div style="font-size:11px;color:#888;font-weight:700;margin-bottom:10px">'+Object.keys(modelMap).join(', ')+'</div>' : '')+
+      previewHtml+
+      '<button onclick="event.stopPropagation();openAddModel('+JSON.stringify(customer)+')" style="width:100%;padding:8px;background:#f0f7ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px">+ 모델/제품 추가</button>'+
+    '</div>'+
+    '<div style="padding:0 20px 14px;text-align:right"><span style="font-size:12px;color:#3b82f6;font-weight:600">상세보기 →</span></div>';
+
   grid.insertBefore(card, addCard);
+}
+
+// 동적 고객사 → 모델/제품 화면 이동
+function goCustomerDynamic(customer, products){
+  // 동적 모델 화면 생성 또는 업데이트
+  var screenId = 'screen-dyn-' + customer.id;
+  var existing = document.getElementById(screenId);
+  if(!existing){
+    var div = document.createElement('div');
+    div.id = screenId;
+    div.className = 'screen';
+    document.querySelector('.container').appendChild(div);
+  }
+  var screen = document.getElementById(screenId);
+
+  // 모델별 제품 그룹핑
+  var modelMap = {};
+  products.forEach(function(p){
+    if(!modelMap[p.modelName]) modelMap[p.modelName] = { desc: p.modelDesc, products: [] };
+    modelMap[p.modelName].products.push(p);
+  });
+
+  var modelCardsHtml = '';
+  Object.keys(modelMap).forEach(function(modelName){
+    var mData = modelMap[modelName];
+    modelCardsHtml +=
+      '<div class="model-card" onclick="goProductDynamic(\''+customer.id+'\',\''+modelName+'\', \''+encodeURIComponent(customer.name)+'\')">'+
+        '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:3px">'+modelName+'</div>'+
+        '<div style="font-size:11px;color:#888">'+(mData.desc||'')+'</div>'+
+        '<div style="font-size:11px;color:#3b82f6;margin-top:8px;font-weight:600">제품 '+mData.products.length+'종 관리 중</div>'+
+      '</div>';
+  });
+  modelCardsHtml += '<div class="model-card" style="opacity:0.4;cursor:default"><div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:3px">+ 모델 추가</div><div style="font-size:11px;color:#888">준비 중</div></div>';
+
+  screen.innerHTML =
+    '<div class="sec-title">모델 선택 — '+customer.name+'</div>'+
+    '<div class="model-grid">'+modelCardsHtml+'</div>';
+
+  showScreen('dyn-' + customer.id);
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:customer.name}]);
+  document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>고객사: '+customer.eng;
+}
+
+// 동적 고객사 제품 화면
+function goProductDynamic(customerId, modelName, customerNameEnc){
+  var customerName = decodeURIComponent(customerNameEnc);
+  db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snap){
+    var allProds = snap.val() || {};
+    var products = Object.values(allProds).filter(function(p){ return p.modelName === modelName; });
+
+    var screenId = 'screen-dynp-' + customerId + '-' + modelName.replace(/[^a-zA-Z0-9]/g,'');
+    var existing = document.getElementById(screenId);
+    if(!existing){
+      var div = document.createElement('div');
+      div.id = screenId;
+      div.className = 'screen';
+      document.querySelector('.container').appendChild(div);
+    }
+    var screen = document.getElementById(screenId);
+
+    var productCardsHtml = products.map(function(p){
+      var isApproved = p.approvalStatus === 'approved';
+      var pid = p.productId;
+      // PRODUCTS 동기화
+      if(!PRODUCTS[pid]){
+        PRODUCTS[pid] = {
+          name: p.productCode+' '+p.productName, code: p.productCode,
+          lastDate: p.createdAt?p.createdAt.split('T')[0]:'-',
+          hasHQ:false, angleNos:[], specMap:{}, tolMap:{}, partNames:{},
+          vinaAll:{}, vinaLH:{}, vinaRH:{},
+          customerId: customerId, modelName: modelName,
+          hasSide: p.hasSide, approvalStatus: p.approvalStatus||'pending',
+          _fromFirebase:true
+        };
+      }
+      return '<div class="product-card" onclick="goDashboard(\''+pid+'\')" style="border-color:'+(isApproved?'#27ae60':'#e4e4e4')+'">'+
+        '<div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">'+p.productCode+'</div>'+
+        '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">'+p.productName+'</div>'+
+        '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+          '<span class="p-tag tag-vina">VINA ✓</span>'+
+          (isApproved
+            ? '<span class="p-tag" style="background:#d1fae5;color:#065f46">✅ 승인완료</span>'
+            : '<span class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>')+
+        '</div>'+
+        '<div class="p-bar"><div class="p-bar-fill" style="width:'+(isApproved?'100':'30')+'%;background:'+(isApproved?'#27ae60':'#f39c12')+'"></div></div>'+
+        '<span class="p-arrow" style="color:'+(isApproved?'#27ae60':'#ddd')+'">→</span>'+
+      '</div>';
+    }).join('');
+    productCardsHtml += '<div class="product-card disabled"><div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">+ 제품 추가</div><div style="font-size:14px;font-weight:700;color:#aaa;margin-bottom:8px">준비 중</div><span class="p-arrow">→</span></div>';
+
+    screen.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
+        '<div class="sec-title" style="margin-bottom:0">제품 선택 — '+modelName+'</div>'+
+      '</div>'+
+      '<div class="product-grid">'+productCardsHtml+'</div>';
+
+    var dynScreenId = 'dyn-' + customerId + '-' + modelName.replace(/[^a-zA-Z0-9]/g,'');
+    // id 교체
+    screen.id = 'screen-' + dynScreenId;
+    showScreen(dynScreenId);
+    updateBC([
+      {label:'🏠 홈',fn:'goHome()'},
+      {label:customerName,fn:'goCustomerDynamic('+JSON.stringify({id:customerId,name:customerName,eng:customerName,color:"#1a1a2e"})+',Object.values(PRODUCTS).filter(function(p){return p.customerId==="'+customerId+'";}))'},
+      {label:modelName}
+    ]);
+  });
 }
 
 // 모델 추가
@@ -1132,26 +1265,97 @@ function saveModel(customerId, customerName){
   db.ref('products/' + productId).set(data).then(function(){
     alert('✅ ' + productCode + ' ' + productName + ' 등록 완료!');
     closeModal();
-    updateHomeKPI();
+    // 기존 카드 제거 후 재생성
+    var oldCard = document.getElementById('customer_' + customerId);
+    if(oldCard) oldCard.remove();
+    // 고객사 + 전체 제품 다시 불러와서 카드 재생성
+    db.ref('customers/' + customerId).once('value').then(function(snapC){
+      var cust = snapC.val();
+      if(!cust) return;
+      db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snapP){
+        var prods = snapP.val() ? Object.values(snapP.val()) : [];
+        addCustomerCard(cust, prods);
+        refreshHomeKPI();
+      });
+    });
   }).catch(function(err){
     alert('❌ 저장 실패: ' + err.message);
   });
 }
 
-function updateHomeKPI(){
-  // KPI는 페이지 새로고침 시 자동 업데이트
+function refreshHomeKPI(){
+  // 홈 통계 박스 동적 업데이트
+  var statBoxes = document.querySelectorAll('#screen-home .stat-box .stat-val');
+  if(!statBoxes.length) return;
+  db.ref('customers').once('value').then(function(snapC){
+    var custCount = snapC.val() ? Object.keys(snapC.val()).length : 0;
+    // 고정 고객사(만도, AM사) 포함
+    var totalCust = 2 + custCount;
+    statBoxes[0].textContent = totalCust;
+  });
+  db.ref('products').once('value').then(function(snapP){
+    var prods = snapP.val() ? Object.values(snapP.val()) : [];
+    var approved = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
+    // 고정 제품 포함: 만도 4개 + AM사 3개
+    var totalProds = 7 + prods.length;
+    statBoxes[2].textContent = totalProds;
+    // 승인완료: 고정 1 + Firebase approved
+    var statBox3 = document.querySelectorAll('#screen-home .stat-box')[3];
+    if(statBox3){
+      statBox3.querySelector('.stat-val').textContent = 1 + approved;
+      var sub = statBox3.querySelector('[style*="color:#27ae60"]');
+      if(sub) sub.textContent = (1+approved) + ' / ' + totalProds + ' 제품';
+    }
+  });
 }
 
-// 페이지 로드 시 Firebase에서 고객사/제품 불러오기
+// ===== Firebase 동적 데이터 로드 =====
+// Firebase에 저장된 고객사/모델/제품을 불러와 대시보드에 반영
 function loadFirebaseData(){
-  // 추가된 고객사 불러오기
-  db.ref('customers').once('value').then(function(snap){
-    var data = snap.val();
-    if(data){
-      Object.values(data).forEach(function(customer){
-        addCustomerCard(customer);
+  db.ref('customers').once('value').then(function(snapC){
+    var customers = snapC.val() || {};
+    db.ref('products').once('value').then(function(snapP){
+      var products = snapP.val() || {};
+
+      // 고객사별 제품 그룹핑
+      var custProducts = {}; // customerId -> [product]
+      Object.values(products).forEach(function(p){
+        if(!custProducts[p.customerId]) custProducts[p.customerId] = [];
+        custProducts[p.customerId].push(p);
+
+        // PRODUCTS 전역 객체에 등록 (대시보드 진입용)
+        var pid = p.productId;
+        if(!PRODUCTS[pid]){
+          PRODUCTS[pid] = {
+            name: p.productCode + ' ' + p.productName,
+            code: p.productCode,
+            lastDate: p.createdAt ? p.createdAt.split('T')[0] : '-',
+            hasHQ: false,
+            angleNos: [],
+            specMap: {},
+            tolMap: {},
+            partNames: {},
+            vinaAll: {},
+            vinaLH: {},
+            vinaRH: {},
+            customerId: p.customerId,
+            modelName: p.modelName,
+            hasSide: p.hasSide,
+            approvalStatus: p.approvalStatus || 'pending',
+            _fromFirebase: true
+          };
+        }
       });
-    }
+
+      // 고객사 카드 생성
+      Object.values(customers).forEach(function(customer){
+        var prods = custProducts[customer.id] || [];
+        addCustomerCard(customer, prods);
+      });
+
+      // KPI 업데이트
+      refreshHomeKPI();
+    });
   });
 }
 
@@ -1196,6 +1400,8 @@ function goDashboard(productId){
   var isAM = ['at5851','ap5010','ap5030'].indexOf(productId) >= 0;
   if(isAM){
     updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사',fn:'goModelAM()'},{label:'SHIELD CAN',fn:'goProductAM()'},{label:curProduct.name}]);
+  } else if(curProduct._fromFirebase){
+    updateBC([{label:'🏠 홈',fn:'goHome()'},{label:curProduct.name}]);
   } else {
     updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:curProduct.name}]);
   }
@@ -1243,8 +1449,18 @@ function goDashboard(productId){
   document.getElementById('trendLegend').innerHTML='';
   document.getElementById('tableBody').innerHTML='';
 
-  buildTrendChart();
-  renderData();
+  // Firebase로만 등록된 제품(specMap 미설정) 안내
+  if(curProduct._fromFirebase && Object.keys(curProduct.specMap).length === 0){
+    document.getElementById('tableBody').innerHTML =
+      '<tr><td colspan="10" style="padding:40px;text-align:center;color:#888">'+
+        '<div style="font-size:32px;margin-bottom:12px">📋</div>'+
+        '<div style="font-size:14px;font-weight:700;margin-bottom:6px">Spec 데이터가 없습니다</div>'+
+        '<div style="font-size:12px">측정 파일을 업로드하면 자동으로 차트와 테이블이 채워집니다.</div>'+
+      '</td></tr>';
+  } else {
+    buildTrendChart();
+    renderData();
+  }
 
   // Firebase에서 추가 측정 데이터 불러오기
   loadProductDataFromFirebase(productId);
