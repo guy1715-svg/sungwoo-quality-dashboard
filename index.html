@@ -708,10 +708,34 @@ function loadMeasData(productId, callback){
 
 // 페이지 로드 시 Firebase에서 데이터 불러오기
 function loadProductDataFromFirebase(productId){
+  // Firebase 제품: specMap/tolMap도 함께 불러오기
+  if(PRODUCTS[productId] && PRODUCTS[productId]._fromFirebase){
+    db.ref('products/' + productId).once('value').then(function(snap){
+      var pd = snap.val();
+      if(pd){
+        if(pd.specMap && Object.keys(pd.specMap).length > 0 && Object.keys(PRODUCTS[productId].specMap).length === 0){
+          // Firebase 키는 문자열이므로 숫자로 변환
+          var sm = {}, tm = {};
+          Object.keys(pd.specMap).forEach(function(k){ sm[parseInt(k)] = pd.specMap[k]; });
+          if(pd.tolMap) Object.keys(pd.tolMap).forEach(function(k){ tm[parseInt(k)] = pd.tolMap[k]; });
+          PRODUCTS[productId].specMap = sm;
+          PRODUCTS[productId].tolMap  = tm;
+          Object.keys(sm).forEach(function(no){
+            if(!PRODUCTS[productId].partNames[no]) PRODUCTS[productId].partNames[no] = 'No.' + no;
+          });
+        }
+      }
+      _doLoadMeasData(productId);
+    });
+  } else {
+    _doLoadMeasData(productId);
+  }
+}
+
+function _doLoadMeasData(productId){
   loadMeasData(productId, function(data){
     var updated = false;
     var fbDateLabels = Object.keys(data).map(function(k){ return k.replace('_', '/'); });
-    // curFbDates 갱신 (삭제 버튼 표시에 사용)
     curFbDates = fbDateLabels.slice();
     window._fbDates = fbDateLabels.slice();
 
@@ -726,7 +750,7 @@ function loadProductDataFromFirebase(productId){
     });
     // 항상 날짜 버튼 재생성 (삭제 버튼 포함)
     rebuildDateBtns(productId, fbDateLabels);
-    if(updated){
+    if(updated || (PRODUCTS[productId]._fromFirebase && Object.keys(PRODUCTS[productId].specMap).length > 0)){
       curDate = 'all';
       buildTrendChart();
       renderData();
@@ -1455,8 +1479,12 @@ function goDashboard(productId){
       '<tr><td colspan="10" style="padding:40px;text-align:center;color:#888">'+
         '<div style="font-size:32px;margin-bottom:12px">📋</div>'+
         '<div style="font-size:14px;font-weight:700;margin-bottom:6px">Spec 데이터가 없습니다</div>'+
-        '<div style="font-size:12px">측정 파일을 업로드하면 자동으로 차트와 테이블이 채워집니다.</div>'+
+        '<div style="font-size:12px">📤 위 <strong>파일 선택</strong> 버튼으로 측정 엑셀 파일을 업로드하면<br>Spec이 자동으로 설정되고 차트·테이블이 채워집니다.</div>'+
       '</td></tr>';
+    // trendChart 영역에도 안내
+    var tc = document.getElementById('trendChart');
+    if(tc){ var ctx=tc.getContext('2d'); ctx.clearRect(0,0,tc.width,tc.height); }
+    document.getElementById('trendLegend').innerHTML = '<span style="color:#aaa;font-size:12px">측정 파일 업로드 후 표시됩니다</span>';
   } else {
     buildTrendChart();
     renderData();
@@ -1725,14 +1753,22 @@ function parseDimensionFile(wb){
   });
 
   var parsed = {};
+  var specMap = {};
+  var tolMap = {};
   Object.keys(result).forEach(function(no){
     var d = result[no];
     var sum=0;
     for(var i=0;i<d.vals.length;i++) sum+=d.vals[i];
-    parsed[parseInt(no)] = sum/d.vals.length;
+    var ni = parseInt(no);
+    parsed[ni] = sum/d.vals.length;
+    if(d.spec !== null && d.spec !== undefined){
+      specMap[ni] = d.spec;
+      // spec 크기에 따라 기본 tol 자동 설정
+      tolMap[ni] = Math.abs(d.spec) <= 5 ? 0.05 : (Math.abs(d.spec) <= 15 ? 0.2 : 0.5);
+    }
   });
 
-  return {date: dateLabel, data: parsed};
+  return {date: dateLabel, data: parsed, specMap: specMap, tolMap: tolMap};
 }
 
 function parseScanFile(wb){
@@ -1801,6 +1837,23 @@ document.addEventListener('DOMContentLoaded', function(){
             // 파일명에서 날짜 추출 우선 (26MMDD 형식)
             var fnMatch = file.name.match(/26(\d{2})(\d{2})/);
             var label = fnMatch ? fnMatch[1]+'/'+fnMatch[2] : (result.date || '신규');
+
+            // Firebase 제품: specMap/tolMap 자동 채우기 (첫 업로드 시)
+            if(curProduct._fromFirebase && Object.keys(curProduct.specMap).length === 0){
+              if(result.specMap && Object.keys(result.specMap).length > 0){
+                curProduct.specMap = result.specMap;
+                curProduct.tolMap  = result.tolMap || {};
+                // partNames 자동 생성 (No.1, No.2 ...)
+                Object.keys(result.specMap).forEach(function(no){
+                  if(!curProduct.partNames[parseInt(no)])
+                    curProduct.partNames[parseInt(no)] = 'No.' + no;
+                });
+                // Firebase에 specMap 저장 (다음 로드 시 재사용)
+                var pid = curProduct.code.split(" ")[0].toLowerCase();
+                db.ref('products/' + pid + '/specMap').set(result.specMap);
+                db.ref('products/' + pid + '/tolMap').set(result.tolMap || {});
+              }
+            }
 
             // 기존 날짜와 중복 체크
             var existingDates = Object.keys(curProduct.vinaAll);
