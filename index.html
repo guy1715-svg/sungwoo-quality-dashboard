@@ -1050,12 +1050,12 @@ function detectFileType(arr){
     if(!row) continue;
     // 하부스캔: 규격 허용 편차
     if(row[0] && String(row[0]).indexOf('규격 허용 편차') >= 0) return 'scan';
-    // VINA 치수측정 형식1: No=열2, Spec=열5 (Measurement Data 파일)
-    if(row[2] && String(row[2]).trim()==='No' && row[5] && String(row[5]).indexOf('Spec') >= 0) return 'dimension';
-    // VINA 치수측정 형식2: No=열4, 기준치수=열6 (HQ 파일)
-    if(row[4] && String(row[4]).trim()==='No' && row[6] && String(row[6]).indexOf('기준치수') >= 0) return 'dimension_hq';
-    // VINA 치수측정 형식3: Cavity/No 헤더
-    if(row[1] && String(row[1]).indexOf('Cavity') >= 0 && row[2] && String(row[2]).indexOf('No') >= 0) return 'dimension';
+    // VINA Measurement Data: Cavity=열0, No=열1
+    if(row[0] && String(row[0]).indexOf('Cavity') >= 0 &&
+       row[1] && String(row[1]).indexOf('No') >= 0) return 'dimension';
+    // HQ 형식: No=열4, 기준치수=열6
+    if(row[4] && String(row[4]).trim()==='No' &&
+       row[6] && String(row[6]).indexOf('기준치수') >= 0) return 'dimension_hq';
   }
   return 'unknown';
 }
@@ -1075,10 +1075,13 @@ function parseDimensionFile(wb){
         var v = arr[i][j];
         if(!v) continue;
         var vs = String(v);
-        // 'Date : 25/04/2026' 형식
+        // 'Date : 25/04/2026' 형식 (DD/MM/YYYY)
         var m1 = vs.match(/Date\s*:\s*(\d{2})\/(\d{2})\/(\d{4})/);
         if(m1){ dateLabel = m1[1]+'/'+m1[2]; break; }
-        // '측정일자' 다음 셀
+        // 'Date : 2026-05-08' 형식
+        var m2 = vs.match(/Date\s*:\s*\d{4}-(\d{2})-(\d{2})/);
+        if(m2){ dateLabel = m2[1]+'/'+m2[2]; break; }
+        // '측정일자' 다음 셀 (엑셀 날짜 숫자)
         if(vs.indexOf('측정일자') >= 0){
           var dv = arr[i][j+2] || arr[i][j+1];
           if(dv && typeof dv === 'number'){
@@ -1093,9 +1096,9 @@ function parseDimensionFile(wb){
     arr.forEach(function(row){
       if(!row||!row.length) return;
 
-      // VINA 형식: No=열2
+      // VINA Measurement Data: No=열1, Spec=열4, Average=열12
       var no = null;
-      var noRaw = row[2];
+      var noRaw = row[1];
       if(noRaw !== null && noRaw !== undefined){
         var n = parseFloat(String(noRaw).trim());
         if(!isNaN(n) && n>=1 && n<=50 && Math.abs(n-Math.round(n))<0.01)
@@ -1103,14 +1106,13 @@ function parseDimensionFile(wb){
       }
 
       if(no){
-        var spec = pNum(row[5]);
-        // 평균값: 열9 (Average)
-        var avg = pNum(row[9]);
+        var spec = pNum(row[4]);
+        var avg = pNum(row[12]); // Average 열
         if(avg===null||avg===0){
-          // 측정값 열7,8 평균
-          var v1=pNum(row[7]), v2=pNum(row[8]);
-          if(v1!==null && v2!==null) avg=(v1+v2)/2;
-          else if(v1!==null) avg=v1;
+          // 측정값 열7~11 평균
+          var vals=[], v;
+          for(var c=7;c<=11;c++){v=pNum(row[c]);if(v!==null&&v!==0)vals.push(v);}
+          if(vals.length>0){avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;}
         }
         if(spec!==null && avg!==null && avg!==0){
           if(!result[no]) result[no]={spec:spec,vals:[]};
