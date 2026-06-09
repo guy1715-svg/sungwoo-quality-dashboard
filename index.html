@@ -272,10 +272,10 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
         </div>
       </div>
 
-      <div style="background:#fff;border-radius:14px;border:2px dashed #e4e4e4;padding:40px 20px;text-align:center;opacity:0.5">
+      <div style="background:#fff;border-radius:14px;border:2px dashed #3b82f6;padding:40px 20px;text-align:center;cursor:pointer;transition:all 0.2s" onclick="openAddCustomer()" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='#fff'">
         <div style="font-size:32px;margin-bottom:10px">+</div>
-        <div style="font-size:14px;font-weight:700;color:#888">고객사 추가</div>
-        <div style="font-size:11px;color:#aaa;margin-top:4px">준비 중</div>
+        <div style="font-size:14px;font-weight:700;color:#3b82f6">고객사 추가</div>
+        <div style="font-size:11px;color:#aaa;margin-top:4px">클릭하여 추가</div>
       </div>
     </div>
 
@@ -595,6 +595,17 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       </div>
     </div>
 
+  </div>
+
+  <!-- 고객사 추가 모달 -->
+  <div id="modalOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:28px;width:480px;max-width:90%;max-height:80vh;overflow-y:auto;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:#1a1a2e" id="modalTitle">고객사 추가</div>
+        <button onclick="closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888">✕</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
   </div>
 
   <div class="footer">성우전자 글로벌 품질관리 시스템 &nbsp;·&nbsp; SUNGWOO ELECTRONICS &nbsp;·&nbsp; 2026</div>
@@ -928,6 +939,226 @@ function updateBC(items){
       :'<span class="bc-active">'+item.label+'</span>';
   }).join('');
 }
+// ===== 모달 관리 =====
+function openModal(title, body){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  var overlay = document.getElementById('modalOverlay');
+  overlay.style.display = 'flex';
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+
+// 고객사 추가
+function openAddCustomer(){
+  openModal('고객사 추가', `
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">고객사명 (한글)</div>
+      <input id="newCustomerName" type="text" placeholder="예: 현대모비스" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">영문명</div>
+      <input id="newCustomerEng" type="text" placeholder="예: Hyundai Mobis" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">고객사 색상</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div onclick="selectColor(this,'#1a1a2e')" style="width:32px;height:32px;background:#1a1a2e;border-radius:6px;cursor:pointer;border:2px solid transparent"></div>
+        <div onclick="selectColor(this,'#2c3e50')" style="width:32px;height:32px;background:#2c3e50;border-radius:6px;cursor:pointer;border:2px solid transparent"></div>
+        <div onclick="selectColor(this,'#1e3a5f')" style="width:32px;height:32px;background:#1e3a5f;border-radius:6px;cursor:pointer;border:2px solid transparent"></div>
+        <div onclick="selectColor(this,'#2980b9')" style="width:32px;height:32px;background:#2980b9;border-radius:6px;cursor:pointer;border:2px solid transparent"></div>
+        <div onclick="selectColor(this,'#27ae60')" style="width:32px;height:32px;background:#27ae60;border-radius:6px;cursor:pointer;border:2px solid transparent"></div>
+        <div onclick="selectColor(this,'#8e44ad')" style="width:32px;height:32px;background:#8e44ad;border-radius:6px;cursor:pointer;border:2px solid transparent"></div>
+        <div onclick="selectColor(this,'#c0392b')" style="width:32px;height:32px;background:#c0392b;border-radius:6px;cursor:pointer;border:2px solid transparent"></div>
+        <div onclick="selectColor(this,'#d35400')" style="width:32px;height:32px;background:#d35400;border-radius:6px;cursor:pointer;border:2px solid transparent"></div>
+      </div>
+      <input type="hidden" id="newCustomerColor" value="#1a1a2e">
+    </div>
+    <button onclick="saveCustomer()" style="width:100%;padding:12px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">+ 고객사 추가</button>
+  `);
+}
+
+function selectColor(el, color){
+  document.querySelectorAll('#modalBody [onclick^="selectColor"]').forEach(function(d){
+    d.style.border = '2px solid transparent';
+  });
+  el.style.border = '2px solid #3b82f6';
+  document.getElementById('newCustomerColor').value = color;
+}
+
+function saveCustomer(){
+  var name = document.getElementById('newCustomerName').value.trim();
+  var eng = document.getElementById('newCustomerEng').value.trim();
+  var color = document.getElementById('newCustomerColor').value;
+  if(!name){ alert('고객사명을 입력하세요'); return; }
+
+  var id = 'c_' + Date.now();
+  var customer = {id:id, name:name, eng:eng||name, color:color, models:{}, createdAt: new Date().toISOString()};
+
+  // Firebase 저장
+  db.ref('customers/' + id).set(customer).then(function(){
+    alert('✅ ' + name + ' 고객사가 추가되었습니다!');
+    closeModal();
+    // 홈화면 카드 추가
+    addCustomerCard(customer);
+    // KPI 업데이트
+    updateHomeKPI();
+  }).catch(function(err){
+    alert('❌ 저장 실패: ' + err.message);
+  });
+}
+
+function addCustomerCard(customer){
+  var grid = document.querySelector('#screen-home [style*="grid-template-columns"]');
+  if(!grid) return;
+  // 추가 카드 앞에 새 카드 삽입
+  var addCard = grid.lastElementChild;
+  var card = document.createElement('div');
+  card.id = 'customer_' + customer.id;
+  card.style.cssText = 'background:#fff;border-radius:14px;border:1px solid #e4e4e4;overflow:hidden;cursor:pointer;transition:all 0.2s';
+  card.onmouseover = function(){ this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)';this.style.transform='translateY(-2px)'; };
+  card.onmouseout = function(){ this.style.boxShadow='none';this.style.transform='translateY(0)'; };
+  card.onclick = function(){ openAddModel(customer); };
+  card.innerHTML =
+    '<div style="background:'+customer.color+';padding:16px 20px;display:flex;align-items:center;justify-content:space-between">'+
+      '<div>'+
+        '<div style="font-size:16px;font-weight:700;color:#fff">'+customer.name+'</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">'+customer.eng+'</div>'+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.5)">모델 0개 · 제품 0종</div>'+
+        '<div style="font-size:11px;color:#fbbf24;margin-top:2px">승인완료 0 / 0</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="padding:16px 20px">'+
+      '<div style="font-size:12px;color:#888;margin-bottom:10px">등록된 모델/제품이 없습니다</div>'+
+      '<button onclick="event.stopPropagation();openAddModel('+JSON.stringify(customer)+')" style="width:100%;padding:8px;background:#f0f7ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">+ 모델/제품 추가</button>'+
+    '</div>';
+  grid.insertBefore(card, addCard);
+}
+
+// 모델 추가
+function openAddModel(customer){
+  openModal('모델/제품 추가 — ' + customer.name, `
+    <div style="background:#f0f7ff;border-radius:8px;padding:10px 14px;font-size:11px;color:#1e40af;margin-bottom:16px">
+      📋 고객사: <strong>${customer.name}</strong>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델명</div>
+      <input id="newModelName" type="text" placeholder="예: MX5A EREV" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델 설명</div>
+      <input id="newModelDesc" type="text" placeholder="예: 전기차 브레이크 브라켓" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <hr style="border:none;border-top:1px solid #f0f0f0;margin:16px 0">
+    <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px">제품 정보</div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품 코드</div>
+      <input id="newProductCode" type="text" placeholder="예: BR0039" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품명</div>
+      <input id="newProductName" type="text" placeholder="예: RR BRKT LH#4" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">LH/RH 구분 여부</div>
+      <div style="display:flex;gap:8px">
+        <button id="sideYes" onclick="setSideOpt(true)" style="flex:1;padding:8px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">구분 있음 (LH/RH)</button>
+        <button id="sideNo" onclick="setSideOpt(false)" style="flex:1;padding:8px;background:#f0f0f0;color:#888;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">구분 없음</button>
+      </div>
+      <input type="hidden" id="newProductSide" value="true">
+    </div>
+    <button onclick="saveModel('${customer.id}','${customer.name}')" style="width:100%;padding:12px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">+ 모델/제품 등록</button>
+  `);
+}
+
+function setSideOpt(hasSide){
+  document.getElementById('newProductSide').value = hasSide;
+  document.getElementById('sideYes').style.background = hasSide ? '#1a1a2e' : '#f0f0f0';
+  document.getElementById('sideYes').style.color = hasSide ? '#fff' : '#888';
+  document.getElementById('sideNo').style.background = hasSide ? '#f0f0f0' : '#1a1a2e';
+  document.getElementById('sideNo').style.color = hasSide ? '#888' : '#fff';
+}
+
+function saveModel(customerId, customerName){
+  var modelName = document.getElementById('newModelName').value.trim();
+  var modelDesc = document.getElementById('newModelDesc').value.trim();
+  var productCode = document.getElementById('newProductCode').value.trim();
+  var productName = document.getElementById('newProductName').value.trim();
+  var hasSide = document.getElementById('newProductSide').value === 'true';
+
+  if(!modelName){ alert('모델명을 입력하세요'); return; }
+  if(!productCode){ alert('제품 코드를 입력하세요'); return; }
+  if(!productName){ alert('제품명을 입력하세요'); return; }
+
+  var productId = productCode.toLowerCase().replace(/[^a-z0-9]/g,'');
+  var now = new Date().toISOString().split('T')[0];
+
+  // PRODUCTS에 추가
+  PRODUCTS[productId] = {
+    name: productCode + ' ' + productName,
+    code: productCode,
+    lastDate: now,
+    hasHQ: false,
+    angleNos: [],
+    specMap: {},
+    tolMap: {},
+    partNames: {},
+    vinaAll: {},
+    vinaLH: {},
+    vinaRH: {},
+    customerId: customerId,
+    modelName: modelName,
+    hasSide: hasSide
+  };
+
+  var data = {
+    customerId: customerId,
+    customerName: customerName,
+    modelName: modelName,
+    modelDesc: modelDesc,
+    productCode: productCode,
+    productName: productName,
+    productId: productId,
+    hasSide: hasSide,
+    createdAt: now,
+    approvalStatus: 'pending'
+  };
+
+  // Firebase 저장
+  db.ref('products/' + productId).set(data).then(function(){
+    alert('✅ ' + productCode + ' ' + productName + ' 등록 완료!');
+    closeModal();
+    updateHomeKPI();
+  }).catch(function(err){
+    alert('❌ 저장 실패: ' + err.message);
+  });
+}
+
+function updateHomeKPI(){
+  // KPI는 페이지 새로고침 시 자동 업데이트
+}
+
+// 페이지 로드 시 Firebase에서 고객사/제품 불러오기
+function loadFirebaseData(){
+  // 추가된 고객사 불러오기
+  db.ref('customers').once('value').then(function(snap){
+    var data = snap.val();
+    if(data){
+      Object.values(data).forEach(function(customer){
+        addCustomerCard(customer);
+      });
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  loadFirebaseData();
+});
+
 function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';}
 function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
 function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
