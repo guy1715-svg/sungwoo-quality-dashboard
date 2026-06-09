@@ -1045,15 +1045,17 @@ function renderData(){
 }
 
 function detectFileType(arr){
-  // 파일 형식 자동 감지
   for(var i=0;i<Math.min(20,arr.length);i++){
     var row = arr[i];
     if(!row) continue;
-    // 하부스캔: 규격 허용 편차 키워드
+    // 하부스캔: 규격 허용 편차
     if(row[0] && String(row[0]).indexOf('규격 허용 편차') >= 0) return 'scan';
-    // 치수측정: No/항목/기준치수 헤더
-    if(row[4] && String(row[4]).indexOf('No') >= 0 &&
-       row[6] && String(row[6]).indexOf('기준치수') >= 0) return 'dimension';
+    // VINA 치수측정 형식1: No=열2, Spec=열5 (Measurement Data 파일)
+    if(row[2] && String(row[2]).trim()==='No' && row[5] && String(row[5]).indexOf('Spec') >= 0) return 'dimension';
+    // VINA 치수측정 형식2: No=열4, 기준치수=열6 (HQ 파일)
+    if(row[4] && String(row[4]).trim()==='No' && row[6] && String(row[6]).indexOf('기준치수') >= 0) return 'dimension_hq';
+    // VINA 치수측정 형식3: Cavity/No 헤더
+    if(row[1] && String(row[1]).indexOf('Cavity') >= 0 && row[2] && String(row[2]).indexOf('No') >= 0) return 'dimension';
   }
   return 'unknown';
 }
@@ -1066,41 +1068,50 @@ function parseDimensionFile(wb){
     var ws = wb.Sheets[sname];
     var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
 
-    // 날짜 추출 (행5~7 사이)
-    for(var i=3;i<8;i++){
+    // 날짜 추출 - 여러 형식 지원
+    for(var i=0;i<Math.min(10,arr.length);i++){
       if(!arr[i]) continue;
       for(var j=0;j<arr[i].length;j++){
         var v = arr[i][j];
-        if(v && String(v).indexOf('측정일자') >= 0){
-          var dateVal = arr[i][j+1] || arr[i+1] && arr[i+1][j+1];
-          if(dateVal){
-            // 엑셀 날짜 숫자 변환
-            if(typeof dateVal === 'number'){
-              var d = new Date((dateVal - 25569) * 86400 * 1000);
-              var mm = String(d.getMonth()+1).padStart(2,'0');
-              var dd = String(d.getDate()).padStart(2,'0');
-              dateLabel = mm+'/'+dd;
-            } else if(String(dateVal).match(/\d{2}\/\d{2}/)){
-              dateLabel = String(dateVal).match(/\d{2}\/\d{2}/)[0];
-            }
+        if(!v) continue;
+        var vs = String(v);
+        // 'Date : 25/04/2026' 형식
+        var m1 = vs.match(/Date\s*:\s*(\d{2})\/(\d{2})\/(\d{4})/);
+        if(m1){ dateLabel = m1[1]+'/'+m1[2]; break; }
+        // '측정일자' 다음 셀
+        if(vs.indexOf('측정일자') >= 0){
+          var dv = arr[i][j+2] || arr[i][j+1];
+          if(dv && typeof dv === 'number'){
+            var d = new Date((dv-25569)*86400*1000);
+            dateLabel = String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
           }
         }
       }
+      if(dateLabel) break;
     }
 
     arr.forEach(function(row){
       if(!row||!row.length) return;
-      var noRaw = row[4];
+
+      // VINA 형식: No=열2
       var no = null;
+      var noRaw = row[2];
       if(noRaw !== null && noRaw !== undefined){
         var n = parseFloat(String(noRaw).trim());
         if(!isNaN(n) && n>=1 && n<=50 && Math.abs(n-Math.round(n))<0.01)
           no = Math.round(n);
       }
+
       if(no){
-        var spec = pNum(row[6]);
-        var avg = pNum(row[16]);
-        if(avg===null||avg===0) avg = pNum(row[15]);
+        var spec = pNum(row[5]);
+        // 평균값: 열9 (Average)
+        var avg = pNum(row[9]);
+        if(avg===null||avg===0){
+          // 측정값 열7,8 평균
+          var v1=pNum(row[7]), v2=pNum(row[8]);
+          if(v1!==null && v2!==null) avg=(v1+v2)/2;
+          else if(v1!==null) avg=v1;
+        }
         if(spec!==null && avg!==null && avg!==0){
           if(!result[no]) result[no]={spec:spec,vals:[]};
           result[no].vals.push(avg);
