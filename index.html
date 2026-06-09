@@ -1215,9 +1215,18 @@ document.addEventListener('DOMContentLoaded', function(){
             // 날짜 버튼 재생성
             var dates = Object.keys(curProduct.vinaAll);
             var dateBtns = document.getElementById('dateBtns');
-            dateBtns.innerHTML = '<button class="filter-btn active" onclick="setDate(\"all\",this)">전체</button>';
+            dateBtns.innerHTML = '';
+            var allBtn = document.createElement('button');
+            allBtn.className = 'filter-btn active';
+            allBtn.textContent = '전체';
+            allBtn.onclick = function(){ setDate('all', this); };
+            dateBtns.appendChild(allBtn);
             dates.forEach(function(d){
-              dateBtns.innerHTML += '<button class="filter-btn" onclick="setDate(\"'+d+'\",this)">'+d+'</button>';
+              var btn = document.createElement('button');
+              btn.className = 'filter-btn';
+              btn.textContent = d;
+              btn.onclick = (function(date){ return function(){ setDate(date, this); }; })(d);
+              dateBtns.appendChild(btn);
             });
 
             // 차트/테이블 업데이트
