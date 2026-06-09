@@ -614,6 +614,41 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
+// 측정 데이터 삭제
+function deleteMeasData(productId, dateLabel){
+  if(!confirm(dateLabel + ' 데이터를 삭제할까요?')) return;
+  var key = dateLabel.replace('/','_');
+  var ref = db.ref('measData/' + productId + '/' + key);
+  ref.remove().then(function(){
+    // 로컬 데이터에서도 제거
+    delete PRODUCTS[productId].vinaAll[dateLabel];
+    delete PRODUCTS[productId].vinaLH[dateLabel];
+    delete PRODUCTS[productId].vinaRH[dateLabel];
+    // 날짜 버튼 재생성
+    var dates = Object.keys(PRODUCTS[productId].vinaAll);
+    var dateBtns = document.getElementById('dateBtns');
+    dateBtns.innerHTML = '';
+    var allBtn = document.createElement('button');
+    allBtn.className = 'filter-btn active';
+    allBtn.textContent = '전체';
+    allBtn.onclick = function(){ setDate('all', this); };
+    dateBtns.appendChild(allBtn);
+    dates.forEach(function(d){
+      var btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.textContent = d;
+      btn.onclick = (function(date){ return function(){ setDate(date, this); }; })(d);
+      dateBtns.appendChild(btn);
+    });
+    curDate = 'all';
+    buildTrendChart();
+    renderData();
+    alert('✅ ' + dateLabel + ' 데이터가 삭제되었습니다.');
+  }).catch(function(err){
+    alert('❌ 삭제 실패: ' + err.message);
+  });
+}
+
 // 측정 데이터 저장
 function saveMeasData(productId, dateLabel, data){
   var ref = db.ref('measData/' + productId + '/' + dateLabel.replace('/','_'));
@@ -631,7 +666,11 @@ function loadMeasData(productId, callback){
   var ref = db.ref('measData/' + productId);
   ref.once('value').then(function(snapshot){
     var data = snapshot.val();
-    if(data) callback(data);
+    if(data){
+      // Firebase에 저장된 날짜 목록 저장
+      window._fbDates = Object.keys(data).map(function(k){ return k.replace('_','/'); });
+      callback(data);
+    }
   });
 }
 
@@ -660,11 +699,26 @@ function loadProductDataFromFirebase(productId){
         allBtn.onclick = function(){ setDate('all', this); };
         dateBtns.appendChild(allBtn);
         dates.forEach(function(d){
+          var wrap = document.createElement('span');
+          wrap.style.display = 'inline-flex';
+          wrap.style.alignItems = 'center';
+          wrap.style.gap = '2px';
           var btn = document.createElement('button');
           btn.className = 'filter-btn';
           btn.textContent = d;
           btn.onclick = (function(date){ return function(){ setDate(date, this); }; })(d);
-          dateBtns.appendChild(btn);
+          wrap.appendChild(btn);
+          // Firebase 저장 데이터만 삭제 버튼 표시
+          var fbDates = window._fbDates || [];
+          if(fbDates.indexOf(d) >= 0){
+            var delBtn = document.createElement('button');
+            delBtn.textContent = '✕';
+            delBtn.title = d + ' 삭제';
+            delBtn.style.cssText = 'padding:2px 5px;background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:4px;font-size:10px;cursor:pointer;';
+            delBtn.onclick = (function(date){ return function(e){ e.stopPropagation(); deleteMeasData(curProduct.code.split(" ")[0].toLowerCase(), date); }; })(d);
+            wrap.appendChild(delBtn);
+          }
+          dateBtns.appendChild(wrap);
         });
         curDate = 'all';
         buildTrendChart();
