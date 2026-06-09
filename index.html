@@ -541,6 +541,46 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       </div>
     </div>
 
+    <!-- 하부스캔 섹션 -->
+    <div id="scanSection" style="display:none;margin-bottom:12px">
+      <div class="card">
+        <div class="card-title">📐 하부스캔 휨 분석 (SMT 평탄도) &nbsp;<span style="font-size:10px;color:#27ae60;font-weight:600">✅ 전수 검사 합격</span></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+          <div style="background:#f8f8f8;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#888;margin-bottom:4px">규격 허용 편차</div>
+            <div style="font-size:20px;font-weight:700;color:#1a1a2e">±0.08<span style="font-size:12px">mm</span></div>
+          </div>
+          <div style="background:#f8f8f8;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#888;margin-bottom:4px">측정 제품수</div>
+            <div style="font-size:20px;font-weight:700;color:#1a1a2e">710<span style="font-size:12px">개</span></div>
+          </div>
+          <div style="background:#eafaf1;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#888;margin-bottom:4px">최대 휨</div>
+            <div style="font-size:20px;font-weight:700;color:#1e8449">0.035<span style="font-size:12px">mm</span></div>
+            <div style="font-size:10px;color:#27ae60">규격 내</div>
+          </div>
+          <div style="background:#eafaf1;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#888;margin-bottom:4px">평균 휨</div>
+            <div style="font-size:20px;font-weight:700;color:#1e8449">0.021<span style="font-size:12px">mm</span></div>
+            <div style="font-size:10px;color:#27ae60">양호</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div>
+            <div style="font-size:11px;color:#888;font-weight:700;margin-bottom:8px">휨 분포 (최대값 기준)</div>
+            <div style="position:relative;height:160px"><canvas id="scanChart"></canvas></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#888;font-weight:700;margin-bottom:8px">합격/불합격 현황</div>
+            <div style="position:relative;height:160px"><canvas id="scanDonut"></canvas></div>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#f0f7ff;border-radius:8px;padding:10px 14px;font-size:11px;color:#1e40af">
+          💡 <strong>SMT 평탄도 기준:</strong> 하부스캔 최대 휨 0.08mm 이하 → 710개 전수 합격 (불량률 0%)
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div class="footer">성우전자 글로벌 품질관리 시스템 &nbsp;·&nbsp; SUNGWOO ELECTRONICS &nbsp;·&nbsp; 2026</div>
@@ -683,7 +723,17 @@ PRODUCTS['ap5010'] = {
   partNames: {1:'X축 거리', 2:'Y축 거리', 3:'X축 거리 #2'},
   vinaAll: {'06/26': {1:14.21, 2:23.22, 3:2.785}},
   vinaLH:  {'06/26': {1:14.21, 2:23.22, 3:2.785}},
-  vinaRH:  {'06/26': {1:14.21, 2:23.22, 3:2.785}}
+  vinaRH:  {'06/26': {1:14.21, 2:23.22, 3:2.785}},
+  scanData: {
+    spec: 0.08,
+    total: 710,
+    avg: 0.0206,
+    max: 0.035,
+    min: 0.007,
+    pass: 710,
+    fail: 0,
+    dist: [319, 391, 0, 0, 0]
+  }
 };
 
 PRODUCTS['ap5030'] = {
@@ -801,6 +851,15 @@ function goDashboard(productId){
 
   buildTrendChart();
   renderData();
+
+  // AP5010 하부스캔 섹션
+  var scanSection = document.getElementById('scanSection');
+  if(curProduct.scanData){
+    scanSection.style.display = 'block';
+    renderScanChart(curProduct.scanData);
+  } else {
+    scanSection.style.display = 'none';
+  }
 }
 
 function switchTab(id,el){
@@ -971,6 +1030,55 @@ function renderData(){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{font:{size:9},autoSkip:false,maxRotation:0},grid:{display:false}},
         y:{ticks:{font:{size:10},callback:function(v){return v+'%';}},grid:{color:'rgba(0,0,0,0.05)'},max:100}}}
+  });
+}
+
+function renderScanChart(scanData){
+  // 분포 바차트
+  var sc = document.getElementById('scanChart');
+  if(sc._chart) sc._chart.destroy();
+  sc._chart = new Chart(sc, {
+    type:'bar',
+    data:{
+      labels:['0~0.02','0.02~0.04','0.04~0.06','0.06~0.08','0.08↑'],
+      datasets:[{
+        data: scanData.dist,
+        backgroundColor:['#27ae60','#2ecc71','#f39c12','#e67e22','#e74c3c'],
+        borderWidth:0, borderRadius:4
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:10}}, grid:{display:false}},
+        y:{ticks:{font:{size:10}}, grid:{color:'rgba(0,0,0,0.05)'},
+           title:{display:true, text:'제품수(개)', font:{size:10}, color:'#888'}}
+      }
+    }
+  });
+
+  // 합격/불합격 도넛
+  var sd = document.getElementById('scanDonut');
+  if(sd._chart) sd._chart.destroy();
+  sd._chart = new Chart(sd, {
+    type:'doughnut',
+    data:{
+      labels:['합격','불합격'],
+      datasets:[{
+        data:[scanData.pass, scanData.fail],
+        backgroundColor:['#27ae60','#e74c3c'],
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      cutout:'65%',
+      plugins:{
+        legend:{display:true, position:'bottom', labels:{font:{size:10}}},
+        tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+'개 ('+Math.round(c.parsed/scanData.total*100)+'%)'}}}
+      }
+    }
   });
 }
 
