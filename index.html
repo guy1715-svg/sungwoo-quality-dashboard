@@ -615,9 +615,9 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
 // 측정 데이터 삭제
-function deleteMeasData(productId, dateLabel, fbDates){
+function deleteMeasData(productId, dateLabel){
   if(!confirm(dateLabel + ' 데이터를 삭제할까요?')) return;
-  fbDates = fbDates || [];
+  var fbDates = curFbDates;
   var key = dateLabel.replace('/','_');
   var ref = db.ref('measData/' + productId + '/' + key);
   ref.remove().then(function(){
@@ -657,8 +657,7 @@ function loadMeasData(productId, callback){
   ref.once('value').then(function(snapshot){
     var data = snapshot.val();
     if(data){
-      // Firebase에 저장된 날짜 목록 저장
-      window._fbDates = Object.keys(data).map(function(k){ return k.replace('_','/'); });
+      curFbDates = Object.keys(data).map(function(k){ return k.replace('_','/'); });
       callback(data);
     }
   });
@@ -884,6 +883,7 @@ PRODUCTS['ap5030'] = {
 var curProduct = null;
 var curDate = 'all';
 var curSide = 'all';
+var curFbDates = [];  // Firebase 저장 날짜 목록
 var donutChart=null,deviationChart=null,trendChart=null;
 
 // ===== 화면 전환 =====
