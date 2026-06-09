@@ -615,7 +615,7 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
 // 측정 데이터 삭제
-function deleteMeasData(productId, dateLabel){
+function deleteMeasData(productId, dateLabel, fbDates){
   if(!confirm(dateLabel + ' 데이터를 삭제할까요?')) return;
   var key = dateLabel.replace('/','_');
   var ref = db.ref('measData/' + productId + '/' + key);
@@ -624,22 +624,11 @@ function deleteMeasData(productId, dateLabel){
     delete PRODUCTS[productId].vinaAll[dateLabel];
     delete PRODUCTS[productId].vinaLH[dateLabel];
     delete PRODUCTS[productId].vinaRH[dateLabel];
+    // fbDates에서도 제거
+    var idx = fbDates.indexOf(dateLabel);
+    if(idx >= 0) fbDates.splice(idx, 1);
     // 날짜 버튼 재생성
-    var dates = Object.keys(PRODUCTS[productId].vinaAll);
-    var dateBtns = document.getElementById('dateBtns');
-    dateBtns.innerHTML = '';
-    var allBtn = document.createElement('button');
-    allBtn.className = 'filter-btn active';
-    allBtn.textContent = '전체';
-    allBtn.onclick = function(){ setDate('all', this); };
-    dateBtns.appendChild(allBtn);
-    dates.forEach(function(d){
-      var btn = document.createElement('button');
-      btn.className = 'filter-btn';
-      btn.textContent = d;
-      btn.onclick = (function(date){ return function(){ setDate(date, this); }; })(d);
-      dateBtns.appendChild(btn);
-    });
+    rebuildDateBtns(productId, fbDates);
     curDate = 'all';
     buildTrendChart();
     renderData();
