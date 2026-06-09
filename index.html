@@ -615,6 +615,38 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
 // 측정 데이터 삭제
+function rebuildDateBtns(productId, fbDates){
+  var dates = Object.keys(PRODUCTS[productId].vinaAll).sort();
+  var dateBtns = document.getElementById('dateBtns');
+  if(!dateBtns) return;
+  dateBtns.innerHTML = '';
+  var allBtn = document.createElement('button');
+  allBtn.className = 'filter-btn active';
+  allBtn.textContent = '전체';
+  allBtn.onclick = function(){ setDate('all', this); };
+  dateBtns.appendChild(allBtn);
+  dates.forEach(function(d){
+    var wrap = document.createElement('span');
+    wrap.style.cssText = 'display:inline-flex;align-items:center;gap:2px;';
+    var btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = d;
+    btn.onclick = (function(date){ return function(){ setDate(date, this); }; })(d);
+    wrap.appendChild(btn);
+    if(fbDates && fbDates.indexOf(d) >= 0){
+      var delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.title = d + ' 삭제';
+      delBtn.style.cssText = 'padding:3px 6px;background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:4px;font-size:10px;cursor:pointer;font-weight:700;';
+      delBtn.onclick = (function(date, pid){
+        return function(e){ e.stopPropagation(); deleteMeasData(pid, date); };
+      })(d, productId);
+      wrap.appendChild(delBtn);
+    }
+    dateBtns.appendChild(wrap);
+  });
+}
+
 function deleteMeasData(productId, dateLabel){
   if(!confirm(dateLabel + ' 데이터를 삭제할까요?')) return;
   var fbDates = curFbDates;
