@@ -617,6 +617,7 @@ var db = firebase.database();
 // 측정 데이터 삭제
 function deleteMeasData(productId, dateLabel, fbDates){
   if(!confirm(dateLabel + ' 데이터를 삭제할까요?')) return;
+  fbDates = fbDates || [];
   var key = dateLabel.replace('/','_');
   var ref = db.ref('measData/' + productId + '/' + key);
   ref.remove().then(function(){
