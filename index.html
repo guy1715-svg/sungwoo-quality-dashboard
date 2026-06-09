@@ -1196,7 +1196,9 @@ document.addEventListener('DOMContentLoaded', function(){
               document.getElementById('measFileName').textContent = '⚠️ 데이터를 읽지 못했습니다';
               return;
             }
-            var label = result.date || '신규';
+            // 파일명에서 날짜 추출 우선 (26MMDD 형식)
+            var fnMatch = file.name.match(/26(\d{2})(\d{2})/);
+            var label = fnMatch ? fnMatch[1]+'/'+fnMatch[2] : (result.date || '신규');
 
             // 기존 날짜와 중복 체크
             var existingDates = Object.keys(curProduct.vinaAll);
