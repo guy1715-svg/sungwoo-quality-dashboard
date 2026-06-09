@@ -489,6 +489,17 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 
     <!-- 탭1 -->
     <div id="dash1" class="tab-content active">
+      <!-- 측정 파일 업로드 -->
+      <div style="background:#fff;border-radius:10px;padding:14px 20px;border:1px solid #e4e4e4;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="font-size:13px;font-weight:700;color:#1a1a2e">📤 측정 파일 업로드</span>
+        <div style="position:relative;display:inline-block">
+          <input type="file" id="measFile" accept=".xlsx,.xls" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer">
+          <button style="padding:7px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">파일 선택</button>
+        </div>
+        <span id="measFileName" style="font-size:12px;color:#888">파일을 선택하면 자동으로 대시보드에 반영됩니다</span>
+        <div id="measStatus" style="font-size:11px;color:#27ae60;font-weight:600;display:none"></div>
+      </div>
+
       <div class="notice">📐 <strong>각도 항목</strong>은 측정 오차 특성상 참고치수로만 표시됩니다.</div>
       <div class="gap-info">📊 <strong>판정 기준:</strong> VINA 측정값이 Spec 허용범위 대비 위치로 판정 · 정상: 범위 내 중앙 70% · 주의: 경계 30% · 즉시수리: 범위 초과</div>
 
@@ -1032,6 +1043,203 @@ function renderData(){
         y:{ticks:{font:{size:10},callback:function(v){return v+'%';}},grid:{color:'rgba(0,0,0,0.05)'},max:100}}}
   });
 }
+
+function detectFileType(arr){
+  // 파일 형식 자동 감지
+  for(var i=0;i<Math.min(20,arr.length);i++){
+    var row = arr[i];
+    if(!row) continue;
+    // 하부스캔: 규격 허용 편차 키워드
+    if(row[0] && String(row[0]).indexOf('규격 허용 편차') >= 0) return 'scan';
+    // 치수측정: No/항목/기준치수 헤더
+    if(row[4] && String(row[4]).indexOf('No') >= 0 &&
+       row[6] && String(row[6]).indexOf('기준치수') >= 0) return 'dimension';
+  }
+  return 'unknown';
+}
+
+function parseDimensionFile(wb){
+  var result = {};
+  var dateLabel = null;
+
+  wb.SheetNames.forEach(function(sname){
+    var ws = wb.Sheets[sname];
+    var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+
+    // 날짜 추출 (행5~7 사이)
+    for(var i=3;i<8;i++){
+      if(!arr[i]) continue;
+      for(var j=0;j<arr[i].length;j++){
+        var v = arr[i][j];
+        if(v && String(v).indexOf('측정일자') >= 0){
+          var dateVal = arr[i][j+1] || arr[i+1] && arr[i+1][j+1];
+          if(dateVal){
+            // 엑셀 날짜 숫자 변환
+            if(typeof dateVal === 'number'){
+              var d = new Date((dateVal - 25569) * 86400 * 1000);
+              var mm = String(d.getMonth()+1).padStart(2,'0');
+              var dd = String(d.getDate()).padStart(2,'0');
+              dateLabel = mm+'/'+dd;
+            } else if(String(dateVal).match(/\d{2}\/\d{2}/)){
+              dateLabel = String(dateVal).match(/\d{2}\/\d{2}/)[0];
+            }
+          }
+        }
+      }
+    }
+
+    arr.forEach(function(row){
+      if(!row||!row.length) return;
+      var noRaw = row[4];
+      var no = null;
+      if(noRaw !== null && noRaw !== undefined){
+        var n = parseFloat(String(noRaw).trim());
+        if(!isNaN(n) && n>=1 && n<=50 && Math.abs(n-Math.round(n))<0.01)
+          no = Math.round(n);
+      }
+      if(no){
+        var spec = pNum(row[6]);
+        var avg = pNum(row[16]);
+        if(avg===null||avg===0) avg = pNum(row[15]);
+        if(spec!==null && avg!==null && avg!==0){
+          if(!result[no]) result[no]={spec:spec,vals:[]};
+          result[no].vals.push(avg);
+        }
+      }
+    });
+  });
+
+  var parsed = {};
+  Object.keys(result).forEach(function(no){
+    var d = result[no];
+    var sum=0;
+    for(var i=0;i<d.vals.length;i++) sum+=d.vals[i];
+    parsed[parseInt(no)] = sum/d.vals.length;
+  });
+
+  return {date: dateLabel, data: parsed};
+}
+
+function parseScanFile(wb){
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+  var spec = pNum(arr[0][1]) || 0.08;
+  var maxVals = [];
+
+  for(var i=3;i<arr.length;i++){
+    var row = arr[i];
+    if(!row || !row[0] || String(row[0]).indexOf('제품') < 0) continue;
+    var maxVal = pNum(row[11]);
+    if(maxVal !== null) maxVals.push(maxVal);
+  }
+
+  if(maxVals.length === 0) return null;
+
+  var sum=0, maxV=0, minV=999;
+  var dist=[0,0,0,0,0];
+  maxVals.forEach(function(v){
+    sum+=v;
+    if(v>maxV) maxV=v;
+    if(v<minV) minV=v;
+    if(v<0.02) dist[0]++;
+    else if(v<0.04) dist[1]++;
+    else if(v<0.06) dist[2]++;
+    else if(v<0.08) dist[3]++;
+    else dist[4]++;
+  });
+
+  return {
+    spec: spec,
+    total: maxVals.length,
+    avg: Math.round(sum/maxVals.length*10000)/10000,
+    max: maxV,
+    min: minV,
+    pass: maxVals.filter(function(v){return v<=spec;}).length,
+    fail: maxVals.filter(function(v){return v>spec;}).length,
+    dist: dist
+  };
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  var measFile = document.getElementById('measFile');
+  if(measFile){
+    measFile.addEventListener('change', function(){
+      if(!this.files[0]) return;
+      var file = this.files[0];
+      document.getElementById('measFileName').textContent = file.name + ' 읽는 중...';
+      document.getElementById('measStatus').style.display='none';
+
+      var reader = new FileReader();
+      reader.onload = function(e){
+        try{
+          var wb = XLSX.read(e.target.result, {type:'array'});
+          var ws = wb.Sheets[wb.SheetNames[0]];
+          var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+          var fileType = detectFileType(arr);
+
+          if(fileType === 'dimension'){
+            var result = parseDimensionFile(wb);
+            if(Object.keys(result.data).length === 0){
+              document.getElementById('measFileName').textContent = '⚠️ 데이터를 읽지 못했습니다';
+              return;
+            }
+            var label = result.date || '신규';
+
+            // 기존 날짜와 중복 체크
+            var existingDates = Object.keys(curProduct.vinaAll);
+            if(existingDates.indexOf(label) < 0){
+              // 새 날짜 추가
+              curProduct.vinaAll[label] = result.data;
+              curProduct.vinaLH[label] = result.data;
+              curProduct.vinaRH[label] = result.data;
+            } else {
+              // 기존 날짜 업데이트
+              curProduct.vinaAll[label] = result.data;
+            }
+
+            // 날짜 버튼 재생성
+            var dates = Object.keys(curProduct.vinaAll);
+            var dateBtns = document.getElementById('dateBtns');
+            dateBtns.innerHTML = '<button class="filter-btn active" onclick="setDate(\"all\",this)">전체</button>';
+            dates.forEach(function(d){
+              dateBtns.innerHTML += '<button class="filter-btn" onclick="setDate(\"'+d+'\",this)">'+d+'</button>';
+            });
+
+            // 차트/테이블 업데이트
+            curDate = 'all';
+            buildTrendChart();
+            renderData();
+
+            document.getElementById('measFileName').textContent = '✅ '+file.name;
+            document.getElementById('measStatus').textContent = '📊 치수측정 데이터 반영완료! 날짜: '+label+' ('+Object.keys(result.data).length+'개 항목)';
+            document.getElementById('measStatus').style.display='block';
+
+          } else if(fileType === 'scan'){
+            var scanResult = parseScanFile(wb);
+            if(!scanResult){
+              document.getElementById('measFileName').textContent = '⚠️ 스캔 데이터를 읽지 못했습니다';
+              return;
+            }
+            curProduct.scanData = scanResult;
+            var scanSection = document.getElementById('scanSection');
+            scanSection.style.display = 'block';
+            renderScanChart(scanResult);
+
+            document.getElementById('measFileName').textContent = '✅ '+file.name;
+            document.getElementById('measStatus').textContent = '📐 하부스캔 데이터 반영완료! 측정수: '+scanResult.total+'개 (합격률: '+Math.round(scanResult.pass/scanResult.total*100)+'%)';
+            document.getElementById('measStatus').style.display='block';
+
+          } else {
+            document.getElementById('measFileName').textContent = '⚠️ 지원하지 않는 파일 형식입니다';
+          }
+        }catch(err){
+          document.getElementById('measFileName').textContent = '❌ 오류: '+err.message;
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }
+});
 
 function renderScanChart(scanData){
   // 분포 바차트
