@@ -1814,7 +1814,7 @@ function renderData(){
 }
 
 function detectFileType(arr){
-  for(var i=0;i<Math.min(20,arr.length);i++){
+  for(var i=0;i<Math.min(25,arr.length);i++){
     var row = arr[i];
     if(!row) continue;
     // 하부스캔: 규격 허용 편차
@@ -1822,9 +1822,14 @@ function detectFileType(arr){
     // VINA Measurement Data: Cavity=열0, No=열1
     if(row[0] && String(row[0]).indexOf('Cavity') >= 0 &&
        row[1] && String(row[1]).indexOf('No') >= 0) return 'dimension';
-    // HQ 형식: No=열4, 기준치수=열6
-    if(row[4] && String(row[4]).trim()==='No' &&
-       row[6] && String(row[6]).indexOf('기준치수') >= 0) return 'dimension_hq';
+    // HQ 본사 형식: 어느 열이든 'No'+'기준치수' 조합
+    for(var j=0;j<row.length-2;j++){
+      if(row[j] && String(row[j]).trim()==='No' &&
+         row[j+2] && String(row[j+2]).indexOf('기준치수') >= 0) return 'dimension_hq';
+    }
+    // HQ 추가 감지: '측정일자' + '부 품 명' 키워드
+    if(row[2] && String(row[2]).indexOf('측정일자') >= 0) return 'dimension_hq';
+    if(row[2] && String(row[2]).indexOf('부 품 명') >= 0) return 'dimension_hq';
   }
   return 'unknown';
 }
