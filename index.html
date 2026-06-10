@@ -1047,8 +1047,11 @@ function addCustomerCard(customer, products){
     products.slice(0,4).forEach(function(p){
       var isApproved = p.approvalStatus === 'approved';
       previewHtml +=
-        '<div style="background:'+(isApproved?'#eafaf1':'#f8f8f8')+';border-radius:8px;padding:10px 12px;border-left:3px solid '+(isApproved?'#27ae60':'#3b82f6')+'">'+
-          '<div style="font-size:10px;color:#888;margin-bottom:2px">'+p.productCode+'</div>'+
+        '<div style="background:'+(isApproved?'#eafaf1':'#f8f8f8')+';border-radius:8px;padding:10px 12px;border-left:3px solid '+(isApproved?'#27ae60':'#3b82f6')+';position:relative">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+            '<div style="font-size:10px;color:#888;margin-bottom:2px">'+p.productCode+'</div>'+
+            '<button onclick="event.stopPropagation();confirmDeleteProduct(\''+p.productId+'\')" style="background:#fee2e2;border:none;border-radius:4px;color:#c0392b;font-size:9px;padding:1px 5px;cursor:pointer;font-weight:700;line-height:1.6">🗑️</button>'+
+          '</div>'+
           '<div style="font-size:12px;font-weight:700;color:#1a1a2e">'+p.productName+'</div>'+
           '<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">'+
             '<span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-weight:600">VINA ✓</span>'+
@@ -1155,19 +1158,35 @@ function confirmDeleteProduct(productId){
 }
 
 function deleteProduct(productId, productName){
+  // 삭제 전 customerId 저장 (홈카드 재생성용)
+  var customerId = PRODUCTS[productId] ? PRODUCTS[productId].customerId : null;
+
   var tasks = [
     db.ref('products/' + productId).remove(),
     db.ref('measData/' + productId).remove()
   ];
-  // specMap도 products/{id}에 저장된 경우 함께 삭제됨 (동일 경로)
   delete PRODUCTS[productId];
 
   Promise.all(tasks).then(function(){
-    // 현재 화면 제품 카드 제거
-    var cards = document.querySelectorAll('.product-card');
-    cards.forEach(function(card){
+    // 1. 현재 화면 제품 카드 제거
+    document.querySelectorAll('.product-card').forEach(function(card){
       if(card.innerHTML.indexOf(productId) >= 0) card.remove();
     });
+
+    // 2. 홈화면 고객사 카드 재생성 (미리보기 최신화)
+    if(customerId){
+      var oldCard = document.getElementById('customer_' + customerId);
+      if(oldCard) oldCard.remove();
+      db.ref('customers/' + customerId).once('value').then(function(snapC){
+        var cust = snapC.val();
+        if(!cust) return;
+        db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snapP){
+          var prods = snapP.val() ? Object.values(snapP.val()) : [];
+          addCustomerCard(cust, prods);
+        });
+      });
+    }
+
     refreshHomeKPI();
     alert('✅ ' + (productName||'제품') + ' 삭제 완료');
   }).catch(function(err){
@@ -1283,7 +1302,7 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
       return '<div class="product-card" onclick="goDashboard(\''+pid+'\')" style="border-color:'+(isApproved?'#27ae60':'#e4e4e4')+'">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
           '<div style="font-size:11px;color:#888;font-weight:600">'+p.productCode+'</div>'+
-          '<button onclick="event.stopPropagation();confirmDeleteProduct(\''+pid+'\')\'" style="background:#fee2e2;border:none;border-radius:5px;color:#c0392b;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">🗑️</button>'+
+          '<button onclick="event.stopPropagation();confirmDeleteProduct(\''+pid+'\')" style="background:#fee2e2;border:none;border-radius:5px;color:#c0392b;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">🗑️</button>'+
         '</div>'+
         '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">'+p.productName+'</div>'+
         '<div style="display:flex;gap:8px;margin-bottom:10px">'+
