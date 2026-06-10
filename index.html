@@ -1784,7 +1784,8 @@ function renderData(){
     rows.push({no:no,spec:spec,tol:tol,val:val,min:min,max:max,isAngle:isAngle,st:st,trendTxt:trendTxt,devPct:devPct,posLabel:posLabel,posColor:posColor});
   });
 
-  rows.sort(function(a,b){return a.st.sortKey-b.st.sortKey;});
+  // No 순서대로 정렬 (판정별 정렬 제거)
+  rows.sort(function(a,b){return a.no-b.no;});
   rows.forEach(function(r){
     var tr=document.createElement('tr');
     if(r.isAngle)tr.classList.add('angle-row');
@@ -1905,16 +1906,17 @@ function parseDimensionFile(wb){
       }
 
       if(no){
-        var spec = pNum(row[4]);  // Spec 열
-        var avg  = pNum(row[10]); // Average 열
+        var spec  = pNum(row[4]);  // Spec 열
+        var upper = pNum(row[5]);  // Upper 공차
+        var lower = pNum(row[6]);  // Lower 공차
+        var avg   = pNum(row[10]); // Average 열
         if(avg===null||avg===0){
-          // 측정값 열7~9 평균
           var vals=[], v;
           for(var c=7;c<=9;c++){v=pNum(row[c]);if(v!==null&&v!==0)vals.push(v);}
           if(vals.length>0){avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;}
         }
         if(spec!==null && avg!==null && avg!==0){
-          if(!result[no]) result[no]={spec:spec,vals:[]};
+          if(!result[no]) result[no]={spec:spec, upper:upper, lower:lower, vals:[]};
           result[no].vals.push(avg);
         }
       }
@@ -1932,8 +1934,14 @@ function parseDimensionFile(wb){
     parsed[ni] = sum/d.vals.length;
     if(d.spec !== null && d.spec !== undefined){
       specMap[ni] = d.spec;
-      // spec 크기에 따라 기본 tol 자동 설정
-      tolMap[ni] = Math.abs(d.spec) <= 5 ? 0.05 : (Math.abs(d.spec) <= 15 ? 0.2 : 0.5);
+      // Upper/Lower 공차 직접 사용, 없으면 크기 기반 fallback
+      if(d.upper !== null && d.upper !== undefined && d.upper > 0){
+        tolMap[ni] = d.upper;
+      } else if(d.lower !== null && d.lower !== undefined && d.lower > 0){
+        tolMap[ni] = d.lower;
+      } else {
+        tolMap[ni] = Math.abs(d.spec) <= 5 ? 0.1 : (Math.abs(d.spec) <= 15 ? 0.2 : 0.5);
+      }
     }
   });
 
