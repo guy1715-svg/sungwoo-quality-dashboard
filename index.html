@@ -709,6 +709,10 @@ function loadMeasData(productId, callback){
 // 페이지 로드 시 Firebase에서 데이터 불러오기
 function loadProductDataFromFirebase(productId){
   // Firebase 제품: specMap/tolMap도 함께 불러오기
+  // _productId가 있으면 우선 사용 (productCode 파생 id와 다를 수 있음)
+  if(PRODUCTS[productId] && PRODUCTS[productId]._productId && PRODUCTS[productId]._productId !== productId){
+    productId = PRODUCTS[productId]._productId;
+  }
   if(PRODUCTS[productId] && PRODUCTS[productId]._fromFirebase){
     db.ref('products/' + productId).once('value').then(function(snap){
       var pd = snap.val();
@@ -1290,6 +1294,7 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
       if(!PRODUCTS[pid]){
         PRODUCTS[pid] = {
           name: p.productCode+' '+p.productName, code: p.productCode,
+          _productId: pid,
           lastDate: p.createdAt?p.createdAt.split('T')[0]:'-',
           hasHQ:false, angleNos:[], specMap:{}, tolMap:{}, partNames:{},
           vinaAll:{}, vinaLH:{}, vinaRH:{},
@@ -1492,6 +1497,7 @@ function loadFirebaseData(){
           PRODUCTS[pid] = {
             name: p.productCode + ' ' + p.productName,
             code: p.productCode,
+            _productId: pid,
             lastDate: p.createdAt ? p.createdAt.split('T')[0] : '-',
             hasHQ: false,
             angleNos: [],
@@ -2088,7 +2094,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     curProduct.partNames[parseInt(no)] = 'No.' + no;
                 });
                 // Firebase에 specMap 저장 (다음 로드 시 재사용)
-                var pid = curProduct.code.split(" ")[0].toLowerCase();
+                var pid = curProduct._productId || curProduct.code.split(" ")[0].toLowerCase().replace(/[^a-z0-9]/g,'');
                 db.ref('products/' + pid + '/specMap').set(result.specMap);
                 db.ref('products/' + pid + '/tolMap').set(result.tolMap || {});
               }
@@ -2133,7 +2139,7 @@ document.addEventListener('DOMContentLoaded', function(){
             document.getElementById('measStatus').style.display='block';
             document.getElementById('measStatus').style.color='#27ae60';
             // Firebase 자동 저장
-            saveMeasData(curProduct.code.split(' ')[0].toLowerCase(), label, result.data);
+            saveMeasData(curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,''), label, result.data);
 
           } else if(fileType === 'dimension_hq'){
             var result = parseHQFile(wb);
@@ -2192,7 +2198,7 @@ document.addEventListener('DOMContentLoaded', function(){
             document.getElementById('measStatus').textContent = '📊 본사 측정 데이터 반영완료! 날짜: '+label+' ('+Object.keys(result.data).length+'개 항목)';
             document.getElementById('measStatus').style.display='block';
             document.getElementById('measStatus').style.color='#27ae60';
-            saveMeasData(curProduct.code.split(' ')[0].toLowerCase(), label, result.data);
+            saveMeasData(curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,''), label, result.data);
 
           } else if(fileType === 'scan'){
             var scanResult = parseScanFile(wb);
