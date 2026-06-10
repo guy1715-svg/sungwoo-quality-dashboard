@@ -1814,23 +1814,26 @@ function renderData(){
 }
 
 function detectFileType(arr){
+  // 전체 텍스트를 합쳐서 키워드로 빠르게 감지
+  var fullText = '';
   for(var i=0;i<Math.min(25,arr.length);i++){
     var row = arr[i];
     if(!row) continue;
-    // 하부스캔: 규격 허용 편차
-    if(row[0] && String(row[0]).indexOf('규격 허용 편차') >= 0) return 'scan';
-    // VINA Measurement Data: Cavity=열0, No=열1
-    if(row[0] && String(row[0]).indexOf('Cavity') >= 0 &&
-       row[1] && String(row[1]).indexOf('No') >= 0) return 'dimension';
-    // HQ 본사 형식: 어느 열이든 'No'+'기준치수' 조합
-    for(var j=0;j<row.length-2;j++){
-      if(row[j] && String(row[j]).trim()==='No' &&
-         row[j+2] && String(row[j+2]).indexOf('기준치수') >= 0) return 'dimension_hq';
+    for(var j=0;j<row.length;j++){
+      if(row[j] !== null && row[j] !== undefined) fullText += String(row[j]) + '|';
     }
-    // HQ 추가 감지: '측정일자' + '부 품 명' 키워드
-    if(row[2] && String(row[2]).indexOf('측정일자') >= 0) return 'dimension_hq';
-    if(row[2] && String(row[2]).indexOf('부 품 명') >= 0) return 'dimension_hq';
   }
+
+  // 하부스캔
+  if(fullText.indexOf('규격 허용 편차') >= 0) return 'scan';
+  // VINA: Cavity + No 조합
+  if(fullText.indexOf('Cavity') >= 0 && fullText.indexOf('No') >= 0 &&
+     fullText.indexOf('기준치수') < 0) return 'dimension';
+  // HQ 본사: 기준치수 + (측정일자 or 부 품 명 or 공차)
+  if(fullText.indexOf('기준치수') >= 0 &&
+    (fullText.indexOf('측정일자') >= 0 || fullText.indexOf('부 품 명') >= 0 ||
+     fullText.indexOf('공차(+)') >= 0)) return 'dimension_hq';
+
   return 'unknown';
 }
 
