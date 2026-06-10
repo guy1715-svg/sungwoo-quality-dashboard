@@ -1814,7 +1814,7 @@ function renderData(){
 }
 
 function detectFileType(arr){
-  // 전체 텍스트를 합쳐서 키워드로 빠르게 감지
+  // 첫 25행 전체 텍스트 합치기
   var fullText = '';
   for(var i=0;i<Math.min(25,arr.length);i++){
     var row = arr[i];
@@ -1824,15 +1824,16 @@ function detectFileType(arr){
     }
   }
 
-  // 하부스캔
+  // 1. 하부스캔
   if(fullText.indexOf('규격 허용 편차') >= 0) return 'scan';
-  // VINA: Cavity + No 조합
-  if(fullText.indexOf('Cavity') >= 0 && fullText.indexOf('No') >= 0 &&
-     fullText.indexOf('기준치수') < 0) return 'dimension';
-  // HQ 본사: 기준치수 + (측정일자 or 부 품 명 or 공차)
-  if(fullText.indexOf('기준치수') >= 0 &&
-    (fullText.indexOf('측정일자') >= 0 || fullText.indexOf('부 품 명') >= 0 ||
-     fullText.indexOf('공차(+)') >= 0)) return 'dimension_hq';
+
+  // 2. 본사 HQ: 한글 키워드로 명확히 구분 (VINA 파일엔 없는 키워드)
+  if(fullText.indexOf('기준치수') >= 0 || fullText.indexOf('부 품 명') >= 0 ||
+     fullText.indexOf('측정일자') >= 0 || fullText.indexOf('공차(+)') >= 0) return 'dimension_hq';
+
+  // 3. VINA: Supplier 또는 Measurement Data 키워드
+  if(fullText.indexOf('Supplier') >= 0 || fullText.indexOf('Measurement Data') >= 0 ||
+     fullText.indexOf('Cavity') >= 0) return 'dimension';
 
   return 'unknown';
 }
@@ -1873,22 +1874,23 @@ function parseDimensionFile(wb){
     arr.forEach(function(row){
       if(!row||!row.length) return;
 
-      // VINA Measurement Data: No=열1, Spec=열4, Average=열12
+      // VINA 형식: Cavity=열1, No=열2, Spec=열5, Upper=열6, Lower=열7
+      // 측정값=열8~10, Average=열11
       var no = null;
-      var noRaw = row[1];
+      var noRaw = row[2]; // No 열
       if(noRaw !== null && noRaw !== undefined){
         var n = parseFloat(String(noRaw).trim());
-        if(!isNaN(n) && n>=1 && n<=50 && Math.abs(n-Math.round(n))<0.01)
+        if(!isNaN(n) && n>=1 && n<=300 && Math.abs(n-Math.round(n))<0.01)
           no = Math.round(n);
       }
 
       if(no){
-        var spec = pNum(row[4]);
-        var avg = pNum(row[12]); // Average 열
+        var spec = pNum(row[5]);  // Spec 열
+        var avg  = pNum(row[11]); // Average 열
         if(avg===null||avg===0){
-          // 측정값 열7~11 평균
+          // 측정값 열8~10 평균
           var vals=[], v;
-          for(var c=7;c<=11;c++){v=pNum(row[c]);if(v!==null&&v!==0)vals.push(v);}
+          for(var c=8;c<=10;c++){v=pNum(row[c]);if(v!==null&&v!==0)vals.push(v);}
           if(vals.length>0){avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;}
         }
         if(spec!==null && avg!==null && avg!==0){
