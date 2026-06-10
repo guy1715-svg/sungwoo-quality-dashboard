@@ -272,7 +272,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
         </div>
       </div>
 
-      <div style="background:#fff;border-radius:14px;border:2px dashed #3b82f6;padding:40px 20px;text-align:center;cursor:pointer;transition:all 0.2s" onclick="openAddCustomer()" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='#fff'">
+      <div id="addCustomerBtn" style="background:#fff;border-radius:14px;border:2px dashed #3b82f6;padding:40px 20px;text-align:center;cursor:pointer;transition:all 0.2s" onclick="openAddCustomer()" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='#fff'">
         <div style="font-size:32px;margin-bottom:10px">+</div>
         <div style="font-size:14px;font-weight:700;color:#3b82f6">고객사 추가</div>
         <div style="font-size:11px;color:#aaa;margin-top:4px">클릭하여 추가</div>
@@ -1017,7 +1017,9 @@ function addCustomerCard(customer, products){
   products = products || [];
   window._customerCache = window._customerCache || {};
   window._customerCache[customer.id] = customer;
-  var addCard = grid.lastElementChild;
+  // 항상 addCustomerBtn 기준으로 삽입 (버튼이 밀리지 않게)
+  var addCard = document.getElementById('addCustomerBtn');
+  if(!addCard) addCard = grid.lastElementChild;
   var card = document.createElement('div');
   card.id = 'customer_' + customer.id;
   card.style.cssText = 'background:#fff;border-radius:14px;border:1px solid #e4e4e4;overflow:hidden;cursor:pointer;transition:all 0.2s';
@@ -1119,9 +1121,14 @@ function openCustomerMenu(btn, customerId){
       '🗑️ 고객사 삭제'+
     '</div>';
   document.body.appendChild(menu);
-  // 외부 클릭 시 닫기
+  // 외부 클릭 시 닫기 (addCustomerBtn 클릭은 통과)
   setTimeout(function(){
-    document.addEventListener('click', closeCustomerMenu, {once:true});
+    document.addEventListener('click', function handler(e){
+      document.removeEventListener('click', handler);
+      var btn = document.getElementById('addCustomerBtn');
+      if(btn && btn.contains(e.target)) return; // 고객사 추가 버튼은 통과
+      closeCustomerMenu();
+    });
   }, 10);
 }
 
