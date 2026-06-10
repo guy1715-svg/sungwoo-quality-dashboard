@@ -1833,24 +1833,32 @@ function renderData(){
 }
 
 function detectFileType(arr){
-  // 첫 25행 전체 텍스트 합치기
+  // 첫 25행 전체 텍스트 합치기 + 셀 단위 배열도 저장
   var fullText = '';
+  var allCells = [];
   for(var i=0;i<Math.min(25,arr.length);i++){
     var row = arr[i];
     if(!row) continue;
     for(var j=0;j<row.length;j++){
-      if(row[j] !== null && row[j] !== undefined) fullText += String(row[j]) + '|';
+      if(row[j] !== null && row[j] !== undefined){
+        var s = String(row[j]).trim();
+        fullText += s + '|';
+        allCells.push(s);
+      }
     }
   }
 
   // 1. 하부스캔
   if(fullText.indexOf('규격 허용 편차') >= 0) return 'scan';
 
-  // 2. 본사 HQ: 한글 키워드로 명확히 구분 (VINA 파일엔 없는 키워드)
-  if(fullText.indexOf('기준치수') >= 0 || fullText.indexOf('부 품 명') >= 0 ||
-     fullText.indexOf('측정일자') >= 0 || fullText.indexOf('공차(+)') >= 0) return 'dimension_hq';
+  // 2. 본사 HQ: 'SPEC' 단독 셀 또는 한글 키워드
+  // VINA 파일에는 'SPEC' 단독 셀이 없음
+  var hasSpecCell = allCells.indexOf('SPEC') >= 0;
+  var hasKorean = fullText.indexOf('기준치수') >= 0 || fullText.indexOf('부 품 명') >= 0 ||
+                  fullText.indexOf('측정일자') >= 0 || fullText.indexOf('공차(+)') >= 0;
+  if(hasSpecCell || hasKorean) return 'dimension_hq';
 
-  // 3. VINA: Supplier 또는 Measurement Data 키워드
+  // 3. VINA: Supplier 또는 Cavity 키워드
   if(fullText.indexOf('Supplier') >= 0 || fullText.indexOf('Measurement Data') >= 0 ||
      fullText.indexOf('Cavity') >= 0) return 'dimension';
 
