@@ -1910,6 +1910,96 @@ function parseDimensionFile(wb){
   return {date: dateLabel, data: parsed, specMap: specMap, tolMap: tolMap};
 }
 
+function parseHQFile(wb){
+  var result = {};
+  var specMap = {};
+  var tolMap = {};
+  var partNames = {};
+  var dateLabel = null;
+
+  wb.SheetNames.forEach(function(sname){
+    var ws = wb.Sheets[sname];
+    var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+
+    // 날짜 추출 - 행7(index 6)의 열4(index 4)
+    for(var i=0; i<Math.min(15, arr.length); i++){
+      var row = arr[i];
+      if(!row) continue;
+      // '측정일자' 행 찾기
+      for(var j=0; j<row.length; j++){
+        if(row[j] && String(row[j]).indexOf('측정일자') >= 0){
+          // 같은 행 또는 다음 셀에서 날짜값 찾기
+          var dv = row[j+2] || row[j+1] || row[j+3];
+          if(dv && typeof dv === 'number' && dv > 40000){
+            var d = new Date((dv - 25569) * 86400 * 1000);
+            dateLabel = String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+          } else if(dv && typeof dv === 'string'){
+            var dm = dv.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+            if(dm) dateLabel = dm[2].padStart(2,'0') + '/' + dm[3].padStart(2,'0');
+          }
+        }
+      }
+      if(dateLabel) break;
+    }
+
+    // 데이터 행 파싱
+    // 컬럼: [1]금형차수 [2]CavityNo [3]장비 [4]No [5]항목 [6]기준치수 [7]공차+ [8]공차- [9]관리상한 [10]관리하한 [11]Max [12]Min [13]판정 [14]측정값
+    arr.forEach(function(row){
+      if(!row || row.length < 12) return;
+
+      var noRaw = row[4];
+      if(noRaw === null || noRaw === undefined || noRaw === 'No' || noRaw === '항 목') return;
+
+      // No 파싱 - 숫자 또는 '26-1' 같은 형식 → 정수부만 사용
+      var no = null;
+      var noStr = String(noRaw).trim();
+      var noMatch = noStr.match(/^(\d+)/);
+      if(noMatch){
+        no = parseInt(noMatch[1]);
+      }
+      if(!no || no < 1 || no > 200) return;
+
+      var spec    = pNum(row[6]);   // 기준치수
+      var tolPlus = pNum(row[7]);   // 공차(+)
+      var tolMinus= pNum(row[8]);   // 공차(-)
+      var measVal = pNum(row[14]);  // 측정값 (열14, 첫번째 측정값)
+      if(measVal === null) measVal = pNum(row[11]); // Max값 fallback
+
+      var partName = row[5] ? String(row[5]).trim() : ('No.'+no);
+
+      if(spec !== null && measVal !== null && measVal !== 0){
+        if(!result[no]){
+          result[no] = {spec: spec, tolPlus: tolPlus, tolMinus: tolMinus, vals: [], name: partName};
+        }
+        result[no].vals.push(measVal);
+        if(!partNames[no]) partNames[no] = partName;
+      }
+    });
+  });
+
+  var parsed = {};
+  Object.keys(result).forEach(function(no){
+    var d = result[no];
+    if(!d.vals.length) return;
+    var ni = parseInt(no);
+    var sum = 0;
+    d.vals.forEach(function(v){ sum += v; });
+    parsed[ni] = sum / d.vals.length;
+    specMap[ni] = d.spec;
+    // tol: 공차+ 와 공차- 의 평균, 없으면 크기 기반 자동 설정
+    var tp = d.tolPlus !== null ? d.tolPlus : null;
+    var tm = d.tolMinus !== null ? d.tolMinus : null;
+    if(tp !== null && tm !== null){
+      tolMap[ni] = (tp + tm) / 2;
+    } else {
+      tolMap[ni] = Math.abs(d.spec) <= 5 ? 0.05 : (Math.abs(d.spec) <= 15 ? 0.2 : 0.5);
+    }
+  });
+
+  if(!dateLabel) dateLabel = 'unknown';
+  return {date: dateLabel, data: parsed, specMap: specMap, tolMap: tolMap, partNames: partNames};
+}
+
 function parseScanFile(wb){
   var ws = wb.Sheets[wb.SheetNames[0]];
   var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
@@ -2033,6 +2123,65 @@ document.addEventListener('DOMContentLoaded', function(){
             document.getElementById('measStatus').style.display='block';
             document.getElementById('measStatus').style.color='#27ae60';
             // Firebase 자동 저장
+            saveMeasData(curProduct.code.split(' ')[0].toLowerCase(), label, result.data);
+
+          } else if(fileType === 'dimension_hq'){
+            var result = parseHQFile(wb);
+            if(Object.keys(result.data).length === 0){
+              document.getElementById('measFileName').textContent = '⚠️ 데이터를 읽지 못했습니다';
+              return;
+            }
+            // 파일명에서 날짜 추출 우선 (26MMDD 형식)
+            var fnMatch = file.name.match(/26(\d{2})(\d{2})/);
+            var label = fnMatch ? fnMatch[1]+'/'+fnMatch[2] : (result.date || '신규');
+
+            // Firebase 제품: specMap/tolMap/partNames 자동 채우기 (첫 업로드 시)
+            if(curProduct._fromFirebase && Object.keys(curProduct.specMap).length === 0){
+              if(result.specMap && Object.keys(result.specMap).length > 0){
+                curProduct.specMap = result.specMap;
+                curProduct.tolMap  = result.tolMap || {};
+                curProduct.partNames = result.partNames || {};
+                var pid = curProduct.code.split(' ')[0].toLowerCase();
+                db.ref('products/' + pid + '/specMap').set(result.specMap);
+                db.ref('products/' + pid + '/tolMap').set(result.tolMap || {});
+              }
+            }
+
+            // 기존 날짜와 중복 체크
+            var existingDates = Object.keys(curProduct.vinaAll);
+            if(existingDates.indexOf(label) < 0){
+              curProduct.vinaAll[label] = result.data;
+              curProduct.vinaLH[label] = result.data;
+              curProduct.vinaRH[label] = result.data;
+            } else {
+              curProduct.vinaAll[label] = result.data;
+            }
+
+            // 날짜 버튼 재생성
+            var dates = Object.keys(curProduct.vinaAll);
+            var dateBtns = document.getElementById('dateBtns');
+            dateBtns.innerHTML = '';
+            var allBtn = document.createElement('button');
+            allBtn.className = 'filter-btn active';
+            allBtn.textContent = '전체';
+            allBtn.onclick = function(){ setDate('all', this); };
+            dateBtns.appendChild(allBtn);
+            dates.forEach(function(d){
+              var btn = document.createElement('button');
+              btn.className = 'filter-btn';
+              btn.textContent = d;
+              btn.onclick = (function(date){ return function(){ setDate(date, this); }; })(d);
+              dateBtns.appendChild(btn);
+            });
+
+            curDate = 'all';
+            buildTrendChart();
+            renderData();
+
+            document.getElementById('measFileName').textContent = '✅ '+file.name;
+            document.getElementById('measStatus').textContent = '📊 본사 측정 데이터 반영완료! 날짜: '+label+' ('+Object.keys(result.data).length+'개 항목)';
+            document.getElementById('measStatus').style.display='block';
+            document.getElementById('measStatus').style.color='#27ae60';
             saveMeasData(curProduct.code.split(' ')[0].toLowerCase(), label, result.data);
 
           } else if(fileType === 'scan'){
