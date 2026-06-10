@@ -717,15 +717,15 @@ function loadProductDataFromFirebase(productId){
     db.ref('products/' + productId).once('value').then(function(snap){
       var pd = snap.val();
       if(pd){
-        if(pd.specMap && Object.keys(pd.specMap).length > 0 && Object.keys(PRODUCTS[productId].specMap).length === 0){
-          // Firebase 키는 문자열이므로 숫자로 변환
+        if(pd.specMap && Object.keys(pd.specMap).length > 0){
+          // Firebase 키는 문자열이므로 숫자로 변환, 항상 최신값으로 덮어씀
           var sm = {}, tm = {};
           Object.keys(pd.specMap).forEach(function(k){ sm[parseInt(k)] = pd.specMap[k]; });
           if(pd.tolMap) Object.keys(pd.tolMap).forEach(function(k){ tm[parseInt(k)] = pd.tolMap[k]; });
           PRODUCTS[productId].specMap = sm;
           PRODUCTS[productId].tolMap  = tm;
           Object.keys(sm).forEach(function(no){
-            if(!PRODUCTS[productId].partNames[no]) PRODUCTS[productId].partNames[no] = 'No.' + no;
+            PRODUCTS[productId].partNames[no] = PRODUCTS[productId].partNames[no] || ('No.' + no);
           });
         }
       }
