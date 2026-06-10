@@ -1402,6 +1402,8 @@ function saveModel(customerId, customerName){
   PRODUCTS[productId] = {
     name: productCode + ' ' + productName,
     code: productCode,
+    _productId: productId,
+    _fromFirebase: true,
     lastDate: now,
     hasHQ: false,
     angleNos: [],
@@ -1413,7 +1415,8 @@ function saveModel(customerId, customerName){
     vinaRH: {},
     customerId: customerId,
     modelName: modelName,
-    hasSide: hasSide
+    hasSide: hasSide,
+    approvalStatus: 'pending'
   };
 
   var data = {
@@ -1570,7 +1573,16 @@ function goDashboard(productId){
   if(isAM){
     updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사',fn:'goModelAM()'},{label:'SHIELD CAN',fn:'goProductAM()'},{label:curProduct.name}]);
   } else if(curProduct._fromFirebase){
-    updateBC([{label:'🏠 홈',fn:'goHome()'},{label:curProduct.name}]);
+    // Firebase 제품: 고객사명 > 모델명 > 제품명 경로 표시
+    var custName = window._customerCache && curProduct.customerId && window._customerCache[curProduct.customerId]
+      ? window._customerCache[curProduct.customerId].name : '고객사';
+    var modelName = curProduct.modelName || '';
+    updateBC([
+      {label:'🏠 홈', fn:'goHome()'},
+      {label: custName},
+      {label: modelName},
+      {label: curProduct.name}
+    ]);
   } else {
     updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:curProduct.name}]);
   }
