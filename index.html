@@ -2085,18 +2085,15 @@ document.addEventListener('DOMContentLoaded', function(){
             var fnMatch = file.name.match(/26(\d{2})(\d{2})/);
             var label = fnMatch ? fnMatch[1]+'/'+fnMatch[2] : (result.date || '신규');
 
-            // Firebase 제품: specMap/tolMap 자동 채우기 (첫 업로드 시)
-            if(curProduct._fromFirebase && Object.keys(curProduct.specMap).length === 0){
+            // Firebase 제품: 업로드할 때마다 specMap 갱신
+            if(curProduct._fromFirebase){
               if(result.specMap && Object.keys(result.specMap).length > 0){
                 curProduct.specMap = result.specMap;
                 curProduct.tolMap  = result.tolMap || {};
-                // partNames 자동 생성 (No.1, No.2 ...)
                 Object.keys(result.specMap).forEach(function(no){
-                  if(!curProduct.partNames[parseInt(no)])
-                    curProduct.partNames[parseInt(no)] = 'No.' + no;
+                  curProduct.partNames[parseInt(no)] = 'No.' + no;
                 });
-                // Firebase에 specMap 저장 (다음 로드 시 재사용)
-                var pid = curProduct._productId || curProduct.code.split(" ")[0].toLowerCase().replace(/[^a-z0-9]/g,'');
+                var pid = curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,'');
                 db.ref('products/' + pid + '/specMap').set(result.specMap);
                 db.ref('products/' + pid + '/tolMap').set(result.tolMap || {});
               }
@@ -2153,13 +2150,13 @@ document.addEventListener('DOMContentLoaded', function(){
             var fnMatch = file.name.match(/26(\d{2})(\d{2})/);
             var label = fnMatch ? fnMatch[1]+'/'+fnMatch[2] : (result.date || '신규');
 
-            // Firebase 제품: specMap/tolMap/partNames 자동 채우기 (첫 업로드 시)
-            if(curProduct._fromFirebase && Object.keys(curProduct.specMap).length === 0){
+            // Firebase 제품: 업로드할 때마다 specMap 갱신
+            if(curProduct._fromFirebase){
               if(result.specMap && Object.keys(result.specMap).length > 0){
                 curProduct.specMap = result.specMap;
                 curProduct.tolMap  = result.tolMap || {};
                 curProduct.partNames = result.partNames || {};
-                var pid = curProduct.code.split(' ')[0].toLowerCase();
+                var pid = curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,'');
                 db.ref('products/' + pid + '/specMap').set(result.specMap);
                 db.ref('products/' + pid + '/tolMap').set(result.tolMap || {});
               }
