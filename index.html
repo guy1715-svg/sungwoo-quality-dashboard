@@ -1148,8 +1148,8 @@ function confirmDeleteCustomer(customerId){
   deleteCustomer(customerId, name);
 }
 
-function confirmDeleteProduct(productId, productNameEnc){
-  var productName = decodeURIComponent(productNameEnc);
+function confirmDeleteProduct(productId){
+  var productName = PRODUCTS[productId] ? PRODUCTS[productId].name : productId;
   if(!confirm('⚠️ ' + productName + ' 제품을 삭제할까요?\n\n측정 데이터도 함께 삭제됩니다.')) return;
   deleteProduct(productId, productName);
 }
@@ -1279,11 +1279,11 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
           _fromFirebase:true
         };
       }
-      var pName = p.productCode+' '+p.productName;
+
       return '<div class="product-card" onclick="goDashboard(\''+pid+'\')" style="border-color:'+(isApproved?'#27ae60':'#e4e4e4')+'">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
           '<div style="font-size:11px;color:#888;font-weight:600">'+p.productCode+'</div>'+
-          '<button onclick="event.stopPropagation();confirmDeleteProduct(\'+pid+\')\''+encodeURIComponent(pName)+'\'" style="background:#fee2e2;border:none;border-radius:5px;color:#c0392b;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">🗑️</button>'+
+          '<button onclick="event.stopPropagation();confirmDeleteProduct(\''+pid+'\')\'" style="background:#fee2e2;border:none;border-radius:5px;color:#c0392b;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">🗑️</button>'+
         '</div>'+
         '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">'+p.productName+'</div>'+
         '<div style="display:flex;gap:8px;margin-bottom:10px">'+
