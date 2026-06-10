@@ -1880,10 +1880,12 @@ function parseDimensionFile(wb){
     arr.forEach(function(row){
       if(!row||!row.length) return;
 
-      // VINA 형식: Cavity=열1, No=열2, Spec=열5, Upper=열6, Lower=열7
-      // 측정값=열8~10, Average=열11
+      // VINA 형식 (XLSX.js 배열 인덱스 기준, min_col=B)
+      // row[0]=Cavity, row[1]=No, row[2]=SpecItem(3D등), row[3]=빈칸
+      // row[4]=Spec, row[5]=Upper, row[6]=Lower
+      // row[7~9]=측정값1~3, row[10]=Average
       var no = null;
-      var noRaw = row[2]; // No 열
+      var noRaw = row[1]; // No 열
       if(noRaw !== null && noRaw !== undefined){
         var n = parseFloat(String(noRaw).trim());
         if(!isNaN(n) && n>=1 && n<=300 && Math.abs(n-Math.round(n))<0.01)
@@ -1891,12 +1893,12 @@ function parseDimensionFile(wb){
       }
 
       if(no){
-        var spec = pNum(row[5]);  // Spec 열
-        var avg  = pNum(row[11]); // Average 열
+        var spec = pNum(row[4]);  // Spec 열
+        var avg  = pNum(row[10]); // Average 열
         if(avg===null||avg===0){
-          // 측정값 열8~10 평균
+          // 측정값 열7~9 평균
           var vals=[], v;
-          for(var c=8;c<=10;c++){v=pNum(row[c]);if(v!==null&&v!==0)vals.push(v);}
+          for(var c=7;c<=9;c++){v=pNum(row[c]);if(v!==null&&v!==0)vals.push(v);}
           if(vals.length>0){avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;}
         }
         if(spec!==null && avg!==null && avg!==0){
