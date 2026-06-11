@@ -485,9 +485,11 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
   <div id="screen-dashboard" class="screen">
     <button class="pdf-btn" onclick="window.print()">🖨️ PDF 출력</button>
     <div style="clear:both;margin-bottom:8px"></div>
-    <div class="tabs" id="dashTabs">
-      <div class="tab active" onclick="switchTab('dash1',this)">📊 VINA 예지보전 대시보드</div>
-
+    <div class="tabs" id="dashTabs" style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex">
+        <div class="tab active" onclick="switchTab('dash1',this)">📊 VINA 예지보전 대시보드</div>
+      </div>
+      <button onclick="goCompare()" style="padding:8px 16px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-right:4px">📂 HQ vs VINA 파일 비교</button>
     </div>
 
     <!-- 탭1 -->
@@ -1552,7 +1554,20 @@ function goProductAM(){
 
 function goCompare(){
   showScreen('compare');
-  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:'HQ vs VINA 비교'}]);
+  // 현재 제품 기반으로 브레드크럼 동적 설정
+  if(curProduct && curProduct._fromFirebase){
+    var custName = window._customerCache && curProduct.customerId && window._customerCache[curProduct.customerId]
+      ? window._customerCache[curProduct.customerId].name : '고객사';
+    updateBC([
+      {label:'🏠 홈', fn:'goHome()'},
+      {label: custName},
+      {label: curProduct.modelName || ''},
+      {label: curProduct.name},
+      {label: 'HQ vs VINA 비교'}
+    ]);
+  } else {
+    updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:'HQ vs VINA 비교'}]);
+  }
   // 파일 업로드 초기화
   hqParsed={};vinaParsed={};
   document.getElementById('hqName').textContent='파일을 선택하세요';
