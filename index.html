@@ -2005,36 +2005,41 @@ function parseHQFile(wb){
       if(dateLabel) break;
     }
 
-    // 데이터 행 파싱
-    // 컬럼: [1]금형차수 [2]CavityNo [3]장비 [4]No [5]항목 [6]기준치수 [7]공차+ [8]공차- [9]관리상한 [10]관리하한 [11]Max [12]Min [13]판정 [14]측정값
+    // 데이터 행 파싱 (XLSX.js 인덱스 기준, min_col=B)
+    // row[0]=금형차수 row[1]=CavityNo row[2]=장비 row[3]=No row[4]=항목
+    // row[5]=기준치수 row[6]=공차(+) row[7]=공차(-) row[8]=관리상한 row[9]=관리하한
+    // row[10]=Max row[11]=Min row[12]=판정 row[13~15]=측정값1~3
     arr.forEach(function(row){
-      if(!row || row.length < 12) return;
+      if(!row || row.length < 10) return;
 
-      var noRaw = row[4];
+      var noRaw = row[3];  // No 열
       if(noRaw === null || noRaw === undefined || noRaw === 'No' || noRaw === '항 목') return;
 
-      // No 파싱 - 숫자 또는 '26-1' 같은 형식 → 정수부만 사용
       var no = null;
       var noStr = String(noRaw).trim();
       var noMatch = noStr.match(/^(\d+)/);
-      if(noMatch){
-        no = parseInt(noMatch[1]);
-      }
-      if(!no || no < 1 || no > 200) return;
+      if(noMatch) no = parseInt(noMatch[1]);
+      if(!no || no < 1 || no > 300) return;
 
-      var spec    = pNum(row[6]);   // 기준치수
-      var tolPlus = pNum(row[7]);   // 공차(+)
-      var tolMinus= pNum(row[8]);   // 공차(-)
-      var measVal = pNum(row[14]);  // 측정값 (열14, 첫번째 측정값)
-      if(measVal === null) measVal = pNum(row[11]); // Max값 fallback
+      var spec     = pNum(row[5]);   // 기준치수
+      var tolPlus  = pNum(row[6]);   // 공차(+)
+      var tolMinus = pNum(row[7]);   // 공차(-)
+      // 측정값: row[13~15] 우선, 없으면 row[10](Max) fallback
+      var m1 = pNum(row[13]), m2 = pNum(row[14]), m3 = pNum(row[15]);
+      var measVal = m1 !== null ? m1 : (pNum(row[10]) !== null ? pNum(row[10]) : null);
 
-      var partName = row[5] ? String(row[5]).trim() : ('No.'+no);
+      var partName = row[4] ? String(row[4]).trim() : ('No.'+no);
 
-      if(spec !== null && measVal !== null && measVal !== 0){
+      // 측정값 3개 평균
+      var vals = [m1, m2, m3].filter(function(v){ return v !== null && v !== 0; });
+      if(vals.length === 0 && measVal !== null && measVal !== 0) vals = [measVal];
+
+      if(spec !== null && vals.length > 0){
         if(!result[no]){
           result[no] = {spec: spec, tolPlus: tolPlus, tolMinus: tolMinus, vals: [], name: partName};
         }
-        result[no].vals.push(measVal);
+        var avg = vals.reduce(function(a,b){return a+b;},0) / vals.length;
+        result[no].vals.push(avg);
         if(!partNames[no]) partNames[no] = partName;
       }
     });
