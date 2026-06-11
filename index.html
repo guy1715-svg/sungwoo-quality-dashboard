@@ -1073,7 +1073,10 @@ function addCustomerCard(customer, products){
         '<div style="background:'+(isApproved?'#eafaf1':'#f8f8f8')+';border-radius:8px;padding:10px 12px;border-left:3px solid '+(isApproved?'#27ae60':'#3b82f6')+';position:relative">'+
           '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
             '<div style="font-size:10px;color:#888;margin-bottom:2px">'+p.productCode+'</div>'+
-            '<button onclick="event.stopPropagation();confirmDeleteProduct(\''+p.productId+'\')" style="background:#fee2e2;border:none;border-radius:4px;color:#c0392b;font-size:9px;padding:1px 5px;cursor:pointer;font-weight:700;line-height:1.6">🗑️</button>'+
+            '<div style="display:flex;gap:3px">'+
+              '<button onclick="event.stopPropagation();openEditProduct(\''+p.productId+'\')" style="background:#dbeafe;border:none;border-radius:4px;color:#1e40af;font-size:9px;padding:1px 5px;cursor:pointer;font-weight:700;line-height:1.6">✏️</button>'+
+              '<button onclick="event.stopPropagation();confirmDeleteProduct(\''+p.productId+'\')" style="background:#fee2e2;border:none;border-radius:4px;color:#c0392b;font-size:9px;padding:1px 5px;cursor:pointer;font-weight:700;line-height:1.6">🗑️</button>'+
+            '</div>'+
           '</div>'+
           '<div style="font-size:12px;font-weight:700;color:#1a1a2e">'+p.productName+'</div>'+
           '<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">'+
@@ -1143,6 +1146,10 @@ function openCustomerMenu(btn, customerId){
       '➕ 모델/제품 추가'+
     '</div>'+
     '<div style="height:1px;background:#f0f0f0"></div>'+
+    '<div onclick="closeCustomerMenu();openEditCustomer(\''+customerId+'\')" style="padding:11px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:#1a1a2e" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'\'">'+
+      '✏️ 고객사 편집'+
+    '</div>'+
+    '<div style="height:1px;background:#f0f0f0"></div>'+
     '<div onclick="closeCustomerMenu();confirmDeleteCustomer(\''+customerId+'\')" style="padding:11px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;color:#e74c3c" onmouseover="this.style.background=\'#fff5f5\'" onmouseout="this.style.background=\'\'">'+
       '🗑️ 고객사 삭제'+
     '</div>';
@@ -1166,6 +1173,142 @@ function closeCustomerMenu(){
 
 // 고객사 캐시 (메뉴에서 참조용)
 window._customerCache = window._customerCache || {};
+
+// ===== 고객사 편집 =====
+function openEditCustomer(customerId){
+  var cust = window._customerCache && window._customerCache[customerId];
+  if(!cust){ alert('고객사 정보를 찾을 수 없습니다'); return; }
+
+  var colorOptions = ['#1a1a2e','#2c3e50','#1e3a5f','#2980b9','#27ae60','#8e44ad','#c0392b','#d35400'];
+  var colorHtml = colorOptions.map(function(c){
+    var sel = (c === cust.color) ? 'border:3px solid #3b82f6;' : 'border:2px solid transparent;';
+    return '<div onclick="selectColor(this,\'' + c + '\')" style="width:32px;height:32px;background:' + c + ';border-radius:6px;cursor:pointer;' + sel + '"></div>';
+  }).join('');
+
+  openModal('고객사 편집 — ' + cust.name, `
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">고객사명 (한글)</div>
+      <input id="editCustomerName" type="text" value="${cust.name}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">영문명</div>
+      <input id="editCustomerEng" type="text" value="${cust.eng||''}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">고객사 색상</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${colorHtml}</div>
+      <input type="hidden" id="newCustomerColor" value="${cust.color}">
+    </div>
+    <button onclick="saveEditCustomer('${customerId}')" style="width:100%;padding:12px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✏️ 수정 저장</button>
+  `);
+}
+
+function saveEditCustomer(customerId){
+  var name  = document.getElementById('editCustomerName').value.trim();
+  var eng   = document.getElementById('editCustomerEng').value.trim();
+  var color = document.getElementById('newCustomerColor').value;
+  if(!name){ alert('고객사명을 입력하세요'); return; }
+
+  var updated = Object.assign({}, window._customerCache[customerId], {name:name, eng:eng||name, color:color});
+
+  db.ref('customers/' + customerId).update({name:name, eng:eng||name, color:color}).then(function(){
+    // 캐시 업데이트
+    window._customerCache[customerId] = updated;
+    // 홈 카드 재생성
+    var oldCard = document.getElementById('customer_' + customerId);
+    if(oldCard) oldCard.remove();
+    db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snapP){
+      var prods = snapP.val() ? Object.values(snapP.val()) : [];
+      addCustomerCard(updated, prods);
+    });
+    closeModal();
+    alert('✅ ' + name + ' 고객사 정보가 수정되었습니다!');
+  }).catch(function(err){
+    alert('❌ 수정 실패: ' + err.message);
+  });
+}
+
+// ===== 제품 편집 =====
+function openEditProduct(productId){
+  var prod = PRODUCTS[productId];
+  if(!prod){ alert('제품 정보를 찾을 수 없습니다'); return; }
+
+  openModal('제품 편집 — ' + prod.name, `
+    <div style="background:#f0f7ff;border-radius:8px;padding:10px 14px;font-size:11px;color:#1e40af;margin-bottom:16px">
+      📋 모델: <strong>${prod.modelName||'-'}</strong>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품 코드</div>
+      <input id="editProductCode" type="text" value="${prod.code||''}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품명</div>
+      <input id="editProductName" type="text" value="${prod.name.replace(prod.code+' ','')}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델명</div>
+      <input id="editProductModel" type="text" value="${prod.modelName||''}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">LH/RH 구분</div>
+      <div style="display:flex;gap:8px">
+        <button id="editSideYes" onclick="setEditSide(true)" style="flex:1;padding:8px;background:${prod.hasSide!==false?'#1a1a2e':'#f0f0f0'};color:${prod.hasSide!==false?'#fff':'#888'};border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">구분 있음</button>
+        <button id="editSideNo"  onclick="setEditSide(false)" style="flex:1;padding:8px;background:${prod.hasSide===false?'#1a1a2e':'#f0f0f0'};color:${prod.hasSide===false?'#fff':'#888'};border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">구분 없음</button>
+      </div>
+      <input type="hidden" id="editProductSide" value="${prod.hasSide!==false?'true':'false'}">
+    </div>
+    <button onclick="saveEditProduct('${productId}')" style="width:100%;padding:12px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✏️ 수정 저장</button>
+  `);
+}
+
+function setEditSide(hasSide){
+  document.getElementById('editProductSide').value = hasSide;
+  document.getElementById('editSideYes').style.background = hasSide ? '#1a1a2e' : '#f0f0f0';
+  document.getElementById('editSideYes').style.color = hasSide ? '#fff' : '#888';
+  document.getElementById('editSideNo').style.background = hasSide ? '#f0f0f0' : '#1a1a2e';
+  document.getElementById('editSideNo').style.color = hasSide ? '#888' : '#fff';
+}
+
+function saveEditProduct(productId){
+  var code    = document.getElementById('editProductCode').value.trim();
+  var name    = document.getElementById('editProductName').value.trim();
+  var model   = document.getElementById('editProductModel').value.trim();
+  var hasSide = document.getElementById('editProductSide').value === 'true';
+  if(!code || !name){ alert('제품 코드와 제품명을 입력하세요'); return; }
+
+  db.ref('products/' + productId).update({
+    productCode: code,
+    productName: name,
+    modelName: model,
+    hasSide: hasSide
+  }).then(function(){
+    // 로컬 PRODUCTS 업데이트
+    if(PRODUCTS[productId]){
+      PRODUCTS[productId].code = code;
+      PRODUCTS[productId].name = code + ' ' + name;
+      PRODUCTS[productId].modelName = model;
+      PRODUCTS[productId].hasSide = hasSide;
+    }
+    // 홈 카드 재생성
+    var customerId = PRODUCTS[productId] ? PRODUCTS[productId].customerId : null;
+    if(customerId){
+      var oldCard = document.getElementById('customer_' + customerId);
+      if(oldCard) oldCard.remove();
+      db.ref('customers/' + customerId).once('value').then(function(snapC){
+        var cust = snapC.val();
+        if(!cust) return;
+        db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snapP){
+          var prods = snapP.val() ? Object.values(snapP.val()) : [];
+          addCustomerCard(cust, prods);
+        });
+      });
+    }
+    closeModal();
+    alert('✅ 제품 정보가 수정되었습니다!');
+  }).catch(function(err){
+    alert('❌ 수정 실패: ' + err.message);
+  });
+}
 
 function confirmDeleteCustomer(customerId){
   var cust = window._customerCache[customerId];
@@ -1326,7 +1469,10 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
       return '<div class="product-card" onclick="goDashboard(\''+pid+'\')" style="border-color:'+(isApproved?'#27ae60':'#e4e4e4')+'">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
           '<div style="font-size:11px;color:#888;font-weight:600">'+p.productCode+'</div>'+
-          '<button onclick="event.stopPropagation();confirmDeleteProduct(\''+pid+'\')" style="background:#fee2e2;border:none;border-radius:5px;color:#c0392b;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">🗑️</button>'+
+          '<div style="display:flex;gap:4px">'+
+            '<button onclick="event.stopPropagation();openEditProduct(\''+pid+'\')" style="background:#dbeafe;border:none;border-radius:5px;color:#1e40af;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">✏️</button>'+
+            '<button onclick="event.stopPropagation();confirmDeleteProduct(\''+pid+'\')" style="background:#fee2e2;border:none;border-radius:5px;color:#c0392b;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">🗑️</button>'+
+          '</div>'+
         '</div>'+
         '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">'+p.productName+'</div>'+
         '<div style="display:flex;gap:8px;margin-bottom:10px">'+
