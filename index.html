@@ -132,21 +132,21 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
   <div id="screen-home" class="screen active">
     <div class="stats-row" style="margin-bottom:24px">
       <div class="stat-box">
-        <div class="stat-val blue">2</div>
+        <div class="stat-val blue" id="kpi-cust">⋯</div>
         <div class="stat-label">고객사</div>
       </div>
       <div class="stat-box">
-        <div class="stat-val" style="color:#3b82f6">1</div>
+        <div class="stat-val" style="color:#3b82f6" id="kpi-model">⋯</div>
         <div class="stat-label">관리 모델</div>
       </div>
       <div class="stat-box">
-        <div class="stat-val" style="color:#f39c12">7</div>
+        <div class="stat-val" style="color:#f39c12" id="kpi-prod">⋯</div>
         <div class="stat-label">관리 제품</div>
       </div>
       <div class="stat-box">
-        <div class="stat-val green">1</div>
+        <div class="stat-val green" id="kpi-approved">⋯</div>
         <div class="stat-label">승인 완료</div>
-        <div style="font-size:10px;color:#27ae60;margin-top:2px">1 / 4 제품</div>
+        <div style="font-size:10px;color:#27ae60;margin-top:2px" id="kpi-approved-sub">- / - 제품</div>
       </div>
     </div>
 
@@ -280,7 +280,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
     </div>
 
     <div class="sec-title">최근 활동</div>
-    <div style="background:#fff;border-radius:12px;border:1px solid #e4e4e4;overflow:hidden;margin-bottom:24px">
+    <div id="recentActivity" style="background:#fff;border-radius:12px;border:1px solid #e4e4e4;overflow:hidden;margin-bottom:24px">
       <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f0f0f0">
         <span style="font-size:18px">✅</span>
         <div style="flex:1">
@@ -1457,28 +1457,99 @@ function saveModel(customerId, customerName){
 }
 
 function refreshHomeKPI(){
-  // 홈 통계 박스 동적 업데이트
-  var statBoxes = document.querySelectorAll('#screen-home .stat-box .stat-val');
-  if(!statBoxes.length) return;
+  // 고객사: Firebase + 고정 2개(만도, AM사)
   db.ref('customers').once('value').then(function(snapC){
-    var custCount = snapC.val() ? Object.keys(snapC.val()).length : 0;
-    // 고정 고객사(만도, AM사) 포함
-    var totalCust = 2 + custCount;
-    statBoxes[0].textContent = totalCust;
+    var fbCust = snapC.val() ? Object.keys(snapC.val()).length : 0;
+    var totalCust = 2 + fbCust;
+    var el = document.getElementById('kpi-cust');
+    if(el) el.textContent = totalCust;
   });
+
+  // 제품 + 모델 + 승인
   db.ref('products').once('value').then(function(snapP){
     var prods = snapP.val() ? Object.values(snapP.val()) : [];
     var approved = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
-    // 고정 제품 포함: 만도 4개 + AM사 3개
+
+    // 고정: 만도 4개 + AM사 3개 = 7개, 승인완료 4개(AM 3 + 만도 1)
     var totalProds = 7 + prods.length;
-    statBoxes[2].textContent = totalProds;
-    // 승인완료: 고정 1 + Firebase approved
-    var statBox3 = document.querySelectorAll('#screen-home .stat-box')[3];
-    if(statBox3){
-      statBox3.querySelector('.stat-val').textContent = 1 + approved;
-      var sub = statBox3.querySelector('[style*="color:#27ae60"]');
-      if(sub) sub.textContent = (1+approved) + ' / ' + totalProds + ' 제품';
-    }
+    var totalApproved = 4 + approved;
+
+    // 모델 수: Firebase 제품의 고유 modelName 수 + 고정 2개(MX5A, SHIELD CAN)
+    var fbModels = {};
+    prods.forEach(function(p){ if(p.modelName) fbModels[p.modelName] = true; });
+    var totalModels = 2 + Object.keys(fbModels).length;
+
+    var elProd = document.getElementById('kpi-prod');
+    var elModel = document.getElementById('kpi-model');
+    var elApproved = document.getElementById('kpi-approved');
+    var elApprovedSub = document.getElementById('kpi-approved-sub');
+
+    if(elProd) elProd.textContent = totalProds;
+    if(elModel) elModel.textContent = totalModels;
+    if(elApproved) elApproved.textContent = totalApproved;
+    if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+  });
+
+  // 최근 활동 업데이트
+  refreshRecentActivity();
+}
+
+// ===== 최근 활동 동적 로드 =====
+function refreshRecentActivity(){
+  var box = document.getElementById('recentActivity');
+  if(!box) return;
+
+  // Firebase measData에서 최근 업로드 수집
+  db.ref('measData').once('value').then(function(snap){
+    var measData = snap.val() || {};
+    var activities = [];
+
+    // Firebase 제품 측정 데이터
+    Object.keys(measData).forEach(function(pid){
+      var dates = measData[pid];
+      if(!dates) return;
+      Object.keys(dates).forEach(function(dateKey){
+        var dateLabel = dateKey.replace('_','/');
+        // PRODUCTS에서 제품명 찾기
+        var prodName = PRODUCTS[pid] ? PRODUCTS[pid].name : pid;
+        var custName = '';
+        if(PRODUCTS[pid] && PRODUCTS[pid].customerId && window._customerCache){
+          var cust = window._customerCache[PRODUCTS[pid].customerId];
+          custName = cust ? cust.name : '';
+        }
+        activities.push({
+          icon: '📊',
+          title: prodName + ' — VINA 측정 완료',
+          sub: (custName ? custName + ' · ' : '') + (PRODUCTS[pid] ? PRODUCTS[pid].modelName || '' : ''),
+          date: '20' + dateLabel.replace('/','-')  // 06/09 → 2026-06-09
+        });
+      });
+    });
+
+    // 날짜 내림차순 정렬, 최대 5개
+    activities.sort(function(a,b){ return b.date.localeCompare(a.date); });
+    activities = activities.slice(0, 5);
+
+    // 고정 활동(만도 승인 등) + Firebase 활동 합치기
+    var fixed = [
+      {icon:'✅', title:'BR0037 RR BRKT LH#2 — 승인 완료', sub:'만도 · MX5A EREV · 검사자: 강병민', date:'2026-05-19'},
+      {icon:'📊', title:'BR0035 FRT BRKT LH#1 — VINA 측정 완료', sub:'만도 · MX5A EREV · 05/21 측정', date:'2026-05-21'},
+    ];
+    var all = activities.concat(fixed);
+    all.sort(function(a,b){ return b.date.localeCompare(a.date); });
+    all = all.slice(0, 6);
+
+    box.innerHTML = all.map(function(a, i){
+      var isLast = i === all.length - 1;
+      return '<div style="padding:12px 20px;display:flex;align-items:center;gap:12px;'+(isLast?'':'border-bottom:1px solid #f0f0f0')+'">' +
+        '<span style="font-size:18px">'+a.icon+'</span>' +
+        '<div style="flex:1">' +
+          '<div style="font-size:13px;font-weight:600">'+a.title+'</div>' +
+          '<div style="font-size:11px;color:#888">'+a.sub+'</div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:#888">'+a.date+'</div>' +
+      '</div>';
+    }).join('');
   });
 }
 
@@ -1535,6 +1606,7 @@ function loadFirebaseData(){
 
 document.addEventListener('DOMContentLoaded', function(){
   loadFirebaseData();
+  refreshHomeKPI();
 });
 
 function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';}
