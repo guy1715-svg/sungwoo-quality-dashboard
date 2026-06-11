@@ -1856,7 +1856,8 @@ function detectFileType(arr){
     if(!row) continue;
     for(var j=0;j<row.length;j++){
       if(row[j] !== null && row[j] !== undefined){
-        var s = String(row[j]).trim();
+        // 줄바꿈 제거 후 trim
+        var s = String(row[j]).replace(/\n|\r/g,' ').trim();
         fullText += s + '|';
         allCells.push(s);
       }
@@ -1867,10 +1868,11 @@ function detectFileType(arr){
   if(fullText.indexOf('규격 허용 편차') >= 0) return 'scan';
 
   // 2. 본사 HQ: 'SPEC' 단독 셀 또는 한글 키워드
-  // VINA 파일에는 'SPEC' 단독 셀이 없음
   var hasSpecCell = allCells.indexOf('SPEC') >= 0;
-  var hasKorean = fullText.indexOf('기준치수') >= 0 || fullText.indexOf('부 품 명') >= 0 ||
-                  fullText.indexOf('측정일자') >= 0 || fullText.indexOf('공차(+)') >= 0;
+  var hasKorean = fullText.indexOf('기준치수') >= 0 ||
+                  fullText.indexOf('부 품 명') >= 0 ||
+                  fullText.indexOf('측정일자') >= 0 ||
+                  fullText.indexOf('공차(+)') >= 0;
   if(hasSpecCell || hasKorean) return 'dimension_hq';
 
   // 3. VINA: Supplier 또는 Cavity 키워드
@@ -2117,6 +2119,15 @@ document.addEventListener('DOMContentLoaded', function(){
           var ws = wb.Sheets[wb.SheetNames[0]];
           var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
           var fileType = detectFileType(arr);
+          // 파일명으로 추가 감지 (detectFileType이 unknown 반환 시)
+          if(fileType === 'unknown'){
+            var fn = file.name.toLowerCase();
+            if(fn.indexOf('측정') >= 0 || fn.indexOf('data_') >= 0 && fn.indexOf('measurement') < 0){
+              fileType = 'dimension_hq';
+            } else if(fn.indexOf('measurement') >= 0){
+              fileType = 'dimension';
+            }
+          }
 
           if(fileType === 'dimension'){
             var result = parseDimensionFile(wb);
