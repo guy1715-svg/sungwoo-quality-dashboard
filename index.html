@@ -495,14 +495,29 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
     <!-- 탭1 -->
     <div id="dash1" class="tab-content active">
       <!-- 측정 파일 업로드 -->
-      <div style="background:#fff;border-radius:10px;padding:14px 20px;border:1px solid #e4e4e4;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <span style="font-size:13px;font-weight:700;color:#1a1a2e">📤 측정 파일 업로드</span>
-        <div style="position:relative;display:inline-block">
-          <input type="file" id="measFile" accept=".xlsx,.xls" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer">
-          <button style="padding:7px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">파일 선택</button>
+      <div style="background:#fff;border-radius:10px;padding:14px 20px;border:1px solid #e4e4e4;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e">📤 측정 파일 업로드</span>
+          <div style="position:relative;display:inline-block">
+            <input type="file" id="measFile" accept=".xlsx,.xls" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer">
+            <button style="padding:7px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">파일 선택</button>
+          </div>
+          <span id="measFileName" style="font-size:12px;color:#888">파일을 선택하면 자동으로 대시보드에 반영됩니다</span>
+          <div id="measStatus" style="font-size:11px;color:#27ae60;font-weight:600;display:none"></div>
         </div>
-        <span id="measFileName" style="font-size:12px;color:#888">파일을 선택하면 자동으로 대시보드에 반영됩니다</span>
-        <div id="measStatus" style="font-size:11px;color:#27ae60;font-weight:600;display:none"></div>
+        <div id="uploadGuide" style="display:none;margin-top:10px;padding:10px 14px;background:#f0f7ff;border-radius:8px;border:1px solid #bfdbfe;">
+          <div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:6px">📋 지원 파일 형식</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <div style="font-size:11px;color:#555">
+              <span style="background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-weight:700;margin-right:4px">VINA 형식</span>
+              Measurement Data_xxx.xlsx · Cavity/No/Spec 컬럼 구조
+            </div>
+            <div style="font-size:11px;color:#555">
+              <span style="background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:3px;font-weight:700;margin-right:4px">본사 형식</span>
+              xxx_측정_DATA_xxx.xlsx · No/기준치수/공차 컬럼 구조
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="notice">📐 <strong>각도 항목</strong>은 측정 오차 특성상 참고치수로만 표시됩니다.</div>
@@ -648,9 +663,11 @@ function rebuildDateBtns(productId, fbDates){
     wrap.appendChild(btn);
     if(fbDates && fbDates.indexOf(d) >= 0){
       var delBtn = document.createElement('button');
-      delBtn.textContent = '✕';
-      delBtn.title = d + ' 삭제';
-      delBtn.style.cssText = 'padding:3px 6px;background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:4px;font-size:10px;cursor:pointer;font-weight:700;';
+      delBtn.textContent = '🗑';
+      delBtn.title = d + ' 데이터 삭제';
+      delBtn.style.cssText = 'padding:3px 8px;background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:4px;font-size:11px;cursor:pointer;font-weight:700;transition:all 0.15s;';
+      delBtn.onmouseover = function(){ this.style.background='#fecaca'; this.style.transform='scale(1.1)'; };
+      delBtn.onmouseout  = function(){ this.style.background='#fee2e2'; this.style.transform='scale(1)'; };
       delBtn.onclick = (function(date, pid){
         return function(e){ e.stopPropagation(); deleteMeasData(pid, date); };
       })(d, productId);
@@ -1717,15 +1734,29 @@ function goDashboard(productId){
   document.getElementById('trendLegend').innerHTML='';
   document.getElementById('tableBody').innerHTML='';
 
+  // 업로드 안내 표시 여부
+  var uploadGuide = document.getElementById('uploadGuide');
+  var noSpec = curProduct._fromFirebase && Object.keys(curProduct.specMap).length === 0;
+  if(uploadGuide) uploadGuide.style.display = noSpec ? 'block' : 'none';
+
+  // LH/RH 구분 버튼: hasSide가 false인 제품은 숨김
+  var sideButtons = document.querySelectorAll('#filterBar .filter-sep, #filterBar [onclick*="setSide"]');
+  var sideLabel = document.querySelector('#filterBar span[style*="font-weight:700"]:last-child');
+  var showSide = curProduct.hasSide !== false;
+  sideButtons.forEach(function(el){ el.style.display = showSide ? '' : 'none'; });
+
   // Firebase로만 등록된 제품(specMap 미설정) 안내
-  if(curProduct._fromFirebase && Object.keys(curProduct.specMap).length === 0){
+  if(noSpec){
     document.getElementById('tableBody').innerHTML =
       '<tr><td colspan="10" style="padding:40px;text-align:center;color:#888">'+
         '<div style="font-size:32px;margin-bottom:12px">📋</div>'+
-        '<div style="font-size:14px;font-weight:700;margin-bottom:6px">Spec 데이터가 없습니다</div>'+
-        '<div style="font-size:12px">📤 위 <strong>파일 선택</strong> 버튼으로 측정 엑셀 파일을 업로드하면<br>Spec이 자동으로 설정되고 차트·테이블이 채워집니다.</div>'+
+        '<div style="font-size:14px;font-weight:700;margin-bottom:6px">측정 데이터가 없습니다</div>'+
+        '<div style="font-size:12px;line-height:1.8">'+
+          '위 <strong>파일 선택</strong> 버튼으로 측정 엑셀 파일을 업로드해 주세요.<br>'+
+          '<span style="color:#3b82f6">VINA 형식</span>(Measurement Data_xxx.xlsx) 또는 '+
+          '<span style="color:#27ae60">본사 형식</span>(xxx_측정_DATA_xxx.xlsx) 모두 지원합니다.'+
+        '</div>'+
       '</td></tr>';
-    // trendChart 영역에도 안내
     var tc = document.getElementById('trendChart');
     if(tc){ var ctx=tc.getContext('2d'); ctx.clearRect(0,0,tc.width,tc.height); }
     document.getElementById('trendLegend').innerHTML = '<span style="color:#aaa;font-size:12px">측정 파일 업로드 후 표시됩니다</span>';
