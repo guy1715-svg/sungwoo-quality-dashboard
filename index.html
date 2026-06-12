@@ -1310,6 +1310,22 @@ function saveEditProduct(productId){
   });
 }
 
+// ===== 토스트 메시지 =====
+function showToast(msg, type){
+  var existing = document.getElementById('toastMsg');
+  if(existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.id = 'toastMsg';
+  var bg = type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#2980b9';
+  toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);'+
+    'background:'+bg+';color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;'+
+    'font-weight:700;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.2);'+
+    'animation:fadeIn 0.2s ease;pointer-events:none;';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 2500);
+}
+
 // ===== 승인 상태 토글 =====
 function toggleApproval(productId, currentStatus, e){
   if(e) e.stopPropagation();
@@ -1345,16 +1361,16 @@ function toggleApproval(productId, currentStatus, e){
       });
     }
     refreshHomeKPI();
-    // 현재 제품 화면 새로고침
+    // 현재 제품 화면 즉시 새로고침 (alert 없이)
     var custId = PRODUCTS[productId] ? PRODUCTS[productId].customerId : null;
-    var modelName = PRODUCTS[productId] ? PRODUCTS[productId].modelName : null;
-    if(custId && modelName){
+    var modelName2 = PRODUCTS[productId] ? PRODUCTS[productId].modelName : null;
+    if(custId && modelName2){
       var custName = window._customerCache && window._customerCache[custId] ? window._customerCache[custId].name : '';
-      goProductDynamic(custId, modelName, encodeURIComponent(custName));
+      goProductDynamic(custId, modelName2, encodeURIComponent(custName));
     }
-    alert(newStatus === 'approved' ? '✅ 승인완료 처리되었습니다!' : '⏳ 승인대기로 변경되었습니다.');
+    showToast(newStatus === 'approved' ? '✅ 승인완료 처리되었습니다!' : '⏳ 승인대기로 변경되었습니다.', 'success');
   }).catch(function(err){
-    alert('❌ 변경 실패: ' + err.message);
+    showToast('❌ 변경 실패: ' + err.message, 'error');
   });
 }
 
