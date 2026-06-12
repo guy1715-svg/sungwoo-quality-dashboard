@@ -1500,7 +1500,7 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
     var productCardsHtml = products.map(function(p){
       var isApproved = p.approvalStatus === 'approved';
       var pid = p.productId;
-      // PRODUCTS 동기화
+      // PRODUCTS 동기화 - 항상 Firebase 최신값으로 업데이트
       if(!PRODUCTS[pid]){
         PRODUCTS[pid] = {
           name: p.productCode+' '+p.productName, code: p.productCode,
@@ -1512,6 +1512,11 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
           hasSide: p.hasSide, approvalStatus: p.approvalStatus||'pending',
           _fromFirebase:true
         };
+      } else {
+        // 승인 상태 등 변경 가능한 필드는 항상 Firebase 최신값으로 덮어씀
+        PRODUCTS[pid].approvalStatus = p.approvalStatus || 'pending';
+        PRODUCTS[pid].hasSide = p.hasSide;
+        PRODUCTS[pid].modelName = modelName;
       }
 
       return '<div class="product-card" onclick="goDashboard(\''+pid+'\')" style="border-color:'+(isApproved?'#27ae60':'#e4e4e4')+'">'+
