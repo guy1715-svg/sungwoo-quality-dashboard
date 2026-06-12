@@ -561,7 +561,14 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       </div>
 
       <div class="card">
-        <div class="card-title">전체 항목 상세 &nbsp;<span style="font-size:10px;color:#e74c3c;font-weight:600">🔴 위험 항목 상단 정렬</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="card-title" style="margin-bottom:0">전체 항목 상세</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;color:#888">정렬:</span>
+            <button id="sortByNo" onclick="setTableSort('no')" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:5px;border:1px solid #1a1a2e;background:#1a1a2e;color:#fff;cursor:pointer">No순</button>
+            <button id="sortByRisk" onclick="setTableSort('risk')" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:5px;border:1px solid #e4e4e4;background:#fff;color:#888;cursor:pointer">🔴 위험순</button>
+          </div>
+        </div>
         <div style="overflow-x:auto">
           <table><thead><tr>
             <th>No.</th><th style="text-align:left">측정 부위</th>
@@ -2076,6 +2083,25 @@ function buildTrendChart(){
   });
 }
 
+// 테이블 정렬 상태
+var curTableSort = 'no'; // 'no' | 'risk'
+
+function setTableSort(mode){
+  curTableSort = mode;
+  // 버튼 스타일 업데이트
+  var btnNo   = document.getElementById('sortByNo');
+  var btnRisk = document.getElementById('sortByRisk');
+  if(btnNo && btnRisk){
+    btnNo.style.background   = mode==='no'   ? '#1a1a2e' : '#fff';
+    btnNo.style.color        = mode==='no'   ? '#fff'    : '#888';
+    btnNo.style.borderColor  = mode==='no'   ? '#1a1a2e' : '#e4e4e4';
+    btnRisk.style.background = mode==='risk' ? '#e74c3c' : '#fff';
+    btnRisk.style.color      = mode==='risk' ? '#fff'    : '#888';
+    btnRisk.style.borderColor= mode==='risk' ? '#e74c3c' : '#e4e4e4';
+  }
+  renderData();
+}
+
 function renderData(){
   var selectedData=getSelectedData();
   var tbody=document.getElementById('tableBody');
@@ -2118,15 +2144,20 @@ function renderData(){
     rows.push({no:no,spec:spec,tol:tol,val:val,min:min,max:max,isAngle:isAngle,st:st,trendTxt:trendTxt,devPct:devPct,posLabel:posLabel,posColor:posColor});
   });
 
-  // No 순서대로 정렬 (판정별 정렬 제거)
-  rows.sort(function(a,b){return a.no-b.no;});
+  // 정렬: No순 or 위험순
+  if(curTableSort === 'risk'){
+    rows.sort(function(a,b){ return a.st.sortKey - b.st.sortKey; });
+  } else {
+    rows.sort(function(a,b){ return a.no - b.no; });
+  }
   rows.forEach(function(r){
     var tr=document.createElement('tr');
     if(r.isAngle)tr.classList.add('angle-row');
     tr.innerHTML=
       '<td><strong style="color:'+(r.isAngle?'#ccc':'#222')+'">'+r.no+'</strong></td>'+
-      '<td class="left"><span class="part-name">'+(curProduct.partNames[r.no]||'No.'+r.no)+'</span>'+
-        (r.isAngle?'<span style="display:inline-block;background:#f0f0f0;color:#999;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:4px">각도</span>':'')+
+      '<td class="left">'+
+        '<span class="part-name" title="'+(curProduct.partNames[r.no]||'No.'+r.no)+'" style="max-width:160px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle">'+(curProduct.partNames[r.no]||'No.'+r.no)+'</span>'+
+        (r.isAngle?'<span style="display:inline-block;background:#f0f0f0;color:#999;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:4px;vertical-align:middle">각도</span>':'')+
       '</td>'+
       '<td>'+r.spec+'</td><td>±'+r.tol+'</td>'+
       '<td style="color:'+(r.isAngle?'#ccc':'#555')+'">'+r.min.toFixed(3)+'</td>'+
@@ -2533,7 +2564,15 @@ document.addEventListener('DOMContentLoaded', function(){
               if(result.specMap && Object.keys(result.specMap).length > 0){
                 curProduct.specMap = result.specMap;
                 curProduct.tolMap  = result.tolMap || {};
-                curProduct.partNames = result.partNames || {};
+                // partNames: 실제 항목명 있으면 병합, 없으면 새 값으로
+                var newPN = result.partNames || {};
+                Object.keys(newPN).forEach(function(k){
+                  var ni = parseInt(k);
+                  // 기존이 'No.N' 형식이거나 없으면 새 항목명으로 교체
+                  if(!curProduct.partNames[ni] || curProduct.partNames[ni] === 'No.'+ni){
+                    curProduct.partNames[ni] = newPN[k];
+                  }
+                });
                 var pid = curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,'');
                 db.ref('products/' + pid + '/specMap').set(result.specMap);
                 db.ref('products/' + pid + '/tolMap').set(result.tolMap || {});
