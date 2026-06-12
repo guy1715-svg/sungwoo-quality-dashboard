@@ -1310,6 +1310,54 @@ function saveEditProduct(productId){
   });
 }
 
+// ===== 승인 상태 토글 =====
+function toggleApproval(productId, currentStatus, e){
+  if(e) e.stopPropagation();
+  var isApproved = currentStatus === 'approved';
+  var newStatus = isApproved ? 'pending' : 'approved';
+  var msg = isApproved
+    ? '승인을 취소하고 승인대기 상태로 변경할까요?'
+    : '✅ 승인완료 처리할까요?';
+  if(!confirm(msg)) return;
+
+  var now = new Date().toISOString().split('T')[0];
+  db.ref('products/' + productId).update({
+    approvalStatus: newStatus,
+    approvedAt: newStatus === 'approved' ? now : null
+  }).then(function(){
+    // 로컬 PRODUCTS 업데이트
+    if(PRODUCTS[productId]){
+      PRODUCTS[productId].approvalStatus = newStatus;
+      PRODUCTS[productId].lastDate = newStatus === 'approved' ? now : PRODUCTS[productId].lastDate;
+    }
+    // 홈 카드 재생성
+    var customerId = PRODUCTS[productId] ? PRODUCTS[productId].customerId : null;
+    if(customerId){
+      var oldCard = document.getElementById('customer_' + customerId);
+      if(oldCard) oldCard.remove();
+      db.ref('customers/' + customerId).once('value').then(function(snapC){
+        var cust = snapC.val();
+        if(!cust) return;
+        db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snapP){
+          var prods = snapP.val() ? Object.values(snapP.val()) : [];
+          addCustomerCard(cust, prods);
+        });
+      });
+    }
+    refreshHomeKPI();
+    // 현재 제품 화면 새로고침
+    var custId = PRODUCTS[productId] ? PRODUCTS[productId].customerId : null;
+    var modelName = PRODUCTS[productId] ? PRODUCTS[productId].modelName : null;
+    if(custId && modelName){
+      var custName = window._customerCache && window._customerCache[custId] ? window._customerCache[custId].name : '';
+      goProductDynamic(custId, modelName, encodeURIComponent(custName));
+    }
+    alert(newStatus === 'approved' ? '✅ 승인완료 처리되었습니다!' : '⏳ 승인대기로 변경되었습니다.');
+  }).catch(function(err){
+    alert('❌ 변경 실패: ' + err.message);
+  });
+}
+
 function confirmDeleteCustomer(customerId){
   var cust = window._customerCache[customerId];
   var name = cust ? cust.name : customerId;
@@ -1475,12 +1523,13 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
           '</div>'+
         '</div>'+
         '<div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">'+p.productName+'</div>'+
-        '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+        '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">'+
           '<span class="p-tag tag-vina">VINA ✓</span>'+
           (isApproved
             ? '<span class="p-tag" style="background:#d1fae5;color:#065f46">✅ 승인완료</span>'
             : '<span class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>')+
         '</div>'+
+        '<button data-pid="'+pid+'" data-status="'+(isApproved?'approved':'pending')+'" onclick="event.stopPropagation();toggleApproval(this.dataset.pid,this.dataset.status)" style="width:100%;padding:6px;margin-bottom:8px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:'+(isApproved?'#fff3cd':'#d1fae5')+';color:'+(isApproved?'#856404':'#065f46')+';">+'+(isApproved?'"⏳ 승인 취소"':'"✅ 승인 처리"')+'</button>'+
         '<div class="p-bar"><div class="p-bar-fill" style="width:'+(isApproved?'100':'30')+'%;background:'+(isApproved?'#27ae60':'#f39c12')+'"></div></div>'+
         '<span class="p-arrow" style="color:'+(isApproved?'#27ae60':'#ddd')+'">→</span>'+
       '</div>';
