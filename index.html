@@ -2852,6 +2852,8 @@ function loadMandoApproval(){
       var isApproved = !!(data[pid] && data[pid].approved);
       updateMandoUI(pid, isApproved);
     });
+    // 만도 승인 상태 로드 완료 후 홈 KPI 숫자 갱신
+    refreshMandoHomeKPI();
   }).catch(function(err){
     console.error('만도 승인 상태 로드 실패:', err);
   });
