@@ -571,6 +571,16 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div class="notice">📐 <strong>각도 항목</strong>은 측정 오차 특성상 참고치수로만 표시됩니다.</div>
       <div class="gap-info">📊 <strong>판정 기준:</strong> VINA 측정값이 Spec 허용범위 대비 위치로 판정 · 정상: 범위 내 중앙 70% · 주의: 경계 30% · 즉시수리: 범위 초과</div>
 
+      <!-- 경고 배너 -->
+      <div id="warningBanner" style="display:none;background:#fff3cd;border:1.5px solid #f0ad4e;border-radius:10px;padding:12px 16px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:18px">⚠️</span>
+          <strong style="color:#856404;font-size:13px">편차 경고 — 즉시 확인이 필요한 항목이 있습니다</strong>
+          <button onclick="document.getElementById('warningBanner').style.display='none'" style="margin-left:auto;background:none;border:none;font-size:16px;color:#856404;cursor:pointer">✕</button>
+        </div>
+        <div id="warningList" style="font-size:12px;color:#664d03;line-height:1.8"></div>
+      </div>
+
       <div class="filter-bar" id="filterBar">
         <span style="font-size:12px;font-weight:700;color:#555">📅 날짜:</span>
         <div id="dateBtns"></div>
@@ -2704,6 +2714,23 @@ function renderData(){
       scales:{x:{ticks:{font:{size:9},autoSkip:false,maxRotation:0},grid:{display:false}},
         y:{ticks:{font:{size:10},callback:function(v){return v+'%';}},grid:{color:'rgba(0,0,0,0.05)'},max:maxPct}}}
   });
+
+  // 경고 배너 업데이트 (편차 80% 초과 항목)
+  var warnBanner = document.getElementById('warningBanner');
+  var warnList = document.getElementById('warningList');
+  if(warnBanner && warnList){
+    var warnItems = devData.filter(function(d){ return d.pct >= 80; });
+    if(warnItems.length > 0){
+      warnList.innerHTML = warnItems.map(function(d){
+        var name = curProduct.partNames[d.no] || ('No.' + d.no);
+        var icon = d.pct >= 100 ? '🔴 범위초과' : '🟡 경계근접';
+        return '<span style="display:inline-block;margin-right:16px">' + icon + ' &nbsp;<strong>No.' + d.no + '</strong> ' + esc(name) + ' &nbsp;<span style="color:#c0392b;font-weight:700">' + d.pct.toFixed(1) + '%</span></span>';
+      }).join('<br>');
+      warnBanner.style.display = 'block';
+    } else {
+      warnBanner.style.display = 'none';
+    }
+  }
 }
 
 function detectFileType(arr){
