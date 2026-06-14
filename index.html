@@ -2950,6 +2950,32 @@ function buildTrendChart(){
   });
 }
 
+function buildCpkSparkSVG(spark){
+  if(!spark || spark.length < 2) return '';
+  var valid = spark.filter(function(v){ return v != null; });
+  if(valid.length < 2) return '';
+  var W=44, H=16, pad=1;
+  var minV = Math.min.apply(null, valid.concat([0]));
+  var maxV = Math.max.apply(null, valid.concat([2]));
+  var range = maxV - minV || 1;
+  var pts = [];
+  var step = (W - pad*2) / (spark.length - 1);
+  spark.forEach(function(v, i){
+    if(v == null) return;
+    var x = pad + i * step;
+    var y = H - pad - ((v - minV) / range) * (H - pad*2);
+    pts.push(x.toFixed(1) + ',' + y.toFixed(1));
+  });
+  // 기준선 Cpk=1.33
+  var refY = H - pad - ((1.33 - minV) / range) * (H - pad*2);
+  var lastV = valid[valid.length-1];
+  var lineColor = lastV >= 1.67 ? '#27ae60' : lastV >= 1.33 ? '#2980b9' : lastV >= 1.0 ? '#f39c12' : '#e74c3c';
+  return '<svg width="'+W+'" height="'+H+'" style="display:inline-block;vertical-align:middle;margin-left:4px" viewBox="0 0 '+W+' '+H+'">' +
+    '<line x1="'+pad+'" y1="'+refY.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+refY.toFixed(1)+'" stroke="#ccc" stroke-width="0.8" stroke-dasharray="2,2"/>' +
+    '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+lineColor+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>' +
+  '</svg>';
+}
+
 // 테이블 정렬 상태
 var curTableSort = 'no'; // 'no' | 'risk'
 
@@ -3009,12 +3035,13 @@ function renderData(){
       else grnCnt++;
       devData.push({no:no,pct:Math.abs(devPct),color:st.color});
     }
-    // Cpk 계산: 전체 날짜 측정값으로 σ 산출
-    var cpkTxt = '-', cpkColor = '#aaa';
+    // Cpk 계산: 전체 날짜 측정값으로 σ 산출 + 날짜별 스파크라인 데이터
+    var cpkTxt = '-', cpkColor = '#aaa', cpkSpark = [];
     if(!isAngle){
-      var allVals = [];
       var src2 = getDataSource();
-      Object.keys(src2).forEach(function(d){ var v = src2[d][no]; if(v != null) allVals.push(v); });
+      var allDates = Object.keys(src2);
+      var allVals = [];
+      allDates.forEach(function(d){ var v = src2[d][no]; if(v != null) allVals.push(v); });
       if(allVals.length >= 2){
         var mean = allVals.reduce(function(a,b){return a+b;},0) / allVals.length;
         var sigma = Math.sqrt(allVals.reduce(function(s,v){return s+(v-mean)*(v-mean);},0)/(allVals.length-1));
@@ -3026,8 +3053,19 @@ function renderData(){
           cpkColor = cpk >= 1.67 ? '#27ae60' : cpk >= 1.33 ? '#2980b9' : cpk >= 1.0 ? '#f39c12' : '#e74c3c';
         }
       }
+      // 날짜별 누적 Cpk 스파크라인 (최근 8개 날짜)
+      var sparkDates = allDates.slice(-8);
+      sparkDates.forEach(function(d, i){
+        var vals = sparkDates.slice(0, i+1).map(function(dd){ return src2[dd] ? src2[dd][no] : null; }).filter(function(v){ return v != null; });
+        if(vals.length >= 2){
+          var m = vals.reduce(function(a,b){return a+b;},0)/vals.length;
+          var s = Math.sqrt(vals.reduce(function(ss,v){return ss+(v-m)*(v-m);},0)/(vals.length-1));
+          if(s > 0) cpkSpark.push(Math.min((max-m)/(3*s),(m-min)/(3*s)));
+          else cpkSpark.push(null);
+        } else { cpkSpark.push(null); }
+      });
     }
-    rows.push({no:no,spec:spec,tol:tol,val:val,min:min,max:max,isAngle:isAngle,st:st,trendTxt:trendTxt,devPct:devPct,posLabel:posLabel,posColor:posColor,cpkTxt:cpkTxt,cpkColor:cpkColor});
+    rows.push({no:no,spec:spec,tol:tol,val:val,min:min,max:max,isAngle:isAngle,st:st,trendTxt:trendTxt,devPct:devPct,posLabel:posLabel,posColor:posColor,cpkTxt:cpkTxt,cpkColor:cpkColor,cpkSpark:cpkSpark});
   });
 
   // 정렬: No순 or 위험순
@@ -3050,7 +3088,7 @@ function renderData(){
       '<td style="color:'+(r.isAngle?'#ccc':'#555')+'">'+r.max.toFixed(3)+'</td>'+
       '<td><strong style="color:'+(r.isAngle?'#ccc':r.st.color)+'">'+r.val.toFixed(4)+'</strong></td>'+
       '<td><span style="color:'+r.posColor+';font-weight:600">'+r.posLabel+'</span></td>'+
-      '<td><span style="font-weight:700;color:'+r.cpkColor+'">'+r.cpkTxt+'</span></td>'+
+      '<td><span style="font-weight:700;color:'+r.cpkColor+'">'+r.cpkTxt+'</span>'+buildCpkSparkSVG(r.cpkSpark)+'</td>'+
       '<td>'+r.trendTxt+'</td>'+
       '<td><span class="badge '+r.st.badgeCls+'">'+r.st.status+'</span></td>';
     tbody.appendChild(tr);
