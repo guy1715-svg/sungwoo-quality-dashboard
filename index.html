@@ -2231,7 +2231,10 @@ function refreshHomeQualityKPI(){
     var total = red + yellow + green;
     if(total === 0) return;
     var avgCpk = cpkList.length > 0 ? (cpkList.reduce(function(a,b){return a+b;},0)/cpkList.length) : null;
-    rows.push({pid:pid, name:p.code || p.name, red:red, yellow:yellow, green:green, total:total, avgCpk:avgCpk});
+    // 승인 완료 제품은 즉시수리/주의 0 처리
+    var isApproved = p.approvalStatus === 'approved';
+    if(isApproved){ green = total; red = 0; yellow = 0; }
+    rows.push({pid:pid, name:p.code || p.name, red:red, yellow:yellow, green:green, total:total, avgCpk:avgCpk, isApproved:isApproved});
   });
 
   if(rows.length === 0){
@@ -2250,9 +2253,10 @@ function refreshHomeQualityKPI(){
     var grnPct   = 100 - redPct - yelPct;
     var cpkTxt   = r.avgCpk != null ? r.avgCpk.toFixed(2) : '-';
     var cpkColor = r.avgCpk == null ? '#aaa' : r.avgCpk >= 1.67 ? '#27ae60' : r.avgCpk >= 1.33 ? '#2980b9' : r.avgCpk >= 1.0 ? '#f39c12' : '#e74c3c';
-    var statusIcon = r.red > 0 ? '🔴' : r.yellow > 0 ? '🟡' : '🟢';
-    return '<div style="display:grid;grid-template-columns:120px 1fr 80px;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f0f0">'+
-      '<div style="font-size:12px;font-weight:700;color:#1a1a2e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(r.name)+'">'+statusIcon+' '+esc(r.name)+'</div>'+
+    var statusIcon = r.isApproved ? '✅' : r.red > 0 ? '🔴' : r.yellow > 0 ? '🟡' : '🟢';
+    var approvedBadge = r.isApproved ? '<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px;vertical-align:middle">승인완료</span>' : '';
+    return '<div style="display:grid;grid-template-columns:140px 1fr 80px;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f0f0">'+
+      '<div style="font-size:12px;font-weight:700;color:#1a1a2e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(r.name)+'">'+statusIcon+' '+esc(r.name)+approvedBadge+'</div>'+
       '<div>'+
         '<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:#f0f0f0">'+
           (redPct > 0 ? '<div style="width:'+redPct+'%;background:#e74c3c;transition:width 0.4s" title="즉시수리 '+r.red+'개"></div>' : '')+
@@ -2260,9 +2264,11 @@ function refreshHomeQualityKPI(){
           (grnPct > 0 ? '<div style="width:'+grnPct+'%;background:#27ae60;transition:width 0.4s" title="정상 '+r.green+'개"></div>' : '')+
         '</div>'+
         '<div style="display:flex;gap:8px;margin-top:3px;font-size:10px;color:#999">'+
-          (r.red>0?'<span style="color:#e74c3c;font-weight:700">🔴 '+r.red+'</span>':'')+
-          (r.yellow>0?'<span style="color:#f39c12;font-weight:700">🟡 '+r.yellow+'</span>':'')+
-          '<span style="color:#27ae60">🟢 '+r.green+'</span>'+
+          (r.isApproved
+            ? '<span style="color:#27ae60;font-weight:700">✅ 승인완료 — 전 항목 합격 처리</span>'
+            : (r.red>0?'<span style="color:#e74c3c;font-weight:700">🔴 '+r.red+'</span>':'')+
+              (r.yellow>0?'<span style="color:#f39c12;font-weight:700">🟡 '+r.yellow+'</span>':'')+
+              '<span style="color:#27ae60">🟢 '+r.green+'</span>')+
         '</div>'+
       '</div>'+
       '<div style="text-align:right;font-size:12px;font-weight:700;color:'+cpkColor+'">Cpk '+cpkTxt+'</div>'+
