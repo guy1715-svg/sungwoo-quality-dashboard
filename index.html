@@ -109,7 +109,21 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 .sp-lbl{position:absolute;bottom:0;font-size:9px;color:#aaa;transform:translateX(-50%);}
 .sp-lbl-c{color:#3b82f6;font-weight:600;}
 .footer{text-align:center;font-size:11px;color:#bbb;padding:16px 0;border-top:1px solid #e8e8e8;margin-top:16px;}
-@media(max-width:800px){.kpi-grid{grid-template-columns:repeat(2,1fr);}.row2{grid-template-columns:1fr;}.upload-grid{grid-template-columns:1fr;}.stats-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:800px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .row2{grid-template-columns:1fr;}
+  .upload-grid{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:520px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .topbar h1{font-size:12px;}
+  .topbar-right{display:none;}
+  .container{padding:12px 8px;}
+  .customer-grid{grid-template-columns:1fr;}
+}
+/* 데이터 테이블 가로 스크롤 */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 </style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -161,26 +175,26 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
           </div>
           <div style="text-align:right">
             <div style="font-size:11px;color:rgba(255,255,255,0.5)">모델 1개 · 제품 4종</div>
-            <div style="font-size:11px;color:#6ee7b7;margin-top:2px">승인완료 1 / 4</div>
+            <div id="mando-home-progress-text" style="font-size:11px;color:#6ee7b7;margin-top:2px">승인완료 1 / 4</div>
           </div>
         </div>
         <div style="padding:16px 20px">
           <div style="font-size:11px;color:#888;font-weight:700;margin-bottom:10px">MX5A EREV &nbsp;<span style="color:#3b82f6;font-weight:400">전기차 브레이크 브라켓</span></div>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">
-            <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;border-left:3px solid #3b82f6">
+            <div id="mando-home-card-br0035" style="background:#f8f8f8;border-radius:8px;padding:10px 12px;border-left:3px solid #3b82f6">
               <div style="font-size:10px;color:#888;margin-bottom:2px">BR0035 L-A/R-A</div>
               <div style="font-size:12px;font-weight:700;color:#1a1a2e">FRT BRKT LH#1</div>
               <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">
                 <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-weight:600">VINA ✓</span>
-                <span style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 6px;border-radius:3px;font-weight:600">⏳ 승인대기</span>
+                <span id="mando-home-status-br0035" style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 6px;border-radius:3px;font-weight:600">⏳ 승인대기</span>
               </div>
             </div>
-            <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;border-left:3px solid #3b82f6">
+            <div id="mando-home-card-br0036" style="background:#f8f8f8;border-radius:8px;padding:10px 12px;border-left:3px solid #3b82f6">
               <div style="font-size:10px;color:#888;margin-bottom:2px">BR0036 L-A/R-A</div>
               <div style="font-size:12px;font-weight:700;color:#1a1a2e">RR BRKT LH#1</div>
               <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">
                 <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-weight:600">VINA ✓</span>
-                <span style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 6px;border-radius:3px;font-weight:600">⏳ 승인대기</span>
+                <span id="mando-home-status-br0036" style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 6px;border-radius:3px;font-weight:600">⏳ 승인대기</span>
               </div>
             </div>
             <div style="background:#eafaf1;border-radius:8px;padding:10px 12px;border-left:3px solid #27ae60">
@@ -192,20 +206,20 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
               </div>
               <div style="font-size:10px;color:#27ae60;margin-top:3px">2026-05-19</div>
             </div>
-            <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;border-left:3px solid #3b82f6">
+            <div id="mando-home-card-br0038" style="background:#f8f8f8;border-radius:8px;padding:10px 12px;border-left:3px solid #3b82f6">
               <div style="font-size:10px;color:#888;margin-bottom:2px">BR0038 L-A/R-A</div>
               <div style="font-size:12px;font-weight:700;color:#1a1a2e">RR BRKT LH#3</div>
               <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">
                 <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-weight:600">VINA ✓</span>
-                <span style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 6px;border-radius:3px;font-weight:600">⏳ 승인대기</span>
+                <span id="mando-home-status-br0038" style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 6px;border-radius:3px;font-weight:600">⏳ 승인대기</span>
               </div>
             </div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:4px">
-            <span>승인 진행률</span><span style="color:#27ae60;font-weight:600">25% (1/4)</span>
+            <span>승인 진행률</span><span id="mando-home-pct" style="color:#27ae60;font-weight:600">25% (1/4)</span>
           </div>
           <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden">
-            <div style="height:100%;width:25%;background:linear-gradient(90deg,#27ae60,#2ecc71);border-radius:3px"></div>
+            <div id="mando-home-pct-bar" style="height:100%;width:25%;background:linear-gradient(90deg,#27ae60,#2ecc71);border-radius:3px"></div>
           </div>
         </div>
         <div style="padding:0 20px 14px;text-align:right">
@@ -249,7 +263,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
             <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;border-left:3px solid #3b82f6">
               <div style="font-size:10px;color:#888;margin-bottom:2px">AP5030</div>
               <div style="font-size:12px;font-weight:700;color:#1a1a2e">LCD GND SPRING</div>
-              <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:walk">
+              <div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap">
                 <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:3px;font-weight:600">VINA ✓</span>
                 <span style="font-size:10px;background:#d1fae5;color:#065f46;padding:1px 6px;border-radius:3px;font-weight:600">✅ 승인완료</span>
               </div>
@@ -342,7 +356,11 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div class="product-card" onclick="goDashboard('br0035')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0035 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">FRT BRKT LH#1</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <span class="p-tag tag-vina">VINA ✓</span>
+          <span id="mando-status-br0035" class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>
+        </div>
+        <button id="mando-btn-br0035" onclick="event.stopPropagation();toggleMandoApproval('br0035')" style="width:100%;padding:5px;margin-bottom:8px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
         <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-21</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
@@ -350,7 +368,11 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div class="product-card" onclick="goDashboard('br0036')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0036 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#1</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <span class="p-tag tag-vina">VINA ✓</span>
+          <span id="mando-status-br0036" class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>
+        </div>
+        <button id="mando-btn-br0036" onclick="event.stopPropagation();toggleMandoApproval('br0036')" style="width:100%;padding:5px;margin-bottom:8px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
         <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-09</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
@@ -366,7 +388,11 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       <div class="product-card" onclick="goDashboard('br0038')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0038 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#3</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-vina">VINA ✓</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <span class="p-tag tag-vina">VINA ✓</span>
+          <span id="mando-status-br0038" class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>
+        </div>
+        <button id="mando-btn-br0038" onclick="event.stopPropagation();toggleMandoApproval('br0038')" style="width:100%;padding:5px;margin-bottom:8px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
         <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-12</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
@@ -569,7 +595,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
             <button id="sortByRisk" onclick="setTableSort('risk')" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:5px;border:1px solid #e4e4e4;background:#fff;color:#888;cursor:pointer">🔴 위험순</button>
           </div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="table-scroll">
           <table><thead><tr>
             <th>No.</th><th style="text-align:left">측정 부위</th>
             <th>Spec</th><th>TOL</th><th>하한</th><th>상한</th>
@@ -637,6 +663,11 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 
 <script>
 // ===== Firebase 초기화 =====
+// ⚠️  보안 주의: Firebase 웹 API 키는 클라이언트에 노출되어도 되지만,
+//    Firebase Console → 프로젝트 설정 → "승인된 도메인"과
+//    Realtime Database 보안 규칙(Rules)을 반드시 설정하여
+//    외부에서 무단으로 데이터를 읽거나 쓰지 못하도록 제한하세요.
+//    참고: https://firebase.google.com/docs/rules
 const firebaseConfig = {
   apiKey: "AIzaSyD9HVCVoM2UUdEaLIsLGua1rRGIXmbtTNc",
   authDomain: "sungwoo-quality.firebaseapp.com",
@@ -687,7 +718,7 @@ function rebuildDateBtns(productId, fbDates){
 function deleteMeasData(productId, dateLabel){
   if(!confirm(dateLabel + ' 데이터를 삭제할까요?')) return;
   var fbDates = curFbDates;
-  var key = dateLabel.replace('/','_');
+  var key = dateLabelToKey(dateLabel);
   var ref = db.ref('measData/' + productId + '/' + key);
   ref.remove().then(function(){
     // 로컬 데이터에서도 제거
@@ -710,7 +741,7 @@ function deleteMeasData(productId, dateLabel){
 
 // 측정 데이터 저장
 function saveMeasData(productId, dateLabel, data){
-  var ref = db.ref('measData/' + productId + '/' + dateLabel.replace('/','_'));
+  var ref = db.ref('measData/' + productId + '/' + dateLabelToKey(dateLabel));
   ref.set(data).then(function(){
     document.getElementById('measStatus').textContent = '💾 Firebase 저장 완료! (' + dateLabel + ')';
     document.getElementById('measStatus').style.color = '#27ae60';
@@ -726,9 +757,12 @@ function loadMeasData(productId, callback){
   ref.once('value').then(function(snapshot){
     var data = snapshot.val();
     if(data){
-      curFbDates = Object.keys(data).map(function(k){ return k.replace('_','/'); });
+      curFbDates = Object.keys(data).map(function(k){ return dateKeyToLabel(k); });
       callback(data);
     }
+  }).catch(function(err){
+    console.error('측정 데이터 로드 실패:', err);
+    alert('❌ 데이터를 불러오지 못했습니다: ' + err.message);
   });
 }
 
@@ -756,6 +790,10 @@ function loadProductDataFromFirebase(productId){
         }
       }
       _doLoadMeasData(productId);
+    }).catch(function(err){
+      console.error('제품 데이터 로드 실패:', err);
+      alert('❌ 제품 정보를 불러오지 못했습니다: ' + err.message);
+      _doLoadMeasData(productId);
     });
   } else {
     _doLoadMeasData(productId);
@@ -765,12 +803,12 @@ function loadProductDataFromFirebase(productId){
 function _doLoadMeasData(productId){
   loadMeasData(productId, function(data){
     var updated = false;
-    var fbDateLabels = Object.keys(data).map(function(k){ return k.replace('_', '/'); });
+    var fbDateLabels = Object.keys(data).map(function(k){ return dateKeyToLabel(k); });
     curFbDates = fbDateLabels.slice();
     window._fbDates = fbDateLabels.slice();
 
     Object.keys(data).forEach(function(dateKey){
-      var dateLabel = dateKey.replace('_', '/');
+      var dateLabel = dateKeyToLabel(dateKey);
       if(!PRODUCTS[productId].vinaAll[dateLabel]){
         PRODUCTS[productId].vinaAll[dateLabel] = data[dateKey];
         PRODUCTS[productId].vinaLH[dateLabel] = data[dateKey];
@@ -786,6 +824,20 @@ function _doLoadMeasData(productId){
       renderData();
     }
   });
+}
+
+// 날짜 키 변환 헬퍼: Firebase 키(2026_06_09) ↔ 표시용(2026/06/09)
+function dateKeyToLabel(key){ return key.replace(/_/g, '/'); }
+function dateLabelToKey(label){ return label.replace(/\//g, '_'); }
+
+// XSS 방어: HTML 특수문자 이스케이프
+function esc(str){
+  return String(str == null ? '' : str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
 }
 
 // ===== 제품 데이터 =====
@@ -1192,21 +1244,21 @@ function openEditCustomer(customerId){
     return '<div onclick="selectColor(this,\'' + c + '\')" style="width:32px;height:32px;background:' + c + ';border-radius:6px;cursor:pointer;' + sel + '"></div>';
   }).join('');
 
-  openModal('고객사 편집 — ' + cust.name, `
+  openModal('고객사 편집 — ' + esc(cust.name), `
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">고객사명 (한글)</div>
-      <input id="editCustomerName" type="text" value="${cust.name}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+      <input id="editCustomerName" type="text" value="${esc(cust.name)}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
     </div>
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">영문명</div>
-      <input id="editCustomerEng" type="text" value="${cust.eng||''}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+      <input id="editCustomerEng" type="text" value="${esc(cust.eng||'')}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
     </div>
     <div style="margin-bottom:20px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">고객사 색상</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">${colorHtml}</div>
-      <input type="hidden" id="newCustomerColor" value="${cust.color}">
+      <input type="hidden" id="newCustomerColor" value="${esc(cust.color)}">
     </div>
-    <button onclick="saveEditCustomer('${customerId}')" style="width:100%;padding:12px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✏️ 수정 저장</button>
+    <button onclick="saveEditCustomer('${esc(customerId)}')" style="width:100%;padding:12px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✏️ 수정 저장</button>
   `);
 }
 
@@ -1240,21 +1292,21 @@ function openEditProduct(productId){
   var prod = PRODUCTS[productId];
   if(!prod){ alert('제품 정보를 찾을 수 없습니다'); return; }
 
-  openModal('제품 편집 — ' + prod.name, `
+  openModal('제품 편집 — ' + esc(prod.name), `
     <div style="background:#f0f7ff;border-radius:8px;padding:10px 14px;font-size:11px;color:#1e40af;margin-bottom:16px">
-      📋 모델: <strong>${prod.modelName||'-'}</strong>
+      📋 모델: <strong>${esc(prod.modelName||'-')}</strong>
     </div>
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품 코드</div>
-      <input id="editProductCode" type="text" value="${prod.code||''}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+      <input id="editProductCode" type="text" value="${esc(prod.code||'')}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
     </div>
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품명</div>
-      <input id="editProductName" type="text" value="${prod.name.replace(prod.code+' ','')}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+      <input id="editProductName" type="text" value="${esc(prod.name.replace(prod.code+' ',''))}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
     </div>
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델명</div>
-      <input id="editProductModel" type="text" value="${prod.modelName||''}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+      <input id="editProductModel" type="text" value="${esc(prod.modelName||'')}" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
     </div>
     <div style="margin-bottom:20px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">LH/RH 구분</div>
@@ -1264,7 +1316,7 @@ function openEditProduct(productId){
       </div>
       <input type="hidden" id="editProductSide" value="${prod.hasSide!==false?'true':'false'}">
     </div>
-    <button onclick="saveEditProduct('${productId}')" style="width:100%;padding:12px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✏️ 수정 저장</button>
+    <button onclick="saveEditProduct('${esc(productId)}')" style="width:100%;padding:12px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✏️ 수정 저장</button>
   `);
 }
 
@@ -1500,7 +1552,7 @@ function goCustomerDynamic(customer, products){
 
   showScreen('dyn-' + customer.id);
   updateBC([{label:'🏠 홈',fn:'goHome()'},{label:customer.name}]);
-  document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>고객사: '+customer.eng;
+  document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>고객사: '+esc(customer.eng);
 }
 
 // 동적 고객사 제품 화면
@@ -1584,9 +1636,9 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
 
 // 모델 추가
 function openAddModel(customer){
-  openModal('모델/제품 추가 — ' + customer.name, `
+  openModal('모델/제품 추가 — ' + esc(customer.name), `
     <div style="background:#f0f7ff;border-radius:8px;padding:10px 14px;font-size:11px;color:#1e40af;margin-bottom:16px">
-      📋 고객사: <strong>${customer.name}</strong>
+      📋 고객사: <strong>${esc(customer.name)}</strong>
     </div>
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델명</div>
@@ -1614,7 +1666,7 @@ function openAddModel(customer){
       </div>
       <input type="hidden" id="newProductSide" value="true">
     </div>
-    <button onclick="saveModel('${customer.id}','${customer.name}')" style="width:100%;padding:12px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">+ 모델/제품 등록</button>
+    <button onclick="saveModel('${esc(customer.id)}','${esc(customer.name)}')" style="width:100%;padding:12px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">+ 모델/제품 등록</button>
   `);
 }
 
@@ -1697,37 +1749,34 @@ function saveModel(customerId, customerName){
 }
 
 function refreshHomeKPI(){
-  // 고객사: Firebase + 고정 2개(만도, AM사)
-  db.ref('customers').once('value').then(function(snapC){
-    var fbCust = snapC.val() ? Object.keys(snapC.val()).length : 0;
-    var totalCust = 2 + fbCust;
-    var el = document.getElementById('kpi-cust');
-    if(el) el.textContent = totalCust;
-  });
+  Promise.all([
+    db.ref('customers').once('value'),
+    db.ref('products').once('value')
+  ]).then(function(snaps){
+    var fbCust  = snaps[0].val() ? Object.keys(snaps[0].val()).length : 0;
+    var prods   = snaps[1].val() ? Object.values(snaps[1].val()) : [];
 
-  // 제품 + 모델 + 승인
-  db.ref('products').once('value').then(function(snapP){
-    var prods = snapP.val() ? Object.values(snapP.val()) : [];
-    var approved = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
-
-    // 고정: 만도 4개 + AM사 3개 = 7개, 승인완료 4개(AM 3 + 만도 1)
-    var totalProds = 7 + prods.length;
+    var totalCust     = 2 + fbCust;
+    var approved      = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
+    var totalProds    = 7 + prods.length;
     var totalApproved = 4 + approved;
-
-    // 모델 수: Firebase 제품의 고유 modelName 수 + 고정 2개(MX5A, SHIELD CAN)
-    var fbModels = {};
+    var fbModels      = {};
     prods.forEach(function(p){ if(p.modelName) fbModels[p.modelName] = true; });
-    var totalModels = 2 + Object.keys(fbModels).length;
+    var totalModels   = 2 + Object.keys(fbModels).length;
 
-    var elProd = document.getElementById('kpi-prod');
-    var elModel = document.getElementById('kpi-model');
-    var elApproved = document.getElementById('kpi-approved');
+    var elCust        = document.getElementById('kpi-cust');
+    var elProd        = document.getElementById('kpi-prod');
+    var elModel       = document.getElementById('kpi-model');
+    var elApproved    = document.getElementById('kpi-approved');
     var elApprovedSub = document.getElementById('kpi-approved-sub');
 
-    if(elProd) elProd.textContent = totalProds;
-    if(elModel) elModel.textContent = totalModels;
-    if(elApproved) elApproved.textContent = totalApproved;
+    if(elCust)        elCust.textContent        = totalCust;
+    if(elProd)        elProd.textContent        = totalProds;
+    if(elModel)       elModel.textContent       = totalModels;
+    if(elApproved)    elApproved.textContent    = totalApproved;
     if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+  }).catch(function(err){
+    console.error('KPI 로드 실패:', err);
   });
 
   // 최근 활동 업데이트
@@ -1749,7 +1798,7 @@ function refreshRecentActivity(){
       var dates = measData[pid];
       if(!dates) return;
       Object.keys(dates).forEach(function(dateKey){
-        var dateLabel = dateKey.replace('_','/');
+        var dateLabel = dateKeyToLabel(dateKey);
         // PRODUCTS에서 제품명 찾기
         var prodName = PRODUCTS[pid] ? PRODUCTS[pid].name : pid;
         var custName = '';
@@ -1761,7 +1810,7 @@ function refreshRecentActivity(){
           icon: '📊',
           title: prodName + ' — VINA 측정 완료',
           sub: (custName ? custName + ' · ' : '') + (PRODUCTS[pid] ? PRODUCTS[pid].modelName || '' : ''),
-          date: '20' + dateLabel.replace('/','-')  // 06/09 → 2026-06-09
+          date: dateLabel.replace(/\//g,'-')  // 2026/06/09 → 2026-06-09
         });
       });
     });
@@ -1796,57 +1845,133 @@ function refreshRecentActivity(){
 // ===== Firebase 동적 데이터 로드 =====
 // Firebase에 저장된 고객사/모델/제품을 불러와 대시보드에 반영
 function loadFirebaseData(){
-  db.ref('customers').once('value').then(function(snapC){
-    var customers = snapC.val() || {};
-    db.ref('products').once('value').then(function(snapP){
-      var products = snapP.val() || {};
+  Promise.all([
+    db.ref('customers').once('value'),
+    db.ref('products').once('value')
+  ]).then(function(snaps){
+    var customers = snaps[0].val() || {};
+    var products  = snaps[1].val() || {};
 
-      // 고객사별 제품 그룹핑
-      var custProducts = {}; // customerId -> [product]
-      Object.values(products).forEach(function(p){
-        if(!custProducts[p.customerId]) custProducts[p.customerId] = [];
-        custProducts[p.customerId].push(p);
+    // 고객사별 제품 그룹핑
+    var custProducts = {}; // customerId -> [product]
+    Object.values(products).forEach(function(p){
+      if(!custProducts[p.customerId]) custProducts[p.customerId] = [];
+      custProducts[p.customerId].push(p);
 
-        // PRODUCTS 전역 객체에 등록 (대시보드 진입용)
-        var pid = p.productId;
-        if(!PRODUCTS[pid]){
-          PRODUCTS[pid] = {
-            name: p.productCode + ' ' + p.productName,
-            code: p.productCode,
-            _productId: pid,
-            lastDate: p.createdAt ? p.createdAt.split('T')[0] : '-',
-            hasHQ: false,
-            angleNos: [],
-            specMap: {},
-            tolMap: {},
-            partNames: {},
-            vinaAll: {},
-            vinaLH: {},
-            vinaRH: {},
-            customerId: p.customerId,
-            modelName: p.modelName,
-            hasSide: p.hasSide,
-            approvalStatus: p.approvalStatus || 'pending',
-            _fromFirebase: true
-          };
-        }
-      });
-
-      // 고객사 카드 생성
-      Object.values(customers).forEach(function(customer){
-        var prods = custProducts[customer.id] || [];
-        addCustomerCard(customer, prods);
-      });
-
-      // KPI 업데이트
-      refreshHomeKPI();
+      // PRODUCTS 전역 객체에 등록 (대시보드 진입용)
+      var pid = p.productId;
+      if(!PRODUCTS[pid]){
+        PRODUCTS[pid] = {
+          name: p.productCode + ' ' + p.productName,
+          code: p.productCode,
+          _productId: pid,
+          lastDate: p.createdAt ? p.createdAt.split('T')[0] : '-',
+          hasHQ: false,
+          angleNos: [],
+          specMap: {},
+          tolMap: {},
+          partNames: {},
+          vinaAll: {},
+          vinaLH: {},
+          vinaRH: {},
+          customerId: p.customerId,
+          modelName: p.modelName,
+          hasSide: p.hasSide,
+          approvalStatus: p.approvalStatus || 'pending',
+          _fromFirebase: true
+        };
+      }
     });
+
+    // 고객사 카드 생성
+    Object.values(customers).forEach(function(customer){
+      var prods = custProducts[customer.id] || [];
+      addCustomerCard(customer, prods);
+    });
+
+    // KPI 업데이트
+    refreshHomeKPI();
+  }).catch(function(err){
+    console.error('Firebase 데이터 로드 실패:', err);
+    alert('❌ 대시보드 데이터를 불러오지 못했습니다: ' + err.message);
+  });
+}
+
+// ===== 만도 하드코딩 제품 승인 관리 =====
+var MANDO_PRODUCTS = {
+  br0035: { fixed: true },   // BR0037은 이미 승인완료 하드코딩
+  br0036: { fixed: true },
+  br0038: { fixed: true }
+};
+
+function updateMandoUI(pid, isApproved){
+  var statusEl  = document.getElementById('mando-status-' + pid);
+  var btnEl     = document.getElementById('mando-btn-' + pid);
+  var homeStatus = document.getElementById('mando-home-status-' + pid);
+  var homeCard   = document.getElementById('mando-home-card-' + pid);
+
+  if(isApproved){
+    if(statusEl){ statusEl.textContent='✅ 승인완료'; statusEl.style.background='#d1fae5'; statusEl.style.color='#065f46'; }
+    if(btnEl){ btnEl.textContent='⏳ 승인 취소'; btnEl.style.background='#fff3cd'; btnEl.style.color='#856404'; }
+    if(homeStatus){ homeStatus.textContent='✅ 승인완료'; homeStatus.style.background='#d1fae5'; homeStatus.style.color='#065f46'; }
+    if(homeCard){ homeCard.style.background='#eafaf1'; homeCard.style.borderLeftColor='#27ae60'; }
+  } else {
+    if(statusEl){ statusEl.textContent='⏳ 승인대기'; statusEl.style.background='#fff3cd'; statusEl.style.color='#856404'; }
+    if(btnEl){ btnEl.textContent='✅ 승인 처리'; btnEl.style.background='#d1fae5'; btnEl.style.color='#065f46'; }
+    if(homeStatus){ homeStatus.textContent='⏳ 승인대기'; homeStatus.style.background='#fff3cd'; homeStatus.style.color='#856404'; }
+    if(homeCard){ homeCard.style.background='#f8f8f8'; homeCard.style.borderLeftColor='#3b82f6'; }
+  }
+  MANDO_PRODUCTS[pid].approved = isApproved;
+  refreshMandoHomeKPI();
+}
+
+function refreshMandoHomeKPI(){
+  // br0037은 항상 승인완료 (하드코딩)
+  var approvedCount = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+  var total = 4;
+  var pct = Math.round(approvedCount / total * 100);
+  var progressText = document.getElementById('mando-home-progress-text');
+  var pctEl        = document.getElementById('mando-home-pct');
+  var pctBar       = document.getElementById('mando-home-pct-bar');
+  if(progressText) progressText.textContent = '승인완료 ' + approvedCount + ' / ' + total;
+  if(pctEl) pctEl.textContent = pct + '% (' + approvedCount + '/' + total + ')';
+  if(pctBar) pctBar.style.width = pct + '%';
+}
+
+function toggleMandoApproval(pid){
+  var isApproved = !!(MANDO_PRODUCTS[pid] && MANDO_PRODUCTS[pid].approved);
+  var newStatus  = !isApproved;
+  var msg = isApproved ? '승인을 취소하고 승인대기 상태로 변경할까요?' : '✅ 승인완료 처리할까요?';
+  if(!confirm(msg)) return;
+
+  var now = new Date().toISOString().split('T')[0];
+  db.ref('mandoApproval/' + pid).set({
+    approved: newStatus,
+    updatedAt: now
+  }).then(function(){
+    updateMandoUI(pid, newStatus);
+    showToast(newStatus ? '✅ 승인완료 처리되었습니다!' : '⏳ 승인대기로 변경되었습니다.', 'success');
+  }).catch(function(err){
+    alert('❌ 저장 실패: ' + err.message);
+  });
+}
+
+function loadMandoApproval(){
+  db.ref('mandoApproval').once('value').then(function(snap){
+    var data = snap.val() || {};
+    Object.keys(MANDO_PRODUCTS).forEach(function(pid){
+      var isApproved = !!(data[pid] && data[pid].approved);
+      updateMandoUI(pid, isApproved);
+    });
+  }).catch(function(err){
+    console.error('만도 승인 상태 로드 실패:', err);
   });
 }
 
 document.addEventListener('DOMContentLoaded', function(){
   loadFirebaseData();
   refreshHomeKPI();
+  loadMandoApproval();
 });
 
 function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';}
@@ -1913,7 +2038,7 @@ function goDashboard(productId){
   } else {
     updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV',fn:'goProduct()'},{label:curProduct.name}]);
   }
-  document.getElementById('topbarRight').innerHTML='VINA 최근: '+curProduct.lastDate+'<br>Part: '+curProduct.code;
+  document.getElementById('topbarRight').innerHTML='VINA 최근: '+esc(curProduct.lastDate)+'<br>Part: '+esc(curProduct.code);
 
   // HQ vs VINA 탭 별도 화면으로 이동됨
 
