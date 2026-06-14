@@ -648,7 +648,7 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
   </div>
 
   <!-- 고객사 추가 모달 -->
-  <div id="modalOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+  <div id="modalOverlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:16px;padding:28px;width:480px;max-width:90%;max-height:80vh;overflow-y:auto;position:relative">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
         <div style="font-size:16px;font-weight:700;color:#1a1a2e" id="modalTitle">고객사 추가</div>
@@ -733,7 +733,7 @@ function deleteMeasData(productId, dateLabel){
     curDate = 'all';
     buildTrendChart();
     renderData();
-    alert('✅ ' + dateLabel + ' 데이터가 삭제되었습니다.');
+    showToast('✅ ' + dateLabel + ' 데이터가 삭제되었습니다.', 'success');
   }).catch(function(err){
     alert('❌ 삭제 실패: ' + err.message);
   });
@@ -829,6 +829,46 @@ function _doLoadMeasData(productId){
 // 날짜 키 변환 헬퍼: Firebase 키(2026_06_09) ↔ 표시용(2026/06/09)
 function dateKeyToLabel(key){ return key.replace(/_/g, '/'); }
 function dateLabelToKey(label){ return label.replace(/\//g, '_'); }
+
+// 현재 제품의 Firebase 저장용 ID 반환
+function getCurProductId(){
+  return curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+
+// 엑셀 시트 배열(arr)에서 날짜 레이블(MM/DD) 추출 — VINA/HQ 파서 공용
+function parseDateFromSheet(arr){
+  for(var i = 0; i < Math.min(15, arr.length); i++){
+    var row = arr[i];
+    if(!row) continue;
+    for(var j = 0; j < row.length; j++){
+      var v = row[j];
+      if(!v) continue;
+      var vs = String(v);
+
+      // 'Date : 25/04/2026' (DD/MM/YYYY)
+      var m1 = vs.match(/Date\s*:\s*(\d{2})\/(\d{2})\/(\d{4})/);
+      if(m1) return m1[2] + '/' + m1[1];
+
+      // 'Date : 2026-05-08' (YYYY-MM-DD)
+      var m2 = vs.match(/Date\s*:\s*\d{4}-(\d{2})-(\d{2})/);
+      if(m2) return m2[1] + '/' + m2[2];
+
+      // '측정일자' 키워드 — 인접 셀에서 날짜 추출
+      if(vs.indexOf('측정일자') >= 0){
+        var dv = row[j+2] || row[j+1] || row[j+3];
+        if(dv && typeof dv === 'number' && dv > 40000){
+          // Excel 날짜 시리얼 → JS Date
+          var d = new Date((dv - 25569) * 86400 * 1000);
+          return String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+        } else if(dv && typeof dv === 'string'){
+          var dm = dv.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+          if(dm) return dm[2].padStart(2,'0') + '/' + dm[3].padStart(2,'0');
+        }
+      }
+    }
+  }
+  return null;
+}
 
 // XSS 방어: HTML 특수문자 이스케이프
 function esc(str){
@@ -1079,7 +1119,7 @@ function saveCustomer(){
 
   // Firebase 저장
   db.ref('customers/' + id).set(customer).then(function(){
-    alert('✅ ' + name + ' 고객사가 추가되었습니다!');
+    showToast('✅ ' + name + ' 고객사가 추가되었습니다!', 'success');
     closeModal();
     // 홈화면 카드 추가
     addCustomerCard(customer, []);
@@ -1281,7 +1321,7 @@ function saveEditCustomer(customerId){
       addCustomerCard(updated, prods);
     });
     closeModal();
-    alert('✅ ' + name + ' 고객사 정보가 수정되었습니다!');
+    showToast('✅ ' + name + ' 고객사 정보가 수정되었습니다!', 'success');
   }).catch(function(err){
     alert('❌ 수정 실패: ' + err.message);
   });
@@ -1363,7 +1403,7 @@ function saveEditProduct(productId){
       });
     }
     closeModal();
-    alert('✅ 제품 정보가 수정되었습니다!');
+    showToast('✅ 제품 정보가 수정되었습니다!', 'success');
   }).catch(function(err){
     alert('❌ 수정 실패: ' + err.message);
   });
@@ -1477,7 +1517,7 @@ function deleteProduct(productId, productName){
     }
 
     refreshHomeKPI();
-    alert('✅ ' + (productName||'제품') + ' 삭제 완료');
+    showToast('✅ ' + (productName||'제품') + ' 삭제 완료', 'success');
   }).catch(function(err){
     alert('❌ 삭제 실패: ' + err.message);
   });
@@ -1507,7 +1547,7 @@ function deleteCustomer(customerId, customerName){
       delete window._customerCache[customerId];
       // KPI 업데이트
       refreshHomeKPI();
-      alert('✅ ' + (customerName||'고객사') + ' 삭제 완료');
+      showToast('✅ ' + (customerName||'고객사') + ' 삭제 완료', 'success');
     }).catch(function(err){
       alert('❌ 삭제 실패: ' + err.message);
     });
@@ -1728,7 +1768,7 @@ function saveModel(customerId, customerName){
 
   // Firebase 저장
   db.ref('products/' + productId).set(data).then(function(){
-    alert('✅ ' + productCode + ' ' + productName + ' 등록 완료!');
+    showToast('✅ ' + productCode + ' ' + productName + ' 등록 완료!', 'success');
     closeModal();
     // 기존 카드 제거 후 재생성
     var oldCard = document.getElementById('customer_' + customerId);
@@ -2365,30 +2405,8 @@ function parseDimensionFile(wb){
     var ws = wb.Sheets[sname];
     var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
 
-    // 날짜 추출 - 여러 형식 지원
-    for(var i=0;i<Math.min(10,arr.length);i++){
-      if(!arr[i]) continue;
-      for(var j=0;j<arr[i].length;j++){
-        var v = arr[i][j];
-        if(!v) continue;
-        var vs = String(v);
-        // 'Date : 25/04/2026' 형식 (DD/MM/YYYY) → MM/DD로 저장
-        var m1 = vs.match(/Date\s*:\s*(\d{2})\/(\d{2})\/(\d{4})/);
-        if(m1){ dateLabel = m1[2]+'/'+m1[1]; break; }
-        // 'Date : 2026-05-08' 형식
-        var m2 = vs.match(/Date\s*:\s*\d{4}-(\d{2})-(\d{2})/);
-        if(m2){ dateLabel = m2[1]+'/'+m2[2]; break; }
-        // '측정일자' 다음 셀 (엑셀 날짜 숫자)
-        if(vs.indexOf('측정일자') >= 0){
-          var dv = arr[i][j+2] || arr[i][j+1];
-          if(dv && typeof dv === 'number'){
-            var d = new Date((dv-25569)*86400*1000);
-            dateLabel = String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
-          }
-        }
-      }
-      if(dateLabel) break;
-    }
+    // 날짜 추출
+    dateLabel = dateLabel || parseDateFromSheet(arr);
 
     arr.forEach(function(row){
       if(!row||!row.length) return;
@@ -2459,26 +2477,8 @@ function parseHQFile(wb){
     var ws = wb.Sheets[sname];
     var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
 
-    // 날짜 추출 - 행7(index 6)의 열4(index 4)
-    for(var i=0; i<Math.min(15, arr.length); i++){
-      var row = arr[i];
-      if(!row) continue;
-      // '측정일자' 행 찾기
-      for(var j=0; j<row.length; j++){
-        if(row[j] && String(row[j]).indexOf('측정일자') >= 0){
-          // 같은 행 또는 다음 셀에서 날짜값 찾기
-          var dv = row[j+2] || row[j+1] || row[j+3];
-          if(dv && typeof dv === 'number' && dv > 40000){
-            var d = new Date((dv - 25569) * 86400 * 1000);
-            dateLabel = String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
-          } else if(dv && typeof dv === 'string'){
-            var dm = dv.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
-            if(dm) dateLabel = dm[2].padStart(2,'0') + '/' + dm[3].padStart(2,'0');
-          }
-        }
-      }
-      if(dateLabel) break;
-    }
+    // 날짜 추출
+    dateLabel = dateLabel || parseDateFromSheet(arr);
 
     // 데이터 행 파싱 (XLSX.js 인덱스 기준, min_col=B)
     // row[0]=금형차수 row[1]=CavityNo row[2]=장비 row[3]=No row[4]=항목
@@ -2627,7 +2627,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 Object.keys(result.specMap).forEach(function(no){
                   curProduct.partNames[parseInt(no)] = 'No.' + no;
                 });
-                var pid = curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,'');
+                var pid = getCurProductId();
                 db.ref('products/' + pid + '/specMap').set(result.specMap);
                 db.ref('products/' + pid + '/tolMap').set(result.tolMap || {});
               }
@@ -2672,7 +2672,7 @@ document.addEventListener('DOMContentLoaded', function(){
             document.getElementById('measStatus').style.display='block';
             document.getElementById('measStatus').style.color='#27ae60';
             // Firebase 자동 저장
-            saveMeasData(curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,''), label, result.data);
+            saveMeasData(getCurProductId(), label, result.data);
 
           } else if(fileType === 'dimension_hq'){
             var result = parseHQFile(wb);
@@ -2698,7 +2698,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     curProduct.partNames[ni] = newPN[k];
                   }
                 });
-                var pid = curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,'');
+                var pid = getCurProductId();
                 db.ref('products/' + pid + '/specMap').set(result.specMap);
                 db.ref('products/' + pid + '/tolMap').set(result.tolMap || {});
               }
@@ -2739,7 +2739,7 @@ document.addEventListener('DOMContentLoaded', function(){
             document.getElementById('measStatus').textContent = '📊 본사 측정 데이터 반영완료! 날짜: '+label+' ('+Object.keys(result.data).length+'개 항목)';
             document.getElementById('measStatus').style.display='block';
             document.getElementById('measStatus').style.color='#27ae60';
-            saveMeasData(curProduct._productId || curProduct.code.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g,''), label, result.data);
+            saveMeasData(getCurProductId(), label, result.data);
 
           } else if(fileType === 'scan'){
             var scanResult = parseScanFile(wb);
