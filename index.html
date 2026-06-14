@@ -170,6 +170,28 @@ body.dark #warningBanner strong{color:#fcd34d;}
 body.dark #warningList{color:#fde68a;}
 body.dark #memoList div{background:#252838;border-color:#2a2d3e;}
 body.dark #paretoSection{background:#1c1f2e;}
+/* 다크모드: 고객사 카드 내부 텍스트 */
+body.dark #homeQualityRow{background:#1c1f2e;border-color:#2a2d3e;}
+body.dark #homeQualityList > div{border-color:#2a2d3e;}
+body.dark #homeQualityList .prod-name{color:#e0e0e0;}
+/* 다크모드: stat-box 내 숫자/텍스트 */
+body.dark .stat-val{color:#e0e0e0;}
+body.dark .stat-val.blue{color:#60a5fa;}
+body.dark .stat-val.green{color:#4ade80;}
+body.dark .stat-box{color:#e0e0e0;}
+/* 다크모드: homeQualityList 제품명 */
+body.dark #homeQualityList div[style*="color:#1a1a2e"]{color:#e0e0e0 !important;}
+body.dark #homeQualityList div[style*="background:#f0f0f0"]{background:#2a2d3e !important;}
+/* 다크모드: 모달 */
+body.dark #modalOverlay > div{background:#1c1f2e;color:#e0e0e0;}
+body.dark #modalOverlay label{color:#bbb;}
+body.dark #modalOverlay h3{color:#e0e0e0;}
+/* 다크모드: 트렌드 항목 선택 박스 */
+body.dark #trendItemSelector{background:#2a2d3e;border-color:#3a3d4e;}
+body.dark #trendItemBtns button{background:#1c1f2e;border-color:#3a3d4e;color:#bbb;}
+/* 다크모드: 수동입력 그리드 */
+body.dark #manualInputGrid > div{background:#252838;border-color:#2a2d3e;}
+body.dark #manualInputGrid > div > div{color:#bbb;}
 </style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -179,8 +201,8 @@ body.dark #paretoSection{background:#1c1f2e;}
 
 <div class="topbar">
   <div>
-    <h1>성우전자 &nbsp;|&nbsp; 글로벌 품질관리 시스템</h1>
-    <p>SUNGWOO ELECTRONICS · Global Quality Management · 예지보전 대시보드</p>
+    <h1>성우전자 &nbsp;|&nbsp; 글로벌 제품관리 시스템</h1>
+    <p>SUNGWOO ELECTRONICS · Global Quality Management</p>
   </div>
   <div style="display:flex;align-items:center;gap:14px">
     <button id="darkToggleBtn" onclick="toggleDarkMode()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600;transition:background 0.2s">🌙 다크</button>
@@ -224,28 +246,18 @@ body.dark #paretoSection{background:#1c1f2e;}
       </div>
     </div>
 
-    <!-- 전체 불량 현황 요약 -->
-    <div id="homeQualityRow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
-      <div class="stat-box" style="border-left:4px solid #e74c3c">
-        <div class="stat-val" style="color:#e74c3c;font-size:22px" id="home-red-total">-</div>
-        <div class="stat-label">즉시수리 항목</div>
-        <div style="font-size:10px;color:#aaa;margin-top:2px">전체 제품 합계</div>
+    <!-- 제품별 품질 현황 -->
+    <div class="card" id="homeQualityRow" style="margin-bottom:24px;padding:16px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="sec-title" style="margin-bottom:0">제품별 품질 현황</div>
+        <div style="display:flex;gap:14px;font-size:11px;color:#888">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#e74c3c;border-radius:2px;margin-right:3px;vertical-align:middle"></span>즉시수리</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#f39c12;border-radius:2px;margin-right:3px;vertical-align:middle"></span>주의관찰</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#27ae60;border-radius:2px;margin-right:3px;vertical-align:middle"></span>정상</span>
+        </div>
       </div>
-      <div class="stat-box" style="border-left:4px solid #f39c12">
-        <div class="stat-val" style="color:#f39c12;font-size:22px" id="home-yellow-total">-</div>
-        <div class="stat-label">주의관찰 항목</div>
-        <div style="font-size:10px;color:#aaa;margin-top:2px">전체 제품 합계</div>
-      </div>
-      <div class="stat-box" style="border-left:4px solid #27ae60">
-        <div class="stat-val" style="color:#27ae60;font-size:22px" id="home-green-total">-</div>
-        <div class="stat-label">정상 항목</div>
-        <div style="font-size:10px;color:#aaa;margin-top:2px">전체 제품 합계</div>
-      </div>
-      <div class="stat-box" style="border-left:4px solid #9b59b6">
-        <div class="stat-val" style="color:#9b59b6;font-size:22px" id="home-cpk-avg">-</div>
-        <div class="stat-label">평균 Cpk</div>
-        <div style="font-size:10px;color:#aaa;margin-top:2px" id="home-cpk-sub">전체 제품 기준</div>
-      </div>
+      <div id="homeQualityList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div id="homeQualityEmpty" style="text-align:center;color:#aaa;font-size:12px;padding:16px 0;display:none">데이터를 불러오는 중...</div>
     </div>
 
     <div class="sec-title">고객사 현황</div>
@@ -2182,19 +2194,20 @@ function refreshHomeKPI(){
 }
 
 function refreshHomeQualityKPI(){
-  var totalRed = 0, totalYellow = 0, totalGreen = 0;
-  var cpkList = [];
+  var list = document.getElementById('homeQualityList');
+  var empty = document.getElementById('homeQualityEmpty');
+  if(!list) return;
+
+  var rows = [];
 
   Object.keys(PRODUCTS).forEach(function(pid){
     var p = PRODUCTS[pid];
     if(!p.specMap || Object.keys(p.specMap).length === 0) return;
-
-    // 전체 날짜 평균 데이터 사용
     var src = p.vinaAll || {};
     var dates = Object.keys(src);
     if(dates.length === 0) return;
 
-    // 각 항목별 전체 평균값 계산
+    var red = 0, yellow = 0, green = 0, cpkList = [];
     Object.keys(p.specMap).forEach(function(noStr){
       var no = parseInt(noStr);
       if(p.angleNos && p.angleNos.indexOf(no) >= 0) return;
@@ -2203,11 +2216,9 @@ function refreshHomeQualityKPI(){
       if(vals.length === 0) return;
       var mean = vals.reduce(function(a,b){return a+b;},0)/vals.length;
       var st = getStatus(mean, spec, tol, false);
-      if(st.sortKey === 0) totalRed++;
-      else if(st.sortKey === 1) totalYellow++;
-      else totalGreen++;
-
-      // Cpk 계산
+      if(st.sortKey === 0) red++;
+      else if(st.sortKey === 1) yellow++;
+      else green++;
       if(vals.length >= 2){
         var sigma = Math.sqrt(vals.reduce(function(s,v){return s+(v-mean)*(v-mean);},0)/(vals.length-1));
         if(sigma > 0){
@@ -2216,24 +2227,47 @@ function refreshHomeQualityKPI(){
         }
       }
     });
+
+    var total = red + yellow + green;
+    if(total === 0) return;
+    var avgCpk = cpkList.length > 0 ? (cpkList.reduce(function(a,b){return a+b;},0)/cpkList.length) : null;
+    rows.push({pid:pid, name:p.code || p.name, red:red, yellow:yellow, green:green, total:total, avgCpk:avgCpk});
   });
 
-  var elR = document.getElementById('home-red-total');
-  var elY = document.getElementById('home-yellow-total');
-  var elG = document.getElementById('home-green-total');
-  var elC = document.getElementById('home-cpk-avg');
-  var elCS = document.getElementById('home-cpk-sub');
-  if(elR) elR.textContent = totalRed;
-  if(elY) elY.textContent = totalYellow;
-  if(elG) elG.textContent = totalGreen;
-  if(elC && cpkList.length > 0){
-    var avgCpk = cpkList.reduce(function(a,b){return a+b;},0)/cpkList.length;
-    elC.textContent = avgCpk.toFixed(2);
-    elC.style.color = avgCpk >= 1.67 ? '#27ae60' : avgCpk >= 1.33 ? '#2980b9' : avgCpk >= 1.0 ? '#f39c12' : '#e74c3c';
-    if(elCS) elCS.textContent = cpkList.length + '개 항목 평균';
-  } else if(elC){
-    elC.textContent = '-';
+  if(rows.length === 0){
+    list.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
   }
+  if(empty) empty.style.display = 'none';
+
+  // 즉시수리 많은 순 정렬
+  rows.sort(function(a,b){ return b.red - a.red; });
+
+  list.innerHTML = rows.map(function(r){
+    var redPct   = Math.round(r.red/r.total*100);
+    var yelPct   = Math.round(r.yellow/r.total*100);
+    var grnPct   = 100 - redPct - yelPct;
+    var cpkTxt   = r.avgCpk != null ? r.avgCpk.toFixed(2) : '-';
+    var cpkColor = r.avgCpk == null ? '#aaa' : r.avgCpk >= 1.67 ? '#27ae60' : r.avgCpk >= 1.33 ? '#2980b9' : r.avgCpk >= 1.0 ? '#f39c12' : '#e74c3c';
+    var statusIcon = r.red > 0 ? '🔴' : r.yellow > 0 ? '🟡' : '🟢';
+    return '<div style="display:grid;grid-template-columns:120px 1fr 80px;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f0f0">'+
+      '<div style="font-size:12px;font-weight:700;color:#1a1a2e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(r.name)+'">'+statusIcon+' '+esc(r.name)+'</div>'+
+      '<div>'+
+        '<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:#f0f0f0">'+
+          (redPct > 0 ? '<div style="width:'+redPct+'%;background:#e74c3c;transition:width 0.4s" title="즉시수리 '+r.red+'개"></div>' : '')+
+          (yelPct > 0 ? '<div style="width:'+yelPct+'%;background:#f39c12;transition:width 0.4s" title="주의관찰 '+r.yellow+'개"></div>' : '')+
+          (grnPct > 0 ? '<div style="width:'+grnPct+'%;background:#27ae60;transition:width 0.4s" title="정상 '+r.green+'개"></div>' : '')+
+        '</div>'+
+        '<div style="display:flex;gap:8px;margin-top:3px;font-size:10px;color:#999">'+
+          (r.red>0?'<span style="color:#e74c3c;font-weight:700">🔴 '+r.red+'</span>':'')+
+          (r.yellow>0?'<span style="color:#f39c12;font-weight:700">🟡 '+r.yellow+'</span>':'')+
+          '<span style="color:#27ae60">🟢 '+r.green+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="text-align:right;font-size:12px;font-weight:700;color:'+cpkColor+'">Cpk '+cpkTxt+'</div>'+
+    '</div>';
+  }).join('');
 }
 
 // ===== 최근 활동 동적 로드 =====
