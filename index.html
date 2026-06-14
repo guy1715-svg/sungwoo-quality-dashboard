@@ -586,6 +586,7 @@ body.dark #paretoSection{background:#1c1f2e;}
           </div>
           <span id="measFileName" style="font-size:12px;color:#888">파일을 선택하면 자동으로 대시보드에 반영됩니다</span>
           <div id="measStatus" style="font-size:11px;color:#27ae60;font-weight:600;display:none"></div>
+          <button onclick="toggleManualInput()" id="manualInputToggleBtn" style="padding:7px 14px;background:#f0f7ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">✏️ 수동 입력</button>
         </div>
         <div id="uploadGuide" style="display:none;margin-top:10px;padding:10px 14px;background:#f0f7ff;border-radius:8px;border:1px solid #bfdbfe;">
           <div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:6px">📋 지원 파일 형식</div>
@@ -668,6 +669,28 @@ body.dark #paretoSection{background:#1c1f2e;}
             <th>VINA 값</th><th>Spec 위치</th><th>Cpk</th><th>추세</th><th>판정</th>
           </tr></thead><tbody id="tableBody"></tbody></table>
         </div>
+      </div>
+    </div>
+
+    <!-- 수동 측정값 입력 섹션 -->
+    <div class="card" id="manualInputSection" style="margin-bottom:12px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">✏️ 수동 측정값 입력</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <label style="font-size:12px;color:#555;font-weight:600">측정일</label>
+          <input type="date" id="manualDate" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;color:#222">
+          <label style="font-size:12px;color:#555;font-weight:600">구분</label>
+          <select id="manualSide" style="font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;color:#222">
+            <option value="vina">VINA</option>
+            <option value="hq">본사(HQ)</option>
+          </select>
+        </div>
+      </div>
+      <div id="manualInputGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:12px;max-height:320px;overflow-y:auto"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <span id="manualSaveMsg" style="font-size:12px;color:#27ae60;align-self:center;display:none">✅ 저장 완료</span>
+        <button onclick="clearManualInput()" style="padding:8px 16px;background:#f0f0f0;color:#555;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer">초기화</button>
+        <button onclick="saveManualInput()" style="padding:8px 20px;background:#1a1a2e;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer">💾 저장</button>
       </div>
     </div>
 
@@ -2177,6 +2200,87 @@ function loadFirebaseData(){
     console.error('Firebase 데이터 로드 실패:', err);
     alert('❌ 대시보드 데이터를 불러오지 못했습니다: ' + err.message);
   });
+}
+
+// ===== 수동 측정값 입력 =====
+function toggleManualInput(){
+  var sec = document.getElementById('manualInputSection');
+  if(!sec) return;
+  var isVisible = sec.style.display !== 'none';
+  sec.style.display = isVisible ? 'none' : 'block';
+  if(!isVisible) buildManualInputGrid();
+}
+
+function buildManualInputGrid(){
+  var grid = document.getElementById('manualInputGrid');
+  if(!grid) return;
+  var nos = Object.keys(curProduct.specMap).map(Number).sort(function(a,b){return a-b;});
+  grid.innerHTML = nos.map(function(no){
+    var name = curProduct.partNames[no] || ('No.' + no);
+    var spec = curProduct.specMap[no], tol = curProduct.tolMap[no];
+    var isAngle = curProduct.angleNos.indexOf(no) >= 0;
+    return '<div style="background:#f8f9fb;border:1px solid #e4e4e4;border-radius:8px;padding:10px">' +
+      '<div style="font-size:10px;color:#888;margin-bottom:2px">No.' + no + (isAngle ? ' <span style="color:#aaa">(각도)</span>' : '') + '</div>' +
+      '<div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(name) + '">' + esc(name) + '</div>' +
+      '<div style="font-size:10px;color:#888;margin-bottom:4px">Spec: ' + spec + ' ±' + tol + '</div>' +
+      '<input type="number" step="0.0001" id="manual_no_' + no + '" placeholder="측정값 입력" ' +
+        'style="width:100%;padding:5px 8px;font-size:12px;border:1px solid #ddd;border-radius:5px;color:#222">' +
+    '</div>';
+  }).join('');
+
+  // 오늘 날짜 기본값
+  var today = new Date();
+  var ymd = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  var dateEl = document.getElementById('manualDate');
+  if(dateEl && !dateEl.value) dateEl.value = ymd;
+}
+
+function clearManualInput(){
+  var nos = Object.keys(curProduct.specMap).map(Number);
+  nos.forEach(function(no){
+    var el = document.getElementById('manual_no_' + no);
+    if(el) el.value = '';
+  });
+  document.getElementById('manualSaveMsg').style.display = 'none';
+}
+
+function saveManualInput(){
+  var dateVal = document.getElementById('manualDate').value;
+  if(!dateVal){ alert('측정일을 선택해 주세요.'); return; }
+  var sideVal = document.getElementById('manualSide').value; // 'vina' or 'hq'
+
+  var dateKey = dateVal.replace(/-/g, '_');
+  var nos = Object.keys(curProduct.specMap).map(Number);
+  var data = {};
+  var cnt = 0;
+  nos.forEach(function(no){
+    var el = document.getElementById('manual_no_' + no);
+    if(el && el.value !== ''){
+      data[no] = parseFloat(el.value);
+      cnt++;
+    }
+  });
+  if(cnt === 0){ alert('입력된 측정값이 없습니다.'); return; }
+
+  var pid = getCurProductId();
+  var refPath = 'measData/' + pid + '/' + (sideVal === 'hq' ? 'hq' : 'vina') + '/' + dateKey;
+
+  db.ref(refPath).update(data).then(function(){
+    // 로컬 데이터 반영
+    if(sideVal === 'vina'){
+      if(!curProduct.vinaAll[dateKey]) curProduct.vinaAll[dateKey] = {};
+      Object.assign(curProduct.vinaAll[dateKey], data);
+    } else {
+      if(!curProduct.hqAll) curProduct.hqAll = {};
+      if(!curProduct.hqAll[dateKey]) curProduct.hqAll[dateKey] = {};
+      Object.assign(curProduct.hqAll[dateKey], data);
+    }
+    buildTrendChart();
+    renderData();
+    buildParetoChart();
+    var msg = document.getElementById('manualSaveMsg');
+    if(msg){ msg.style.display = 'inline'; setTimeout(function(){ msg.style.display='none'; }, 3000); }
+  }).catch(function(e){ alert('저장 실패: ' + e.message); });
 }
 
 // ===== 파레토 차트 =====
