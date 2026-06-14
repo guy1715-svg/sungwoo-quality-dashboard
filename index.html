@@ -2156,7 +2156,9 @@ function refreshHomeKPI(){
     var totalProds    = 7 + prods.length;
     // 만도 승인: br0037 고정 + MANDO_PRODUCTS 버튼 상태
     var mandoApproved = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
-    var totalApproved = mandoApproved + fbApproved;
+    // AM사 3종은 하드코딩 승인완료 (at5851, ap5010, ap5030)
+    var amApproved = 3;
+    var totalApproved = mandoApproved + amApproved + fbApproved;
     var fbModels      = {};
     prods.forEach(function(p){ if(p.modelName) fbModels[p.modelName] = true; });
     var totalModels   = 2 + Object.keys(fbModels).length;
@@ -2802,7 +2804,8 @@ function refreshMandoHomeKPI(){
     var fbProds = snap.val() ? Object.values(snap.val()) : [];
     var fbApproved = fbProds.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
     var totalProds = 7 + fbProds.length;
-    var totalApproved = mandoApproved + fbApproved;
+    var amApproved = 3; // at5851, ap5010, ap5030 하드코딩 승인완료
+    var totalApproved = mandoApproved + amApproved + fbApproved;
     var elApproved    = document.getElementById('kpi-approved');
     var elApprovedSub = document.getElementById('kpi-approved-sub');
     if(elApproved)    elApproved.textContent    = totalApproved;
