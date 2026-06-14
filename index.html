@@ -2152,9 +2152,11 @@ function refreshHomeKPI(){
     var prods   = snaps[1].val() ? Object.values(snaps[1].val()) : [];
 
     var totalCust     = 2 + fbCust;
-    var approved      = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
+    var fbApproved    = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
     var totalProds    = 7 + prods.length;
-    var totalApproved = 4 + approved;
+    // 만도 승인: br0037 고정 + MANDO_PRODUCTS 버튼 상태
+    var mandoApproved = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+    var totalApproved = mandoApproved + fbApproved;
     var fbModels      = {};
     prods.forEach(function(p){ if(p.modelName) fbModels[p.modelName] = true; });
     var totalModels   = 2 + Object.keys(fbModels).length;
@@ -2785,15 +2787,27 @@ function updateMandoUI(pid, isApproved){
 
 function refreshMandoHomeKPI(){
   // br0037은 항상 승인완료 (하드코딩)
-  var approvedCount = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+  var mandoApproved = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
   var total = 4;
-  var pct = Math.round(approvedCount / total * 100);
+  var pct = Math.round(mandoApproved / total * 100);
   var progressText = document.getElementById('mando-home-progress-text');
   var pctEl        = document.getElementById('mando-home-pct');
   var pctBar       = document.getElementById('mando-home-pct-bar');
-  if(progressText) progressText.textContent = '승인완료 ' + approvedCount + ' / ' + total;
-  if(pctEl) pctEl.textContent = pct + '% (' + approvedCount + '/' + total + ')';
+  if(progressText) progressText.textContent = '승인완료 ' + mandoApproved + ' / ' + total;
+  if(pctEl) pctEl.textContent = pct + '% (' + mandoApproved + '/' + total + ')';
   if(pctBar) pctBar.style.width = pct + '%';
+
+  // 홈 상단 kpi-approved 숫자도 실시간 갱신 (만도 + Firebase AM사 승인)
+  db.ref('products').once('value').then(function(snap){
+    var fbProds = snap.val() ? Object.values(snap.val()) : [];
+    var fbApproved = fbProds.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
+    var totalProds = 7 + fbProds.length;
+    var totalApproved = mandoApproved + fbApproved;
+    var elApproved    = document.getElementById('kpi-approved');
+    var elApprovedSub = document.getElementById('kpi-approved-sub');
+    if(elApproved)    elApproved.textContent    = totalApproved;
+    if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+  }).catch(function(){});
 }
 
 function toggleMandoApproval(pid){
