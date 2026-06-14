@@ -1208,6 +1208,11 @@ function openModal(title, body){
 
 function closeModal(){
   document.getElementById('modalOverlay').style.display = 'none';
+  // 에러 표시 초기화
+  document.querySelectorAll('[id$="_err"]').forEach(function(el){ el.remove(); });
+  document.querySelectorAll('#modalOverlay input, #modalOverlay select').forEach(function(el){
+    el.style.borderColor = ''; el.style.background = '';
+  });
 }
 
 // 고객사 추가
@@ -1251,7 +1256,16 @@ function saveCustomer(){
   var name = document.getElementById('newCustomerName').value.trim();
   var eng = document.getElementById('newCustomerEng').value.trim();
   var color = document.getElementById('newCustomerColor').value;
-  if(!name){ alert('고객사명을 입력하세요'); return; }
+
+  // 필수값 검증
+  if(!name){ showFieldError('newCustomerName', '고객사명을 입력하세요'); return; }
+  if(name.length < 2){ showFieldError('newCustomerName', '2자 이상 입력하세요'); return; }
+  clearFieldError('newCustomerName');
+
+  // 중복 체크
+  var cache = window._customerCache || {};
+  var isDup = Object.values(cache).some(function(c){ return c.name === name; });
+  if(isDup){ showFieldError('newCustomerName', '이미 동일한 고객사명이 있습니다'); return; }
 
   var id = 'c_' + Date.now();
   var customer = {id:id, name:name, eng:eng||name, color:color, models:{}, createdAt: new Date().toISOString()};
@@ -1697,6 +1711,28 @@ function exportPDFReport(){
   w.document.close();
 }
 
+function showFieldError(fieldId, msg){
+  var el = document.getElementById(fieldId);
+  if(!el) return;
+  el.style.borderColor = '#e74c3c';
+  el.style.background = '#fff5f5';
+  var errId = fieldId + '_err';
+  var existing = document.getElementById(errId);
+  if(existing) existing.remove();
+  var errEl = document.createElement('div');
+  errEl.id = errId;
+  errEl.style.cssText = 'font-size:11px;color:#e74c3c;margin-top:3px;font-weight:600';
+  errEl.textContent = '⚠ ' + msg;
+  el.parentNode.insertBefore(errEl, el.nextSibling);
+  el.focus();
+}
+function clearFieldError(fieldId){
+  var el = document.getElementById(fieldId);
+  if(el){ el.style.borderColor = ''; el.style.background = ''; }
+  var errEl = document.getElementById(fieldId + '_err');
+  if(errEl) errEl.remove();
+}
+
 function showToast(msg, type){
   var existing = document.getElementById('toastMsg');
   if(existing) existing.remove();
@@ -2012,11 +2048,19 @@ function saveModel(customerId, customerName){
   var productName = document.getElementById('newProductName').value.trim();
   var hasSide = document.getElementById('newProductSide').value === 'true';
 
-  if(!modelName){ alert('모델명을 입력하세요'); return; }
-  if(!productCode){ alert('제품 코드를 입력하세요'); return; }
-  if(!productName){ alert('제품명을 입력하세요'); return; }
+  // 필수값 검증
+  if(!modelName){ showFieldError('newModelName', '모델명을 입력하세요'); return; }
+  clearFieldError('newModelName');
+  if(!productCode){ showFieldError('newProductCode', '제품 코드를 입력하세요'); return; }
+  if(!/^[A-Za-z0-9\-_]+$/.test(productCode)){ showFieldError('newProductCode', '영문/숫자/하이픈만 사용 가능합니다'); return; }
+  clearFieldError('newProductCode');
+  if(!productName){ showFieldError('newProductName', '제품명을 입력하세요'); return; }
+  clearFieldError('newProductName');
 
   var productId = productCode.toLowerCase().replace(/[^a-z0-9]/g,'');
+
+  // 중복 제품 코드 체크
+  if(PRODUCTS[productId]){ showFieldError('newProductCode', '이미 등록된 제품 코드입니다: ' + productCode); return; }
   var now = new Date().toISOString().split('T')[0];
 
   // PRODUCTS에 추가
