@@ -122,9 +122,20 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
   .stats-row{grid-template-columns:1fr 1fr;}
   .topbar h1{font-size:12px;}
   .topbar-right{display:none;}
-  .container{padding:12px 8px;}
+  .container{padding:12px 8px;padding-bottom:72px;}
   .customer-grid{grid-template-columns:1fr;}
 }
+/* 하단 모바일 네비게이션 */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e4e4e4;z-index:1000;padding:6px 0 env(safe-area-inset-bottom,0);}
+.bottom-nav-inner{display:flex;justify-content:space-around;align-items:center;}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px;cursor:pointer;border:none;background:none;color:#888;font-size:10px;font-weight:600;min-width:56px;}
+.bn-item .bn-icon{font-size:20px;line-height:1;}
+.bn-item.active{color:#1a1a2e;}
+.bn-item.active .bn-icon{filter:drop-shadow(0 0 2px rgba(59,130,246,0.5));}
+@media(max-width:520px){.bottom-nav{display:block;}}
+body.dark .bottom-nav{background:#1c1f2e;border-color:#2a2d3e;}
+body.dark .bn-item{color:#666;}
+body.dark .bn-item.active{color:#e0e0e0;}
 /* 데이터 테이블 스크롤 */
 .table-scroll{overflow-x:auto;overflow-y:auto;max-height:540px;-webkit-overflow-scrolling:touch;}
 .table-scroll thead th{position:sticky;top:0;z-index:2;}
@@ -3706,6 +3717,43 @@ function analyze(){
   document.getElementById('cmpSummary').style.display='block';
   document.getElementById('cmpSummary').scrollIntoView({behavior:'smooth'});
 }
+// ===== 하단 네비게이션 =====
+function updateBottomNav(){
+  var cur = document.querySelector('.screen.active');
+  var screenId = cur ? cur.id : 'home';
+  document.querySelectorAll('.bn-item').forEach(function(el){
+    el.classList.remove('active');
+  });
+  var map = {home:'bn-home', dashboard:'bn-dash', compare:'bn-cmp', admin:'bn-admin'};
+  var activeId = map[screenId];
+  if(activeId){
+    var el = document.getElementById(activeId);
+    if(el) el.classList.add('active');
+  }
+}
+// showScreen 후 항상 네비 업데이트
+var _origShowScreen = showScreen;
+showScreen = function(id){
+  _origShowScreen(id);
+  updateBottomNav();
+};
 </script>
+
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bn-item active" id="bn-home" onclick="goHome()">
+      <span class="bn-icon">🏠</span>홈
+    </button>
+    <button class="bn-item" id="bn-dash" onclick="(function(){ var s=document.getElementById('dashboard'); if(s&&s.classList.contains('active')){} else if(curProduct&&curProduct.code){showScreen('dashboard');}else{goHome();} })()">
+      <span class="bn-icon">📊</span>대시보드
+    </button>
+    <button class="bn-item" id="bn-cmp" onclick="goCompare()">
+      <span class="bn-icon">🔀</span>비교
+    </button>
+    <button class="bn-item" id="bn-admin" onclick="showScreen('admin')">
+      <span class="bn-icon">⚙️</span>관리
+    </button>
+  </div>
+</nav>
 </body>
 </html>
