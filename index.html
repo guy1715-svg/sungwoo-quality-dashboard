@@ -224,6 +224,30 @@ body.dark #paretoSection{background:#1c1f2e;}
       </div>
     </div>
 
+    <!-- 전체 불량 현황 요약 -->
+    <div id="homeQualityRow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+      <div class="stat-box" style="border-left:4px solid #e74c3c">
+        <div class="stat-val" style="color:#e74c3c;font-size:22px" id="home-red-total">-</div>
+        <div class="stat-label">즉시수리 항목</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">전체 제품 합계</div>
+      </div>
+      <div class="stat-box" style="border-left:4px solid #f39c12">
+        <div class="stat-val" style="color:#f39c12;font-size:22px" id="home-yellow-total">-</div>
+        <div class="stat-label">주의관찰 항목</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">전체 제품 합계</div>
+      </div>
+      <div class="stat-box" style="border-left:4px solid #27ae60">
+        <div class="stat-val" style="color:#27ae60;font-size:22px" id="home-green-total">-</div>
+        <div class="stat-label">정상 항목</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">전체 제품 합계</div>
+      </div>
+      <div class="stat-box" style="border-left:4px solid #9b59b6">
+        <div class="stat-val" style="color:#9b59b6;font-size:22px" id="home-cpk-avg">-</div>
+        <div class="stat-label">평균 Cpk</div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px" id="home-cpk-sub">전체 제품 기준</div>
+      </div>
+    </div>
+
     <div class="sec-title">고객사 현황</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;margin-bottom:24px">
 
@@ -2150,8 +2174,66 @@ function refreshHomeKPI(){
     console.error('KPI 로드 실패:', err);
   });
 
+  // 전체 불량 현황 집계 (PRODUCTS 하드코딩 제품)
+  refreshHomeQualityKPI();
+
   // 최근 활동 업데이트
   refreshRecentActivity();
+}
+
+function refreshHomeQualityKPI(){
+  var totalRed = 0, totalYellow = 0, totalGreen = 0;
+  var cpkList = [];
+
+  Object.keys(PRODUCTS).forEach(function(pid){
+    var p = PRODUCTS[pid];
+    if(!p.specMap || Object.keys(p.specMap).length === 0) return;
+
+    // 전체 날짜 평균 데이터 사용
+    var src = p.vinaAll || {};
+    var dates = Object.keys(src);
+    if(dates.length === 0) return;
+
+    // 각 항목별 전체 평균값 계산
+    Object.keys(p.specMap).forEach(function(noStr){
+      var no = parseInt(noStr);
+      if(p.angleNos && p.angleNos.indexOf(no) >= 0) return;
+      var spec = p.specMap[no], tol = p.tolMap[no];
+      var vals = dates.map(function(d){ return src[d] ? src[d][no] : null; }).filter(function(v){ return v != null; });
+      if(vals.length === 0) return;
+      var mean = vals.reduce(function(a,b){return a+b;},0)/vals.length;
+      var st = getStatus(mean, spec, tol, false);
+      if(st.sortKey === 0) totalRed++;
+      else if(st.sortKey === 1) totalYellow++;
+      else totalGreen++;
+
+      // Cpk 계산
+      if(vals.length >= 2){
+        var sigma = Math.sqrt(vals.reduce(function(s,v){return s+(v-mean)*(v-mean);},0)/(vals.length-1));
+        if(sigma > 0){
+          var cpk = Math.min((spec+tol-mean)/(3*sigma),(mean-(spec-tol))/(3*sigma));
+          if(isFinite(cpk)) cpkList.push(cpk);
+        }
+      }
+    });
+  });
+
+  var elR = document.getElementById('home-red-total');
+  var elY = document.getElementById('home-yellow-total');
+  var elG = document.getElementById('home-green-total');
+  var elC = document.getElementById('home-cpk-avg');
+  var elCS = document.getElementById('home-cpk-sub');
+  if(elR) elR.textContent = totalRed;
+  if(elY) elY.textContent = totalYellow;
+  if(elG) elG.textContent = totalGreen;
+  if(elC && cpkList.length > 0){
+    var avgCpk = cpkList.reduce(function(a,b){return a+b;},0)/cpkList.length;
+    elC.textContent = avgCpk.toFixed(2);
+    elC.style.color = avgCpk >= 1.67 ? '#27ae60' : avgCpk >= 1.33 ? '#2980b9' : avgCpk >= 1.0 ? '#f39c12' : '#e74c3c';
+    if(elCS) elCS.textContent = cpkList.length + '개 항목 평균';
+  } else if(elC){
+    elC.textContent = '-';
+  }
 }
 
 // ===== 최근 활동 동적 로드 =====
@@ -2671,7 +2753,7 @@ document.addEventListener('DOMContentLoaded', function(){
   loadMandoApproval();
 });
 
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';refreshHomeQualityKPI();}
 function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
 function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
 
