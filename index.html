@@ -128,6 +128,37 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 /* 데이터 테이블 스크롤 */
 .table-scroll{overflow-x:auto;overflow-y:auto;max-height:540px;-webkit-overflow-scrolling:touch;}
 .table-scroll thead th{position:sticky;top:0;z-index:2;}
+
+/* ===== 다크모드 ===== */
+body.dark{background:#0f1117;color:#e0e0e0;}
+body.dark .topbar{background:#0a0a14;}
+body.dark .container{}
+body.dark .card,body.dark .stat-box,body.dark .customer-card,body.dark .model-card,body.dark .product-card{background:#1c1f2e;border-color:#2a2d3e;color:#e0e0e0;}
+body.dark .customer-card:hover,body.dark .model-card:hover,body.dark .product-card:hover{border-color:#3b82f6;box-shadow:0 4px 20px rgba(59,130,246,0.2);}
+body.dark .tabs{background:#1c1f2e;border-color:#2a2d3e;}
+body.dark .tab{color:#aaa;}
+body.dark .tab.active{background:#2a2d3e;color:#e0e0e0;}
+body.dark .filter-bar{background:#1c1f2e;border-color:#2a2d3e;}
+body.dark .filter-btn{background:#2a2d3e;color:#bbb;border-color:#3a3d4e;}
+body.dark .filter-btn.active{background:#3b82f6;color:#fff;border-color:#3b82f6;}
+body.dark .filter-btn.lh-active{background:#27ae60;color:#fff;}
+body.dark .filter-btn.rh-active{background:#e74c3c;color:#fff;}
+body.dark table{color:#e0e0e0;}
+body.dark thead th{background:#1c1f2e;color:#bbb;border-color:#2a2d3e;}
+body.dark tbody tr{border-color:#2a2d3e;}
+body.dark tbody tr:hover{background:#252838;}
+body.dark .breadcrumb{color:#888;}
+body.dark .crumb:hover{background:#2a2d3e;color:#e0e0e0;}
+body.dark .bc-active{color:#e0e0e0;}
+body.dark .notice,body.dark .gap-info{background:#1c1f2e;border-color:#2a2d3e;color:#aaa;}
+body.dark input[type="text"],body.dark input[type="number"],body.dark select,body.dark textarea{background:#2a2d3e;border-color:#3a3d4e;color:#e0e0e0;}
+body.dark .sec-title{color:#e0e0e0;}
+body.dark .stat-label{color:#888;}
+body.dark #warningBanner{background:#2d2410;border-color:#f0ad4e;}
+body.dark #warningBanner strong{color:#fcd34d;}
+body.dark #warningList{color:#fde68a;}
+body.dark #memoList div{background:#252838;border-color:#2a2d3e;}
+body.dark #paretoSection{background:#1c1f2e;}
 </style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -140,7 +171,10 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
     <h1>성우전자 &nbsp;|&nbsp; 글로벌 품질관리 시스템</h1>
     <p>SUNGWOO ELECTRONICS · Global Quality Management · 예지보전 대시보드</p>
   </div>
-  <div class="topbar-right" id="topbarRight">관리자: 성우전자 개발팀<br>업데이트: 2026-05-26</div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <button id="darkToggleBtn" onclick="toggleDarkMode()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600;transition:background 0.2s">🌙 다크</button>
+    <div class="topbar-right" id="topbarRight">관리자: 성우전자 개발팀<br>업데이트: 2026-05-26</div>
+  </div>
 </div>
 
 <div class="container">
@@ -653,6 +687,18 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
       </div>
     </div>
 
+    <!-- 파레토 차트 섹션 -->
+    <div class="card" id="paretoSection" style="margin-bottom:12px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">📊 불량 파레토 — 항목별 불합격 빈도 (전체 날짜)</div>
+        <span id="paretoSub" style="font-size:11px;color:#888"></span>
+      </div>
+      <div style="position:relative;height:200px">
+        <canvas id="paretoChart"></canvas>
+      </div>
+      <div id="paretoNote" style="margin-top:8px;font-size:11px;color:#888;text-align:center"></div>
+    </div>
+
     <!-- 하부스캔 섹션 -->
     <div id="scanSection" style="display:none;margin-bottom:12px">
       <div class="card">
@@ -1095,7 +1141,7 @@ var curProduct = null;
 var curDate = 'all';
 var curSide = 'all';
 var curFbDates = [];  // Firebase 저장 날짜 목록
-var donutChart=null,deviationChart=null,trendChart=null;
+var donutChart=null,deviationChart=null,trendChart=null,paretoChart=null;
 
 // ===== 화면 전환 =====
 function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById('screen-'+id).classList.add('active');}
@@ -2133,6 +2179,114 @@ function loadFirebaseData(){
   });
 }
 
+// ===== 파레토 차트 =====
+function buildParetoChart(){
+  var src = getDataSource();
+  var dates = Object.keys(src);
+  var nos = Object.keys(curProduct.specMap).map(Number);
+  var failCount = {}; // no -> 불합격 횟수
+  var totalCount = {}; // no -> 측정 횟수
+
+  nos.forEach(function(no){
+    var isAngle = curProduct.angleNos.indexOf(no) >= 0;
+    if(isAngle) return;
+    var spec = curProduct.specMap[no], tol = curProduct.tolMap[no];
+    failCount[no] = 0; totalCount[no] = 0;
+    dates.forEach(function(d){
+      var v = src[d][no];
+      if(v == null) return;
+      totalCount[no]++;
+      var st = getStatus(v, spec, tol, false);
+      if(st.sortKey === 0) failCount[no]++; // 즉시수리만 불합격
+    });
+  });
+
+  var items = Object.keys(failCount)
+    .filter(function(no){ return totalCount[no] > 0; })
+    .map(function(no){
+      return { no: parseInt(no), fail: failCount[no], total: totalCount[no], rate: failCount[no]/totalCount[no]*100 };
+    })
+    .filter(function(d){ return d.fail > 0; })
+    .sort(function(a,b){ return b.fail - a.fail; })
+    .slice(0, 15);
+
+  var section = document.getElementById('paretoSection');
+  if(!section) return;
+
+  if(items.length === 0){
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+
+  var totalFails = items.reduce(function(s,d){ return s+d.fail; }, 0);
+  document.getElementById('paretoSub').textContent = '전체 불합격 ' + totalFails + '건 · 상위 ' + items.length + '개 항목';
+  document.getElementById('paretoNote').textContent = '* 즉시수리(범위초과) 판정 기준 · 날짜 수: ' + dates.length + '회 측정';
+
+  // 누적 % 계산 (파레토 라인)
+  var cumFail = 0;
+  var cumPcts = items.map(function(d){ cumFail += d.fail; return Math.round(cumFail/totalFails*100); });
+
+  if(paretoChart){ paretoChart.destroy(); paretoChart = null; }
+  paretoChart = new Chart(document.getElementById('paretoChart'), {
+    type: 'bar',
+    data: {
+      labels: items.map(function(d){
+        var name = curProduct.partNames[d.no] || '';
+        return name ? 'No.' + d.no + ' ' + (name.length > 8 ? name.slice(0,8)+'…' : name) : 'No.' + d.no;
+      }),
+      datasets: [
+        {
+          type: 'bar',
+          label: '불합격 횟수',
+          data: items.map(function(d){ return d.fail; }),
+          backgroundColor: items.map(function(d){
+            return d.rate >= 50 ? '#e74c3c' : d.rate >= 20 ? '#f39c12' : '#3b82f6';
+          }),
+          borderWidth: 0,
+          borderRadius: 3,
+          yAxisID: 'y'
+        },
+        {
+          type: 'line',
+          label: '누적 비율',
+          data: cumPcts,
+          borderColor: '#9b59b6',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#9b59b6',
+          yAxisID: 'y2',
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx){
+              if(ctx.datasetIndex === 0){
+                var d = items[ctx.dataIndex];
+                return '불합격: ' + d.fail + '회 / ' + d.total + '회 (' + d.rate.toFixed(0) + '%)';
+              }
+              return '누적: ' + ctx.parsed.y + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { size: 9 }, maxRotation: 30 }, grid: { display: false } },
+        y: { position: 'left', ticks: { font: { size: 10 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' }, title: { display: true, text: '불합격 횟수', font: { size: 10 } } },
+        y2: { position: 'right', min: 0, max: 100, ticks: { font: { size: 10 }, callback: function(v){ return v+'%'; } }, grid: { display: false }, title: { display: true, text: '누적 %', font: { size: 10 } } }
+      }
+    }
+  });
+}
+
 // ===== 메모/노트 =====
 var _memoCache = {};
 
@@ -2313,6 +2467,23 @@ function toggleMandoApproval(pid){
   });
 }
 
+// ===== 다크모드 =====
+function toggleDarkMode(){
+  var isDark = document.body.classList.toggle('dark');
+  var btn = document.getElementById('darkToggleBtn');
+  if(btn) btn.textContent = isDark ? '☀️ 라이트' : '🌙 다크';
+  try{ localStorage.setItem('darkMode', isDark ? '1' : '0'); }catch(e){}
+}
+(function(){
+  try{
+    if(localStorage.getItem('darkMode')==='1'){
+      document.body.classList.add('dark');
+      var btn=document.getElementById('darkToggleBtn');
+      if(btn) btn.textContent='☀️ 라이트';
+    }
+  }catch(e){}
+})();
+
 function loadMandoApproval(){
   db.ref('mandoApproval').once('value').then(function(snap){
     var data = snap.val() || {};
@@ -2474,6 +2645,9 @@ function goDashboard(productId){
 
   // 메모 불러오기
   loadMemo(productId);
+
+  // 파레토 차트
+  buildParetoChart();
 
   // AP5010 하부스캔 섹션
   var scanSection = document.getElementById('scanSection');
