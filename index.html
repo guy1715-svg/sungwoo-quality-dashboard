@@ -648,7 +648,18 @@ body.dark #paretoSection{background:#1c1f2e;}
       </div>
 
       <div class="card" style="margin-bottom:14px">
-        <div class="card-title">날짜별 VINA 측정값 추이 <span id="trendSideLabel" style="color:#2980b9">(LH+RH 평균)</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+          <div class="card-title" style="margin-bottom:0">날짜별 VINA 측정값 추이 <span id="trendSideLabel" style="color:#2980b9">(LH+RH 평균)</span></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;color:#888">모드:</span>
+            <button id="trendModeTop" onclick="setTrendMode('top')" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:5px;border:1px solid #1a1a2e;background:#1a1a2e;color:#fff;cursor:pointer">상위 5개</button>
+            <button id="trendModeSelect" onclick="setTrendMode('select')" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:5px;border:1px solid #e4e4e4;background:#fff;color:#888;cursor:pointer">항목 선택</button>
+          </div>
+        </div>
+        <div id="trendItemSelector" style="display:none;margin-bottom:8px;padding:8px;background:#f8f9fb;border-radius:7px;border:1px solid #e4e4e4">
+          <div style="font-size:11px;color:#888;margin-bottom:6px">비교할 항목 선택 (최대 6개)</div>
+          <div id="trendItemBtns" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+        </div>
         <div class="legend" id="trendLegend"></div>
         <div style="position:relative;height:220px"><canvas id="trendChart"></canvas></div>
       </div>
@@ -2706,6 +2717,16 @@ function goDashboard(productId){
   document.getElementById('dash1').classList.add('active');
   document.querySelector('.tab').classList.add('active');
 
+  // 트렌드 모드 초기화
+  curTrendMode = 'top';
+  curTrendSelected = [];
+  var btnTop = document.getElementById('trendModeTop');
+  var btnSel = document.getElementById('trendModeSelect');
+  if(btnTop){ btnTop.style.background='#1a1a2e'; btnTop.style.color='#fff'; btnTop.style.borderColor='#1a1a2e'; }
+  if(btnSel){ btnSel.style.background='#fff'; btnSel.style.color='#888'; btnSel.style.borderColor='#e4e4e4'; }
+  var selBox = document.getElementById('trendItemSelector');
+  if(selBox) selBox.style.display = 'none';
+
   // 차트 완전 초기화
   if(donutChart){donutChart.destroy();donutChart=null;}
   if(deviationChart){deviationChart.destroy();deviationChart=null;}
@@ -2799,6 +2820,60 @@ function getStatus(val,spec,tol,isAngle){
   return{status:'🟢 정상',badgeCls:'bg',sortKey:2,color:'#1e8449'};
 }
 
+// 트렌드 차트 모드
+var curTrendMode = 'top'; // 'top' | 'select'
+var curTrendSelected = []; // 선택된 No 목록
+
+function setTrendMode(mode){
+  curTrendMode = mode;
+  document.getElementById('trendModeTop').style.background = mode === 'top' ? '#1a1a2e' : '#fff';
+  document.getElementById('trendModeTop').style.color = mode === 'top' ? '#fff' : '#888';
+  document.getElementById('trendModeTop').style.borderColor = mode === 'top' ? '#1a1a2e' : '#e4e4e4';
+  document.getElementById('trendModeSelect').style.background = mode === 'select' ? '#1a1a2e' : '#fff';
+  document.getElementById('trendModeSelect').style.color = mode === 'select' ? '#fff' : '#888';
+  document.getElementById('trendModeSelect').style.borderColor = mode === 'select' ? '#1a1a2e' : '#e4e4e4';
+
+  var sel = document.getElementById('trendItemSelector');
+  if(mode === 'select'){
+    sel.style.display = 'block';
+    buildTrendItemBtns();
+  } else {
+    sel.style.display = 'none';
+    curTrendSelected = [];
+  }
+  buildTrendChart();
+}
+
+function buildTrendItemBtns(){
+  var container = document.getElementById('trendItemBtns');
+  if(!container) return;
+  var nos = Object.keys(curProduct.specMap).map(Number)
+    .filter(function(no){ return curProduct.angleNos.indexOf(no) < 0; })
+    .sort(function(a,b){ return a-b; });
+  container.innerHTML = '';
+  nos.forEach(function(no){
+    var btn = document.createElement('button');
+    var isActive = curTrendSelected.indexOf(no) >= 0;
+    btn.textContent = 'No.' + no;
+    btn.title = curProduct.partNames[no] || '';
+    btn.style.cssText = 'padding:3px 9px;font-size:11px;border-radius:4px;border:1px solid ' +
+      (isActive ? '#3b82f6' : '#ddd') + ';background:' + (isActive ? '#3b82f6' : '#fff') +
+      ';color:' + (isActive ? '#fff' : '#555') + ';cursor:pointer;font-weight:600;';
+    btn.onclick = function(){
+      var idx = curTrendSelected.indexOf(no);
+      if(idx >= 0){
+        curTrendSelected.splice(idx, 1);
+      } else {
+        if(curTrendSelected.length >= 6){ alert('최대 6개까지 선택 가능합니다.'); return; }
+        curTrendSelected.push(no);
+      }
+      buildTrendItemBtns();
+      buildTrendChart();
+    };
+    container.appendChild(btn);
+  });
+}
+
 function buildTrendChart(){
   var src=getDataSource();
   var dates=Object.keys(src);
@@ -2820,15 +2895,20 @@ function buildTrendChart(){
     return curProduct.angleNos.indexOf(no)<0;
   });
 
-  // 편차 가장 큰 상위 5개
-  var devMap={};
-  nos.forEach(function(no){
-    var spec=curProduct.specMap[no];
-    var lastDate=dates[dates.length-1];
-    var val=src[lastDate]?src[lastDate][no]:null;
-    if(val!==undefined&&val!==null) devMap[no]=Math.abs((val-spec)/curProduct.tolMap[no]*100);
-  });
-  var topNos=Object.keys(devMap).map(Number).sort(function(a,b){return devMap[b]-devMap[a];}).slice(0,5);
+  // 항목 선택 모드 vs 상위 5개 자동 모드
+  var topNos;
+  if(curTrendMode === 'select' && curTrendSelected.length > 0){
+    topNos = curTrendSelected.filter(function(no){ return nos.indexOf(no) >= 0; });
+  } else {
+    var devMap={};
+    nos.forEach(function(no){
+      var spec=curProduct.specMap[no];
+      var lastDate=dates[dates.length-1];
+      var val=src[lastDate]?src[lastDate][no]:null;
+      if(val!==undefined&&val!==null) devMap[no]=Math.abs((val-spec)/curProduct.tolMap[no]*100);
+    });
+    topNos=Object.keys(devMap).map(Number).sort(function(a,b){return devMap[b]-devMap[a];}).slice(0,5);
+  }
   var COLORS=['#e74c3c','#f39c12','#2980b9','#27ae60','#9b59b6'];
 
   var datasets=topNos.map(function(no,i){
