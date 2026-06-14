@@ -249,7 +249,7 @@ body.dark #paretoSection{background:#1c1f2e;}
     </div>
 
     <div class="sec-title">고객사 현황</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;margin-bottom:24px">
+    <div id="customerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;margin-bottom:24px">
 
       <div style="background:#fff;border-radius:16px;border:1px solid #e0e4ef;overflow:hidden;cursor:pointer;transition:all 0.25s;box-shadow:0 2px 12px rgba(0,0,0,0.07)" onclick="goModel()" onmouseover="this.style.boxShadow='0 8px 28px rgba(26,26,46,0.15)';this.style.transform='translateY(-3px)'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.07)';this.style.transform='translateY(0)'">
         <div style="background:linear-gradient(135deg,#1a1a2e 0%,#2d2d5e 100%);padding:18px 22px;display:flex;align-items:center;justify-content:space-between">
@@ -1308,7 +1308,7 @@ function saveCustomer(){
 }
 
 function addCustomerCard(customer, products){
-  var grid = document.querySelector('#screen-home [style*="grid-template-columns"]');
+  var grid = document.getElementById('customerGrid');
   if(!grid) return;
   // 이미 존재하는 카드 중복 방지
   if(document.getElementById('customer_' + customer.id)) return;
