@@ -509,7 +509,8 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 
   <!-- 대시보드 -->
   <div id="screen-dashboard" class="screen">
-    <button class="pdf-btn" onclick="window.print()">🖨️ PDF 출력</button>
+    <button class="pdf-btn" onclick="exportPDFReport()">🖨️ PDF 리포트</button>
+    <button class="pdf-btn" onclick="exportCSV()" style="background:#27ae60;margin-left:6px">📥 CSV 내보내기</button>
     <div style="clear:both;margin-bottom:8px"></div>
     <div class="tabs" id="dashTabs" style="display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex">
@@ -1410,6 +1411,142 @@ function saveEditProduct(productId){
 }
 
 // ===== 토스트 메시지 =====
+// ===== CSV 내보내기 =====
+function exportCSV(){
+  if(!curProduct){ alert('제품을 선택해주세요'); return; }
+  var src   = getDataSource();
+  var dates = Object.keys(src).sort();
+  var nos   = Object.keys(curProduct.specMap).map(Number).sort(function(a,b){return a-b;});
+
+  if(dates.length === 0){ alert('내보낼 측정 데이터가 없습니다'); return; }
+
+  var BOM = '﻿'; // Excel UTF-8 인식용
+  var rows = [];
+
+  // 헤더
+  var header = ['No.', '측정 부위', 'Spec', 'TOL', '하한', '상한'];
+  dates.forEach(function(d){ header.push(d + ' 측정값'); header.push(d + ' 편차(%)'); });
+  header.push('최신 판정');
+  rows.push(header.join(','));
+
+  nos.forEach(function(no){
+    var spec = curProduct.specMap[no];
+    var tol  = curProduct.tolMap[no];
+    if(spec == null) return;
+    var lower = spec - tol, upper = spec + tol;
+    var row = [
+      no,
+      '"' + (curProduct.partNames[no] || 'No.' + no) + '"',
+      spec, tol,
+      lower.toFixed(4), upper.toFixed(4)
+    ];
+    var lastOk = null;
+    dates.forEach(function(d){
+      var val = src[d] ? src[d][no] : null;
+      if(val != null){
+        var dev = ((val - spec) / tol * 100).toFixed(1);
+        var ok  = val >= lower && val <= upper;
+        row.push(val.toFixed(4));
+        row.push(dev);
+        lastOk = ok;
+      } else {
+        row.push(''); row.push('');
+      }
+    });
+    row.push(lastOk === null ? '-' : lastOk ? '합격' : '불합격');
+    rows.push(row.join(','));
+  });
+
+  var blob = new Blob([BOM + rows.join('\n')], {type:'text/csv;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = curProduct.code.replace(/\s/g,'_') + '_측정데이터.csv';
+  a.click();
+  showToast('✅ CSV 파일이 다운로드되었습니다.', 'success');
+}
+
+// ===== PDF 리포트 (핵심 요약) =====
+function exportPDFReport(){
+  if(!curProduct){ alert('제품을 선택해주세요'); return; }
+  var src   = getDataSource();
+  var dates = Object.keys(src).sort();
+  var nos   = Object.keys(curProduct.specMap).map(Number).sort(function(a,b){return a-b;});
+  var lastDate = dates[dates.length - 1] || '-';
+  var lastSrc  = lastDate !== '-' ? (src[lastDate] || {}) : {};
+
+  var total = 0, pass = 0, warn = 0, fail = 0;
+  var tableRows = '';
+  nos.forEach(function(no){
+    var spec = curProduct.specMap[no], tol = curProduct.tolMap[no];
+    if(spec == null) return;
+    var val   = lastSrc[no];
+    var lower = spec - tol, upper = spec + tol;
+    var statusTxt = '-', statusColor = '#888', rowBg = '';
+    var devTxt = '-';
+    if(val != null){
+      total++;
+      var dev = (val - spec) / tol * 100;
+      devTxt = (dev >= 0 ? '+' : '') + dev.toFixed(1) + '%';
+      var absP = Math.abs(dev);
+      if(absP > 100){ fail++; statusTxt='불합격'; statusColor='#e74c3c'; rowBg='background:#fff5f5'; }
+      else if(absP > 70){ warn++; statusTxt='주의'; statusColor='#f39c12'; rowBg='background:#fffbf0'; }
+      else { pass++; statusTxt='합격'; statusColor='#27ae60'; }
+    }
+    tableRows +=
+      '<tr style="' + rowBg + '">' +
+        '<td style="text-align:center">' + no + '</td>' +
+        '<td>' + esc(curProduct.partNames[no] || 'No.' + no) + '</td>' +
+        '<td style="text-align:center">' + spec + '</td>' +
+        '<td style="text-align:center">±' + tol + '</td>' +
+        '<td style="text-align:center">' + (val != null ? val.toFixed(4) : '-') + '</td>' +
+        '<td style="text-align:center">' + devTxt + '</td>' +
+        '<td style="text-align:center;font-weight:700;color:' + statusColor + '">' + statusTxt + '</td>' +
+      '</tr>';
+  });
+
+  var passRate = total > 0 ? (pass / total * 100).toFixed(1) : '-';
+  var now = new Date().toLocaleDateString('ko-KR');
+
+  var html = '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
+  '<title>품질 측정 리포트 — ' + esc(curProduct.code) + '</title>' +
+  '<style>' +
+    'body{font-family:-apple-system,sans-serif;margin:0;padding:24px;color:#222;font-size:12px}' +
+    'h1{font-size:18px;margin:0 0 4px}' +
+    '.meta{color:#888;font-size:11px;margin-bottom:20px}' +
+    '.kpi-row{display:flex;gap:12px;margin-bottom:20px}' +
+    '.kpi{flex:1;border:1px solid #e4e4e4;border-radius:8px;padding:12px;text-align:center}' +
+    '.kpi-val{font-size:22px;font-weight:700;margin-bottom:2px}' +
+    '.kpi-label{font-size:10px;color:#888}' +
+    'table{width:100%;border-collapse:collapse;margin-top:8px}' +
+    'th{background:#1a1a2e;color:#fff;padding:7px 8px;font-size:11px;text-align:center}' +
+    'td{padding:6px 8px;border-bottom:1px solid #f0f0f0;font-size:11px}' +
+    '.section-title{font-size:13px;font-weight:700;color:#1a1a2e;margin:20px 0 8px;border-bottom:2px solid #1a1a2e;padding-bottom:4px}' +
+    '@media print{body{padding:12px}.no-print{display:none}}' +
+  '</style></head><body>' +
+  '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+    '<div><div style="font-size:10px;color:#3b82f6;font-weight:700;margin-bottom:4px">성우전자 글로벌 품질관리 시스템</div>' +
+    '<h1>' + esc(curProduct.name) + '</h1>' +
+    '<div class="meta">기준 측정일: ' + lastDate + ' &nbsp;|&nbsp; 출력일: ' + now + ' &nbsp;|&nbsp; Part: ' + esc(curProduct.code) + '</div></div>' +
+    '<button class="no-print" onclick="window.print()" style="padding:8px 18px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">🖨️ 인쇄</button>' +
+  '</div>' +
+  '<div class="kpi-row">' +
+    '<div class="kpi"><div class="kpi-val" style="color:#1a1a2e">' + total + '</div><div class="kpi-label">전체 측정 항목</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:#27ae60">' + pass + '</div><div class="kpi-label">합격</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:#f39c12">' + warn + '</div><div class="kpi-label">주의 (70~100%)</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:#e74c3c">' + fail + '</div><div class="kpi-label">불합격</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:' + (parseFloat(passRate) >= 95 ? '#27ae60' : '#e74c3c') + '">' + passRate + '%</div><div class="kpi-label">합격률</div></div>' +
+  '</div>' +
+  '<div class="section-title">측정 상세 데이터 — ' + lastDate + '</div>' +
+  '<table><thead><tr><th>No.</th><th style="text-align:left">측정 부위</th><th>Spec</th><th>TOL</th><th>측정값</th><th>편차(%)</th><th>판정</th></tr></thead>' +
+  '<tbody>' + tableRows + '</tbody></table>' +
+  '<div style="margin-top:20px;font-size:10px;color:#aaa;text-align:right">* 편차(%) = (측정값 - Spec) / TOL × 100 &nbsp;|&nbsp; 주의: |편차| 70% 초과, 불합격: 100% 초과</div>' +
+  '</body></html>';
+
+  var w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
 function showToast(msg, type){
   var existing = document.getElementById('toastMsg');
   if(existing) existing.remove();
