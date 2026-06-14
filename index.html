@@ -246,20 +246,7 @@ body.dark #manualInputGrid > div > div{color:#bbb;}
       </div>
     </div>
 
-    <!-- 제품별 품질 현황 -->
-    <div class="card" id="homeQualityRow" style="margin-bottom:24px;padding:16px 20px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="sec-title" style="margin-bottom:0">제품별 품질 현황</div>
-        <div style="display:flex;gap:14px;font-size:11px;color:#888">
-          <span><span style="display:inline-block;width:10px;height:10px;background:#e74c3c;border-radius:2px;margin-right:3px;vertical-align:middle"></span>즉시수리</span>
-          <span><span style="display:inline-block;width:10px;height:10px;background:#f39c12;border-radius:2px;margin-right:3px;vertical-align:middle"></span>주의관찰</span>
-          <span><span style="display:inline-block;width:10px;height:10px;background:#27ae60;border-radius:2px;margin-right:3px;vertical-align:middle"></span>정상</span>
-        </div>
-      </div>
-      <div id="homeQualityList" style="display:flex;flex-direction:column;gap:8px"></div>
-      <div id="homeQualityEmpty" style="text-align:center;color:#aaa;font-size:12px;padding:16px 0;display:none">데이터를 불러오는 중...</div>
-    </div>
-
+    <!-- 제품별 품질 현황 (고객사 상세에서 표시) -->
     <div class="sec-title">고객사 현황</div>
     <div id="customerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;margin-bottom:24px">
 
@@ -1946,8 +1933,9 @@ function goCustomerDynamic(customer, products){
   modelCardsHtml += '<div class="model-card" style="opacity:0.4;cursor:default"><div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:3px">+ 모델 추가</div><div style="font-size:11px;color:#888">준비 중</div></div>';
 
   screen.innerHTML =
-    '<div class="sec-title">모델 선택 — '+customer.name+'</div>'+
-    '<div class="model-grid">'+modelCardsHtml+'</div>';
+    '<div class="sec-title">모델 선택 — '+esc(customer.name)+'</div>'+
+    '<div class="model-grid">'+modelCardsHtml+'</div>'+
+    buildCustomerQualityBar(products);
 
   showScreen('dyn-' + customer.id);
   updateBC([{label:'🏠 홈',fn:'goHome()'},{label:customer.name}]);
@@ -2191,6 +2179,73 @@ function refreshHomeKPI(){
 
   // 최근 활동 업데이트
   refreshRecentActivity();
+}
+
+function buildCustomerQualityBar(fbProducts){
+  // fbProducts: Firebase에서 온 제품 배열 [{productId, productCode, productName, approvalStatus, ...}]
+  var rows = [];
+  fbProducts.forEach(function(p){
+    var pid = p.productId;
+    var local = PRODUCTS[pid];
+    if(!local || !local.specMap || Object.keys(local.specMap).length === 0) return;
+    var src = local.vinaAll || {};
+    var dates = Object.keys(src);
+    if(dates.length === 0) return;
+    var red=0, yellow=0, green=0, cpkList=[];
+    Object.keys(local.specMap).forEach(function(noStr){
+      var no = parseInt(noStr);
+      if(local.angleNos && local.angleNos.indexOf(no)>=0) return;
+      var spec=local.specMap[no], tol=local.tolMap[no];
+      var vals=dates.map(function(d){return src[d]?src[d][no]:null;}).filter(function(v){return v!=null;});
+      if(!vals.length) return;
+      var mean=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+      var st=getStatus(mean,spec,tol,false);
+      if(st.sortKey===0) red++; else if(st.sortKey===1) yellow++; else green++;
+      if(vals.length>=2){
+        var sigma=Math.sqrt(vals.reduce(function(s,v){return s+(v-mean)*(v-mean);},0)/(vals.length-1));
+        if(sigma>0){ var cpk=Math.min((spec+tol-mean)/(3*sigma),(mean-(spec-tol))/(3*sigma)); if(isFinite(cpk)) cpkList.push(cpk); }
+      }
+    });
+    var total=red+yellow+green; if(!total) return;
+    var isApproved = p.approvalStatus==='approved' || local.approvalStatus==='approved';
+    if(isApproved){green=total;red=0;yellow=0;}
+    var avgCpk=cpkList.length?cpkList.reduce(function(a,b){return a+b;},0)/cpkList.length:null;
+    rows.push({name:p.productCode||p.productName,red:red,yellow:yellow,green:green,total:total,avgCpk:avgCpk,isApproved:isApproved});
+  });
+  if(!rows.length) return '';
+  rows.sort(function(a,b){return b.red-a.red;});
+  var legend='<div style="display:flex;gap:14px;font-size:11px;color:#888">'+
+    '<span><span style="display:inline-block;width:10px;height:10px;background:#e74c3c;border-radius:2px;margin-right:3px;vertical-align:middle"></span>즉시수리</span>'+
+    '<span><span style="display:inline-block;width:10px;height:10px;background:#f39c12;border-radius:2px;margin-right:3px;vertical-align:middle"></span>주의관찰</span>'+
+    '<span><span style="display:inline-block;width:10px;height:10px;background:#27ae60;border-radius:2px;margin-right:3px;vertical-align:middle"></span>정상</span></div>';
+  var rowsHtml=rows.map(function(r){
+    var redPct=Math.round(r.red/r.total*100), yelPct=Math.round(r.yellow/r.total*100), grnPct=100-redPct-yelPct;
+    var cpkTxt=r.avgCpk!=null?r.avgCpk.toFixed(2):'-';
+    var cpkColor=r.avgCpk==null?'#aaa':r.avgCpk>=1.67?'#27ae60':r.avgCpk>=1.33?'#2980b9':r.avgCpk>=1.0?'#f39c12':'#e74c3c';
+    var icon=r.isApproved?'✅':r.red>0?'🔴':r.yellow>0?'🟡':'🟢';
+    return '<div style="display:grid;grid-template-columns:130px 1fr 72px;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f0f0f0">'+
+      '<div style="font-size:12px;font-weight:700;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+icon+' '+esc(r.name)+(r.isApproved?'<span style="font-size:9px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px">승인완료</span>':'')+'</div>'+
+      '<div>'+
+        '<div style="display:flex;height:12px;border-radius:6px;overflow:hidden;background:#f0f0f0">'+
+          (redPct>0?'<div style="width:'+redPct+'%;background:#e74c3c"></div>':'')+
+          (yelPct>0?'<div style="width:'+yelPct+'%;background:#f39c12"></div>':'')+
+          (grnPct>0?'<div style="width:'+grnPct+'%;background:#27ae60"></div>':'')+
+        '</div>'+
+        '<div style="font-size:10px;color:#999;margin-top:2px">'+
+          (r.isApproved?'<span style="color:#27ae60;font-weight:700">✅ 전 항목 합격</span>':(r.red>0?'<span style="color:#e74c3c;font-weight:700">🔴 '+r.red+'</span> ':'')+
+          (r.yellow>0?'<span style="color:#f39c12;font-weight:700">🟡 '+r.yellow+'</span> ':'')+
+          '<span style="color:#27ae60">🟢 '+r.green+'</span>')+
+        '</div>'+
+      '</div>'+
+      '<div style="text-align:right;font-size:12px;font-weight:700;color:'+cpkColor+'">Cpk '+cpkTxt+'</div>'+
+    '</div>';
+  }).join('');
+  return '<div class="card" style="margin-top:20px;padding:16px 20px">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'+
+      '<div class="sec-title" style="margin-bottom:0">제품별 품질 현황</div>'+legend+
+    '</div>'+
+    rowsHtml+
+  '</div>';
 }
 
 function refreshHomeQualityKPI(){
@@ -2793,7 +2848,7 @@ document.addEventListener('DOMContentLoaded', function(){
   loadMandoApproval();
 });
 
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';refreshHomeQualityKPI();}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';}
 function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
 function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
 
