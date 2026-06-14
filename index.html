@@ -1205,8 +1205,8 @@ function addCustomerCard(customer, products){
   card.innerHTML =
     '<div style="background:'+customer.color+';padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:relative">'+
       '<div>'+
-        '<div style="font-size:16px;font-weight:700;color:#fff">'+customer.name+'</div>'+
-        '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">'+customer.eng+'</div>'+
+        '<div style="font-size:16px;font-weight:700;color:#fff">'+esc(customer.name)+'</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">'+esc(customer.eng)+'</div>'+
       '</div>'+
       '<div style="display:flex;align-items:flex-start;gap:10px">'+
         '<div style="text-align:right">'+
@@ -1668,7 +1668,7 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
     showScreen(dynScreenId);
     updateBC([
       {label:'🏠 홈',fn:'goHome()'},
-      {label:customerName,fn:'goCustomerDynamic('+JSON.stringify({id:customerId,name:customerName,eng:customerName,color:"#1a1a2e"})+',Object.values(PRODUCTS).filter(function(p){return p.customerId==="'+customerId+'";}))'},
+      {label:esc(customerName),fn:'goCustomerDynamic('+JSON.stringify({id:customerId,name:customerName,eng:customerName,color:"#1a1a2e"})+',Object.values(PRODUCTS).filter(function(p){return p.customerId==="'+esc(customerId)+'";}))'},
       {label:modelName}
     ]);
   });
@@ -2009,8 +2009,7 @@ function loadMandoApproval(){
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-  loadFirebaseData();
-  refreshHomeKPI();
+  loadFirebaseData(); // 내부에서 refreshHomeKPI() 호출함
   loadMandoApproval();
 });
 
@@ -2205,6 +2204,20 @@ function getStatus(val,spec,tol,isAngle){
 function buildTrendChart(){
   var src=getDataSource();
   var dates=Object.keys(src);
+
+  // 데이터 없을 때 빈 캔버스 대신 안내 메시지 표시
+  var trendWrap = document.getElementById('trendChart') && document.getElementById('trendChart').parentNode;
+  var emptyMsg = trendWrap && trendWrap.querySelector('.chart-empty-msg');
+  if(dates.length === 0){
+    if(trendWrap && !emptyMsg){
+      var msg = document.createElement('div');
+      msg.className = 'chart-empty-msg';
+      msg.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;color:#aaa;text-align:center;pointer-events:none;';
+      msg.innerHTML = '📂 측정 파일을 업로드하면<br>트렌드 차트가 표시됩니다';
+      trendWrap.appendChild(msg);
+    }
+    return;
+  } else if(emptyMsg){ emptyMsg.remove(); }
   var nos=Object.keys(curProduct.specMap).map(Number).filter(function(no){
     return curProduct.angleNos.indexOf(no)<0;
   });
@@ -2602,7 +2615,7 @@ document.addEventListener('DOMContentLoaded', function(){
           // 파일명으로 추가 감지 (detectFileType이 unknown 반환 시)
           if(fileType === 'unknown'){
             var fn = file.name.toLowerCase();
-            if(fn.indexOf('측정') >= 0 || fn.indexOf('data_') >= 0 && fn.indexOf('measurement') < 0){
+            if(fn.indexOf('측정') >= 0 || (fn.indexOf('data_') >= 0 && fn.indexOf('measurement') < 0)){
               fileType = 'dimension_hq';
             } else if(fn.indexOf('measurement') >= 0){
               fileType = 'dimension';
@@ -2635,15 +2648,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
             // 기존 날짜와 중복 체크
             var existingDates = Object.keys(curProduct.vinaAll);
-            if(existingDates.indexOf(label) < 0){
-              // 새 날짜 추가
-              curProduct.vinaAll[label] = result.data;
-              curProduct.vinaLH[label] = result.data;
-              curProduct.vinaRH[label] = result.data;
-            } else {
-              // 기존 날짜 업데이트
-              curProduct.vinaAll[label] = result.data;
+            if(existingDates.indexOf(label) >= 0){
+              if(!confirm(label + ' 날짜 데이터가 이미 존재합니다. 덮어쓸까요?')) return;
             }
+            curProduct.vinaAll[label] = result.data;
+            curProduct.vinaLH[label] = result.data;
+            curProduct.vinaRH[label] = result.data;
 
             // 날짜 버튼 재생성
             var dates = Object.keys(curProduct.vinaAll);
