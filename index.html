@@ -146,6 +146,17 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
 <div class="container">
   <div class="breadcrumb" id="breadcrumb"><span class="bc-active">🏠 홈</span></div>
 
+  <!-- 전체 검색바 -->
+  <div style="position:relative;margin-bottom:20px">
+    <input id="globalSearch" type="text" placeholder="🔍  제품 코드, 고객사, 모델명 검색..." autocomplete="off"
+      style="width:100%;padding:12px 16px 12px 42px;border:2px solid #e0e4ef;border-radius:12px;font-size:13px;outline:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.05);transition:border-color 0.2s;box-sizing:border-box"
+      onfocus="this.style.borderColor='#3b82f6';showSearchResults()"
+      onblur="setTimeout(hideSearchResults,200)"
+      oninput="showSearchResults()">
+    <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none">🔍</span>
+    <div id="searchResults" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #e0e4ef;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:500;max-height:320px;overflow-y:auto"></div>
+  </div>
+
   <!-- 홈 -->
   <div id="screen-home" class="screen active">
     <div class="stats-row" style="margin-bottom:24px">
@@ -610,9 +621,25 @@ tr.angle-row td{background:#f9f9f9;color:#bbb;}
           <table><thead><tr>
             <th>No.</th><th style="text-align:left">측정 부위</th>
             <th>Spec</th><th>TOL</th><th>하한</th><th>상한</th>
-            <th>VINA 값</th><th>Spec 위치</th><th>추세</th><th>판정</th>
+            <th>VINA 값</th><th>Spec 위치</th><th>Cpk</th><th>추세</th><th>판정</th>
           </tr></thead><tbody id="tableBody"></tbody></table>
         </div>
+      </div>
+    </div>
+
+    <!-- 메모/노트 섹션 -->
+    <div class="card" id="memoSection" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="card-title" style="margin-bottom:0">📝 메모 / 특이사항</div>
+        <span id="memoSaveStatus" style="font-size:11px;color:#27ae60;display:none">✅ 저장됨</span>
+      </div>
+      <div id="memoList" style="margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px">
+        <input id="memoInput" type="text" placeholder="측정 특이사항, 설비 변경 등 메모 입력..." maxlength="200"
+          style="flex:1;padding:9px 12px;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;outline:none"
+          onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e0e4ef'"
+          onkeydown="if(event.key==='Enter')addMemo()">
+        <button onclick="addMemo()" style="padding:9px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">+ 추가</button>
       </div>
     </div>
 
@@ -1439,7 +1466,7 @@ function exportCSV(){
   // 헤더
   var header = ['No.', '측정 부위', 'Spec', 'TOL', '하한', '상한'];
   dates.forEach(function(d){ header.push(d + ' 측정값'); header.push(d + ' 편차(%)'); });
-  header.push('최신 판정');
+  header.push('Cpk'); header.push('최신 판정');
   rows.push(header.join(','));
 
   nos.forEach(function(no){
@@ -1466,6 +1493,15 @@ function exportCSV(){
         row.push(''); row.push('');
       }
     });
+    // Cpk
+    var cpkVal = '-';
+    var allValsC = dates.map(function(d){ return src[d] ? src[d][no] : null; }).filter(function(v){ return v != null; });
+    if(allValsC.length >= 2){
+      var meanC = allValsC.reduce(function(a,b){return a+b;},0)/allValsC.length;
+      var sigC  = Math.sqrt(allValsC.reduce(function(s,v){return s+(v-meanC)*(v-meanC);},0)/(allValsC.length-1));
+      if(sigC > 0) cpkVal = Math.min((upper-meanC)/(3*sigC),(meanC-lower)/(3*sigC)).toFixed(2);
+    }
+    row.push(cpkVal);
     row.push(lastOk === null ? '-' : lastOk ? '합격' : '불합격');
     rows.push(row.join(','));
   });
@@ -2087,6 +2123,127 @@ function loadFirebaseData(){
   });
 }
 
+// ===== 메모/노트 =====
+var _memoCache = {};
+
+function loadMemo(productId){
+  db.ref('memos/' + productId).once('value').then(function(snap){
+    _memoCache[productId] = snap.val() ? Object.entries(snap.val()).map(function(e){ return Object.assign({id:e[0]},e[1]); }) : [];
+    renderMemoList(productId);
+  }).catch(function(){ _memoCache[productId] = []; renderMemoList(productId); });
+}
+
+function renderMemoList(productId){
+  var list = document.getElementById('memoList');
+  if(!list) return;
+  var memos = _memoCache[productId] || [];
+  if(memos.length === 0){
+    list.innerHTML = '<div style="font-size:12px;color:#bbb;padding:4px 0">등록된 메모가 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = memos.slice().reverse().map(function(m){
+    return '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#f8faff;border-radius:8px;margin-bottom:6px">'
+      + '<div style="flex:1"><div style="font-size:12px;color:#1a1a2e">' + esc(m.text) + '</div>'
+      + '<div style="font-size:10px;color:#bbb;margin-top:2px">' + esc(m.date) + '</div></div>'
+      + '<button onclick="deleteMemo(\'' + productId + '\',\'' + m.id + '\')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:13px;padding:0;line-height:1" title="삭제">✕</button>'
+      + '</div>';
+  }).join('');
+}
+
+function addMemo(){
+  if(!curProduct) return;
+  var pid   = getCurProductId();
+  var input = document.getElementById('memoInput');
+  var text  = input.value.trim();
+  if(!text) return;
+  var now   = new Date().toLocaleString('ko-KR');
+  var ref   = db.ref('memos/' + pid).push();
+  ref.set({text: text, date: now}).then(function(){
+    if(!_memoCache[pid]) _memoCache[pid] = [];
+    _memoCache[pid].push({id: ref.key, text: text, date: now});
+    renderMemoList(pid);
+    input.value = '';
+    var st = document.getElementById('memoSaveStatus');
+    if(st){ st.style.display='inline'; setTimeout(function(){ st.style.display='none'; }, 2000); }
+  }).catch(function(err){ alert('❌ 메모 저장 실패: ' + err.message); });
+}
+
+function deleteMemo(productId, memoId){
+  if(!confirm('메모를 삭제할까요?')) return;
+  db.ref('memos/' + productId + '/' + memoId).remove().then(function(){
+    _memoCache[productId] = (_memoCache[productId]||[]).filter(function(m){ return m.id !== memoId; });
+    renderMemoList(productId);
+  }).catch(function(err){ alert('❌ 삭제 실패: ' + err.message); });
+}
+
+// ===== 전체 검색 =====
+function buildSearchIndex(){
+  var items = [];
+
+  // 하드코딩 고객사
+  items.push({type:'고객사', name:'만도', sub:'Mando Corporation', action:function(){ goHome(); setTimeout(goModel, 50); }});
+  items.push({type:'고객사', name:'AM사', sub:'AM Corporation', action:function(){ goHome(); setTimeout(goModelAM, 50); }});
+
+  // 하드코딩 제품
+  Object.keys(PRODUCTS).forEach(function(pid){
+    var p = PRODUCTS[pid];
+    items.push({type:'제품', name:p.code || p.name, sub:p.name + (p.modelName ? ' · ' + p.modelName : ''), action:function(){ goDashboard(pid); }});
+  });
+
+  // Firebase 고객사
+  if(window._customerCache){
+    Object.values(window._customerCache).forEach(function(c){
+      if(!items.find(function(i){ return i.name === c.name; })){
+        items.push({type:'고객사', name:c.name, sub:c.eng, action:function(){ goHome(); }});
+      }
+    });
+  }
+
+  return items;
+}
+
+function showSearchResults(){
+  var q = document.getElementById('globalSearch').value.trim().toLowerCase();
+  var box = document.getElementById('searchResults');
+  if(!q){ box.style.display='none'; return; }
+
+  var items = buildSearchIndex();
+  var matched = items.filter(function(item){
+    return item.name.toLowerCase().indexOf(q) >= 0 || item.sub.toLowerCase().indexOf(q) >= 0;
+  }).slice(0, 8);
+
+  if(matched.length === 0){
+    box.innerHTML = '<div style="padding:16px;text-align:center;font-size:12px;color:#aaa">검색 결과가 없습니다</div>';
+    box.style.display = 'block';
+    return;
+  }
+
+  box.innerHTML = matched.map(function(item, idx){
+    return '<div data-idx="'+idx+'" style="padding:11px 16px;cursor:pointer;border-bottom:1px solid #f4f4f4;display:flex;align-items:center;gap:10px;transition:background 0.15s" '
+      + 'onmouseover="this.style.background=\'#f0f7ff\'" onmouseout="this.style.background=\'#fff\'">'
+      + '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:' + (item.type==='고객사'?'#eff6ff':'#ecfdf5') + ';color:' + (item.type==='고객사'?'#3b82f6':'#059669') + '">' + esc(item.type) + '</span>'
+      + '<div><div style="font-size:13px;font-weight:700;color:#1a1a2e">' + esc(item.name) + '</div>'
+      + '<div style="font-size:11px;color:#888;margin-top:1px">' + esc(item.sub) + '</div></div>'
+      + '</div>';
+  }).join('');
+
+  // 클릭 이벤트
+  matched.forEach(function(item, idx){
+    box.children[idx].addEventListener('mousedown', function(){
+      document.getElementById('globalSearch').value = '';
+      box.style.display = 'none';
+      item.action();
+    });
+  });
+
+  box.style.display = 'block';
+}
+
+function hideSearchResults(){
+  var box = document.getElementById('searchResults');
+  if(box) box.style.display = 'none';
+}
+
 // ===== 만도 하드코딩 제품 승인 관리 =====
 var MANDO_PRODUCTS = {
   br0035: { fixed: true },   // BR0037은 이미 승인완료 하드코딩
@@ -2305,6 +2462,9 @@ function goDashboard(productId){
   // Firebase에서 추가 측정 데이터 불러오기
   loadProductDataFromFirebase(productId);
 
+  // 메모 불러오기
+  loadMemo(productId);
+
   // AP5010 하부스캔 섹션
   var scanSection = document.getElementById('scanSection');
   if(curProduct.scanData){
@@ -2470,7 +2630,25 @@ function renderData(){
       else grnCnt++;
       devData.push({no:no,pct:Math.abs(devPct),color:st.color});
     }
-    rows.push({no:no,spec:spec,tol:tol,val:val,min:min,max:max,isAngle:isAngle,st:st,trendTxt:trendTxt,devPct:devPct,posLabel:posLabel,posColor:posColor});
+    // Cpk 계산: 전체 날짜 측정값으로 σ 산출
+    var cpkTxt = '-', cpkColor = '#aaa';
+    if(!isAngle){
+      var allVals = [];
+      var src2 = getDataSource();
+      Object.keys(src2).forEach(function(d){ var v = src2[d][no]; if(v != null) allVals.push(v); });
+      if(allVals.length >= 2){
+        var mean = allVals.reduce(function(a,b){return a+b;},0) / allVals.length;
+        var sigma = Math.sqrt(allVals.reduce(function(s,v){return s+(v-mean)*(v-mean);},0)/(allVals.length-1));
+        if(sigma > 0){
+          var cpu = (max - mean) / (3 * sigma);
+          var cpl = (mean - min) / (3 * sigma);
+          var cpk = Math.min(cpu, cpl);
+          cpkTxt = cpk.toFixed(2);
+          cpkColor = cpk >= 1.67 ? '#27ae60' : cpk >= 1.33 ? '#2980b9' : cpk >= 1.0 ? '#f39c12' : '#e74c3c';
+        }
+      }
+    }
+    rows.push({no:no,spec:spec,tol:tol,val:val,min:min,max:max,isAngle:isAngle,st:st,trendTxt:trendTxt,devPct:devPct,posLabel:posLabel,posColor:posColor,cpkTxt:cpkTxt,cpkColor:cpkColor});
   });
 
   // 정렬: No순 or 위험순
@@ -2493,6 +2671,7 @@ function renderData(){
       '<td style="color:'+(r.isAngle?'#ccc':'#555')+'">'+r.max.toFixed(3)+'</td>'+
       '<td><strong style="color:'+(r.isAngle?'#ccc':r.st.color)+'">'+r.val.toFixed(4)+'</strong></td>'+
       '<td><span style="color:'+r.posColor+';font-weight:600">'+r.posLabel+'</span></td>'+
+      '<td><span style="font-weight:700;color:'+r.cpkColor+'">'+r.cpkTxt+'</span></td>'+
       '<td>'+r.trendTxt+'</td>'+
       '<td><span class="badge '+r.st.badgeCls+'">'+r.st.status+'</span></td>';
     tbody.appendChild(tr);
