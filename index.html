@@ -194,6 +194,19 @@ body.dark #manualInputGrid > div{background:#252838;border-color:#2a2d3e;}
 body.dark #manualInputGrid > div > div{color:#bbb;}
 body.dark #heroBanner{background:linear-gradient(135deg,#0a0a14 0%,#0d1a2e 50%,#0a2040 100%);}
 body.dark #screen-home .sec-title{color:#e0e0e0;}
+/* 다크모드: 시스템 소개 카드 */
+body.dark #systemIntroRow > div:nth-child(1){background:linear-gradient(135deg,#0f1f3d,#1a2d4a) !important;border-color:#2a3a5e !important;}
+body.dark #systemIntroRow > div:nth-child(2){background:linear-gradient(135deg,#0a2418,#0f3020) !important;border-color:#1a3d28 !important;}
+body.dark #systemIntroRow > div:nth-child(3){background:linear-gradient(135deg,#1a0d2e,#251445) !important;border-color:#3a2060 !important;}
+body.dark #systemIntroRow > div > div:nth-child(2){color:#93c5fd !important;}
+body.dark #systemIntroRow > div:nth-child(2) > div:nth-child(2){color:#4ade80 !important;}
+body.dark #systemIntroRow > div:nth-child(3) > div:nth-child(2){color:#c084fc !important;}
+body.dark #systemIntroRow > div > div:last-child{color:#aaa !important;}
+/* 다크모드: 승인 히스토리 모달 */
+body.dark #approvalHistoryModal > div{background:#1c1f2e !important;}
+body.dark #ahm-body table{color:#e0e0e0;}
+body.dark #ahm-body thead th{background:#252838 !important;color:#888 !important;}
+body.dark #ahm-body tbody td{border-color:#2a2d3e !important;color:#ccc !important;}
 body.dark #screen-home button[onclick*="goDashboard"]{background:#1c1f2e;border-color:#2a2d3e;color:#e0e0e0;}
 body.dark #overviewGrid > div{filter:brightness(0.85);}
 </style>
@@ -237,6 +250,7 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
         <div>
           <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.12em;margin-bottom:6px">SUNGWOO ELECTRONICS · GLOBAL PRODUCT MANAGEMENT</div>
           <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:4px">성우전자 글로벌 제품관리 시스템</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-style:italic">해외법인·본사 품질 데이터 통합 · 실시간 Cpk 분석 · 고객 승인 이력 관리</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.45)" id="heroClock"></div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -257,6 +271,25 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
             <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px" id="hero-approved-sub">/ - 제품</div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 시스템 소개 카드 (발표용) -->
+    <div id="systemIntroRow" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+      <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:14px;padding:18px 20px">
+        <div style="font-size:22px;margin-bottom:8px">🎯</div>
+        <div style="font-size:13px;font-weight:800;color:#1e40af;margin-bottom:4px">개발 목적</div>
+        <div style="font-size:11px;color:#3b82f6;line-height:1.6">해외 법인(VINA)과 본사(HQ) 간 품질 데이터를 실시간으로 통합 관리하여 고객 승인 대응 속도를 극대화</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:14px;padding:18px 20px">
+        <div style="font-size:22px;margin-bottom:8px">⚡</div>
+        <div style="font-size:13px;font-weight:800;color:#065f46;margin-bottom:4px">실용성</div>
+        <div style="font-size:11px;color:#16a34a;line-height:1.6">Excel 파일 업로드 → 자동 Cpk 계산 → 불량항목 즉시 식별 → PDF 리포트 출력까지 원스톱 처리</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#fdf4ff,#f3e8ff);border:1px solid #e9d5ff;border-radius:14px;padding:18px 20px">
+        <div style="font-size:22px;margin-bottom:8px">🏆</div>
+        <div style="font-size:13px;font-weight:800;color:#6b21a8;margin-bottom:4px">기대 효과</div>
+        <div style="font-size:11px;color:#9333ea;line-height:1.6">IATF 16949 품질 기준 준수 · 고객사 승인 이력 추적 · 글로벌 품질 가시성 확보</div>
       </div>
     </div>
 
@@ -497,7 +530,10 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
           <span class="p-tag tag-vina">VINA ✓</span>
           <span id="mando-status-br0035" class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>
         </div>
-        <button id="mando-btn-br0035" onclick="event.stopPropagation();toggleMandoApproval('br0035')" style="width:100%;padding:5px;margin-bottom:8px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button id="mando-btn-br0035" onclick="event.stopPropagation();toggleMandoApproval('br0035')" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
+          <button onclick="event.stopPropagation();showApprovalHistory('br0035')" style="padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#f8f8f8;color:#888">📋 이력</button>
+        </div>
         <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-21</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
@@ -509,7 +545,10 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
           <span class="p-tag tag-vina">VINA ✓</span>
           <span id="mando-status-br0036" class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>
         </div>
-        <button id="mando-btn-br0036" onclick="event.stopPropagation();toggleMandoApproval('br0036')" style="width:100%;padding:5px;margin-bottom:8px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button id="mando-btn-br0036" onclick="event.stopPropagation();toggleMandoApproval('br0036')" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
+          <button onclick="event.stopPropagation();showApprovalHistory('br0036')" style="padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#f8f8f8;color:#888">📋 이력</button>
+        </div>
         <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-09</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
@@ -529,7 +568,10 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
           <span class="p-tag tag-vina">VINA ✓</span>
           <span id="mando-status-br0038" class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>
         </div>
-        <button id="mando-btn-br0038" onclick="event.stopPropagation();toggleMandoApproval('br0038')" style="width:100%;padding:5px;margin-bottom:8px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button id="mando-btn-br0038" onclick="event.stopPropagation();toggleMandoApproval('br0038')" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#d1fae5;color:#065f46">✅ 승인 처리</button>
+          <button onclick="event.stopPropagation();showApprovalHistory('br0038')" style="padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#f8f8f8;color:#888">📋 이력</button>
+        </div>
         <div class="p-bar"><div class="p-bar-fill" style="width:80%;background:#3b82f6"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>VINA 데이터 완성</span><span>2026-05-12</span></div>
         <span class="p-arrow" style="color:#3b82f6">→</span>
@@ -1708,73 +1750,141 @@ function exportPDFReport(){
   var nos   = Object.keys(curProduct.specMap).map(Number).sort(function(a,b){return a-b;});
   var lastDate = dates[dates.length - 1] || '-';
   var lastSrc  = lastDate !== '-' ? (src[lastDate] || {}) : {};
+  var now = new Date();
+  var nowStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
 
   var total = 0, pass = 0, warn = 0, fail = 0;
   var tableRows = '';
+  var cpkList = [];
   nos.forEach(function(no){
     var spec = curProduct.specMap[no], tol = curProduct.tolMap[no];
     if(spec == null) return;
-    var val   = lastSrc[no];
-    var lower = spec - tol, upper = spec + tol;
+    var isAngle = curProduct.angleNos.indexOf(no) >= 0;
+    var val = lastSrc[no];
+    var min = spec - tol, max = spec + tol;
     var statusTxt = '-', statusColor = '#888', rowBg = '';
-    var devTxt = '-';
-    if(val != null){
+    var devTxt = '-', cpkTxt = '-';
+    if(val != null && !isAngle){
       total++;
       var dev = (val - spec) / tol * 100;
       devTxt = (dev >= 0 ? '+' : '') + dev.toFixed(1) + '%';
       var absP = Math.abs(dev);
-      if(absP > 100){ fail++; statusTxt='불합격'; statusColor='#e74c3c'; rowBg='background:#fff5f5'; }
-      else if(absP > 70){ warn++; statusTxt='주의'; statusColor='#f39c12'; rowBg='background:#fffbf0'; }
+      if(absP > 100){ fail++; statusTxt='불합격'; statusColor='#e74c3c'; rowBg='background:#fff5f5;'; }
+      else if(absP > 70){ warn++; statusTxt='주의'; statusColor='#f39c12'; rowBg='background:#fffbf0;'; }
       else { pass++; statusTxt='합격'; statusColor='#27ae60'; }
+      // Cpk
+      var allVals = dates.map(function(d){ return src[d] ? src[d][no] : null; }).filter(function(v){ return v!=null; });
+      if(allVals.length >= 2){
+        var mean = allVals.reduce(function(a,b){return a+b;},0)/allVals.length;
+        var sigma = Math.sqrt(allVals.reduce(function(s,v){return s+(v-mean)*(v-mean);},0)/(allVals.length-1));
+        if(sigma > 0){
+          var cpk = Math.min((max-mean)/(3*sigma),(mean-min)/(3*sigma));
+          if(isFinite(cpk)){ cpkTxt = cpk.toFixed(2); cpkList.push(cpk); }
+        }
+      }
     }
     tableRows +=
-      '<tr style="' + rowBg + '">' +
-        '<td style="text-align:center">' + no + '</td>' +
-        '<td>' + esc(curProduct.partNames[no] || 'No.' + no) + '</td>' +
+      '<tr style="'+rowBg+'">' +
+        '<td style="text-align:center;font-weight:700">' + no + '</td>' +
+        '<td>' + esc(curProduct.partNames[no] || 'No.' + no) + (isAngle?'<span style="color:#aaa;font-size:9px"> (각도)</span>':'') + '</td>' +
         '<td style="text-align:center">' + spec + '</td>' +
         '<td style="text-align:center">±' + tol + '</td>' +
-        '<td style="text-align:center">' + (val != null ? val.toFixed(4) : '-') + '</td>' +
+        '<td style="text-align:center;font-weight:700">' + (val != null ? val.toFixed(4) : '-') + '</td>' +
         '<td style="text-align:center">' + devTxt + '</td>' +
+        '<td style="text-align:center;font-weight:700;color:#555">' + cpkTxt + '</td>' +
         '<td style="text-align:center;font-weight:700;color:' + statusColor + '">' + statusTxt + '</td>' +
       '</tr>';
   });
 
   var passRate = total > 0 ? (pass / total * 100).toFixed(1) : '-';
-  var now = new Date().toLocaleDateString('ko-KR');
+  var avgCpk = cpkList.length > 0 ? (cpkList.reduce(function(a,b){return a+b;},0)/cpkList.length).toFixed(2) : '-';
+  var cpkColor = avgCpk === '-' ? '#888' : parseFloat(avgCpk) >= 1.67 ? '#27ae60' : parseFloat(avgCpk) >= 1.33 ? '#2980b9' : parseFloat(avgCpk) >= 1.0 ? '#f39c12' : '#e74c3c';
+  var passColor = parseFloat(passRate) >= 95 ? '#27ae60' : parseFloat(passRate) >= 80 ? '#f39c12' : '#e74c3c';
+
+  // 트렌드 요약 (날짜별 불합격 수)
+  var trendRows = dates.slice(-6).map(function(d){
+    var r=0, w2=0, g=0;
+    nos.forEach(function(no){
+      if(curProduct.angleNos.indexOf(no)>=0) return;
+      var v = src[d] ? src[d][no] : null; if(v==null) return;
+      var sp=curProduct.specMap[no], tl=curProduct.tolMap[no];
+      var p=Math.abs((v-sp)/tl*100);
+      if(p>100) r++; else if(p>70) w2++; else g++;
+    });
+    return '<tr><td>'+d+'</td><td style="color:#e74c3c;font-weight:700;text-align:center">'+r+'</td><td style="color:#f39c12;font-weight:700;text-align:center">'+w2+'</td><td style="color:#27ae60;font-weight:700;text-align:center">'+g+'</td></tr>';
+  }).join('');
 
   var html = '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
   '<title>품질 측정 리포트 — ' + esc(curProduct.code) + '</title>' +
   '<style>' +
-    'body{font-family:-apple-system,sans-serif;margin:0;padding:24px;color:#222;font-size:12px}' +
-    'h1{font-size:18px;margin:0 0 4px}' +
-    '.meta{color:#888;font-size:11px;margin-bottom:20px}' +
-    '.kpi-row{display:flex;gap:12px;margin-bottom:20px}' +
-    '.kpi{flex:1;border:1px solid #e4e4e4;border-radius:8px;padding:12px;text-align:center}' +
-    '.kpi-val{font-size:22px;font-weight:700;margin-bottom:2px}' +
-    '.kpi-label{font-size:10px;color:#888}' +
-    'table{width:100%;border-collapse:collapse;margin-top:8px}' +
-    'th{background:#1a1a2e;color:#fff;padding:7px 8px;font-size:11px;text-align:center}' +
-    'td{padding:6px 8px;border-bottom:1px solid #f0f0f0;font-size:11px}' +
-    '.section-title{font-size:13px;font-weight:700;color:#1a1a2e;margin:20px 0 8px;border-bottom:2px solid #1a1a2e;padding-bottom:4px}' +
-    '@media print{body{padding:12px}.no-print{display:none}}' +
+    '*{box-sizing:border-box;margin:0;padding:0}' +
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f7fa;color:#222;font-size:12px;padding:0}' +
+    '.page{max-width:800px;margin:0 auto;background:#fff;padding:32px 36px;min-height:100vh}' +
+    '.header{background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}' +
+    '.header-left .co{font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.1em;margin-bottom:4px}' +
+    '.header-left h1{font-size:18px;font-weight:800;color:#fff;margin-bottom:2px}' +
+    '.header-left .sub{font-size:11px;color:rgba(255,255,255,0.5)}' +
+    '.header-right{text-align:right}' +
+    '.header-right .date{font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:4px}' +
+    '.header-right .part{font-size:13px;font-weight:700;color:#60a5fa}' +
+    '.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}' +
+    '.kpi{border:1px solid #e8eaf0;border-radius:10px;padding:12px 10px;text-align:center;background:#fafafa}' +
+    '.kpi-val{font-size:22px;font-weight:800;margin-bottom:2px}' +
+    '.kpi-lbl{font-size:10px;color:#888;font-weight:500}' +
+    '.section{font-size:12px;font-weight:800;color:#1a1a2e;margin:20px 0 8px;padding-bottom:5px;border-bottom:2px solid #1a1a2e;display:flex;align-items:center;gap:6px}' +
+    'table{width:100%;border-collapse:collapse}' +
+    'th{background:#1a1a2e;color:#fff;padding:7px 8px;font-size:10px;text-align:center;font-weight:700}' +
+    'th:nth-child(2){text-align:left}' +
+    'td{padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:11px;text-align:center}' +
+    'td:nth-child(2){text-align:left}' +
+    'tr:hover td{background:#f8f9fb}' +
+    '.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0}' +
+    '.footer{margin-top:20px;padding-top:12px;border-top:1px solid #e8eaf0;display:flex;justify-content:space-between;font-size:9px;color:#bbb}' +
+    '.print-btn{position:fixed;bottom:24px;right:24px;padding:12px 22px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.2)}' +
+    '@media print{.print-btn{display:none}body{background:#fff}.page{padding:20px}}' +
   '</style></head><body>' +
-  '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
-    '<div><div style="font-size:10px;color:#3b82f6;font-weight:700;margin-bottom:4px">성우전자 글로벌 제품관리 시스템</div>' +
-    '<h1>' + esc(curProduct.name) + '</h1>' +
-    '<div class="meta">기준 측정일: ' + lastDate + ' &nbsp;|&nbsp; 출력일: ' + now + ' &nbsp;|&nbsp; Part: ' + esc(curProduct.code) + '</div></div>' +
-    '<button class="no-print" onclick="window.print()" style="padding:8px 18px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">🖨️ 인쇄</button>' +
+  '<div class="page">' +
+  '<div class="header">' +
+    '<div class="header-left">' +
+      '<div class="co">SUNGWOO ELECTRONICS · GLOBAL PRODUCT MANAGEMENT</div>' +
+      '<h1>' + esc(curProduct.name) + '</h1>' +
+      '<div class="sub">측정 품질 리포트 &nbsp;|&nbsp; 기준일: ' + lastDate + ' &nbsp;|&nbsp; 총 ' + dates.length + '회 측정</div>' +
+    '</div>' +
+    '<div class="header-right">' +
+      '<div class="date">출력일: ' + nowStr + '</div>' +
+      '<div class="part">' + esc(curProduct.code) + '</div>' +
+    '</div>' +
   '</div>' +
   '<div class="kpi-row">' +
-    '<div class="kpi"><div class="kpi-val" style="color:#1a1a2e">' + total + '</div><div class="kpi-label">전체 측정 항목</div></div>' +
-    '<div class="kpi"><div class="kpi-val" style="color:#27ae60">' + pass + '</div><div class="kpi-label">합격</div></div>' +
-    '<div class="kpi"><div class="kpi-val" style="color:#f39c12">' + warn + '</div><div class="kpi-label">주의 (70~100%)</div></div>' +
-    '<div class="kpi"><div class="kpi-val" style="color:#e74c3c">' + fail + '</div><div class="kpi-label">불합격</div></div>' +
-    '<div class="kpi"><div class="kpi-val" style="color:' + (parseFloat(passRate) >= 95 ? '#27ae60' : '#e74c3c') + '">' + passRate + '%</div><div class="kpi-label">합격률</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:#1a1a2e">' + total + '</div><div class="kpi-lbl">측정 항목</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:#27ae60">' + pass + '</div><div class="kpi-lbl">합격</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:#f39c12">' + warn + '</div><div class="kpi-lbl">주의</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:#e74c3c">' + fail + '</div><div class="kpi-lbl">불합격</div></div>' +
+    '<div class="kpi"><div class="kpi-val" style="color:'+passColor+'">' + passRate + '%</div><div class="kpi-lbl">합격률</div></div>' +
   '</div>' +
-  '<div class="section-title">측정 상세 데이터 — ' + lastDate + '</div>' +
-  '<table><thead><tr><th>No.</th><th style="text-align:left">측정 부위</th><th>Spec</th><th>TOL</th><th>측정값</th><th>편차(%)</th><th>판정</th></tr></thead>' +
+  '<div class="two-col">' +
+    '<div>' +
+      '<div class="section">📊 날짜별 판정 추이 (최근 6회)</div>' +
+      '<table><thead><tr><th>측정일</th><th>불합격</th><th>주의</th><th>합격</th></tr></thead><tbody>' + (trendRows || '<tr><td colspan="4" style="color:#aaa;padding:12px">데이터 없음</td></tr>') + '</tbody></table>' +
+    '</div>' +
+    '<div>' +
+      '<div class="section">📈 공정능력 요약</div>' +
+      '<table><thead><tr><th>지표</th><th>값</th><th>기준</th><th>평가</th></tr></thead><tbody>' +
+        '<tr><td style="text-align:left;font-weight:700">평균 Cpk</td><td style="font-weight:800;color:'+cpkColor+'">' + avgCpk + '</td><td>≥ 1.67</td><td style="color:'+cpkColor+';font-weight:700">' + (avgCpk==='-'?'-':parseFloat(avgCpk)>=1.67?'우수':parseFloat(avgCpk)>=1.33?'양호':parseFloat(avgCpk)>=1.0?'개선필요':'불량') + '</td></tr>' +
+        '<tr><td style="text-align:left;font-weight:700">합격률</td><td style="font-weight:800;color:'+passColor+'">' + passRate + '%</td><td>≥ 95%</td><td style="color:'+passColor+';font-weight:700">' + (passRate==='-'?'-':parseFloat(passRate)>=95?'합격':'미달') + '</td></tr>' +
+        '<tr><td style="text-align:left;font-weight:700">측정 횟수</td><td style="font-weight:800">' + dates.length + '회</td><td>-</td><td>-</td></tr>' +
+      '</tbody></table>' +
+    '</div>' +
+  '</div>' +
+  '<div class="section" style="margin-top:20px">📋 항목별 측정 상세 — ' + lastDate + '</div>' +
+  '<table><thead><tr><th>No.</th><th>측정 부위</th><th>Spec</th><th>TOL</th><th>측정값</th><th>편차(%)</th><th>Cpk</th><th>판정</th></tr></thead>' +
   '<tbody>' + tableRows + '</tbody></table>' +
-  '<div style="margin-top:20px;font-size:10px;color:#aaa;text-align:right">* 편차(%) = (측정값 - Spec) / TOL × 100 &nbsp;|&nbsp; 주의: |편차| 70% 초과, 불합격: 100% 초과</div>' +
+  '<div class="footer">' +
+    '<span>성우전자 글로벌 제품관리 시스템 · SUNGWOO ELECTRONICS</span>' +
+    '<span>* 편차(%) = (측정값 - Spec) ÷ TOL × 100 &nbsp;|&nbsp; 불합격: |편차| > 100%</span>' +
+  '</div>' +
+  '</div>' +
+  '<button class="print-btn" onclick="window.print()">🖨️ PDF 저장 / 인쇄</button>' +
   '</body></html>';
 
   var w = window.open('', '_blank');
@@ -2217,15 +2327,15 @@ function refreshHomeKPI(){
     var elApproved    = document.getElementById('kpi-approved');
     var elApprovedSub = document.getElementById('kpi-approved-sub');
 
-    if(elCust)        elCust.textContent        = totalCust;
-    if(elProd)        elProd.textContent        = totalProds;
-    if(elModel)       elModel.textContent       = totalModels;
-    if(elApproved)    elApproved.textContent    = totalApproved;
+    countUp(elCust,     totalCust,     800);
+    countUp(elProd,     totalProds,    900);
+    countUp(elModel,    totalModels,   700);
+    countUp(elApproved, totalApproved, 1000);
     if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
     // 히어로 배너 승인완료 연동
     var heroAT = document.getElementById('hero-approved-total');
     var heroAS = document.getElementById('hero-approved-sub');
-    if(heroAT) heroAT.textContent = totalApproved;
+    countUp(heroAT, totalApproved, 1000);
     if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
   }).catch(function(err){
     console.error('KPI 로드 실패:', err);
@@ -2814,9 +2924,9 @@ function hideSearchResults(){
 
 // ===== 만도 하드코딩 제품 승인 관리 =====
 var MANDO_PRODUCTS = {
-  br0035: { fixed: true },   // BR0037은 이미 승인완료 하드코딩
-  br0036: { fixed: true },
-  br0038: { fixed: true }
+  br0035: { fixed: true, name: 'BR0035 FRT BRKT LH#1' },
+  br0036: { fixed: true, name: 'BR0036 RR BRKT LH#1' },
+  br0038: { fixed: true, name: 'BR0038 RR BRKT LH#3' }
 };
 
 function updateMandoUI(pid, isApproved){
@@ -2876,16 +2986,55 @@ function toggleMandoApproval(pid){
   var msg = isApproved ? '승인을 취소하고 승인대기 상태로 변경할까요?' : '✅ 승인완료 처리할까요?';
   if(!confirm(msg)) return;
 
-  var now = new Date().toISOString().split('T')[0];
+  var now = new Date();
+  var nowStr = now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0') + ' ' +
+    String(now.getHours()).padStart(2,'0') + ':' +
+    String(now.getMinutes()).padStart(2,'0');
+
   db.ref('mandoApproval/' + pid).set({
     approved: newStatus,
-    updatedAt: now
+    updatedAt: nowStr
   }).then(function(){
+    // 히스토리 push
+    db.ref('mandoApprovalHistory/' + pid).push({
+      action: newStatus ? 'approved' : 'cancelled',
+      at: nowStr
+    });
     updateMandoUI(pid, newStatus);
     showToast(newStatus ? '✅ 승인완료 처리되었습니다!' : '⏳ 승인대기로 변경되었습니다.', 'success');
   }).catch(function(err){
     alert('❌ 저장 실패: ' + err.message);
   });
+}
+
+function showApprovalHistory(pid){
+  var name = (MANDO_PRODUCTS[pid] && MANDO_PRODUCTS[pid].name) || pid;
+  var modal = document.getElementById('approvalHistoryModal');
+  var title = document.getElementById('ahm-title');
+  var body  = document.getElementById('ahm-body');
+  if(!modal) return;
+  title.textContent = name + ' 승인 이력';
+  body.innerHTML = '<div style="color:#888;text-align:center;padding:20px">불러오는 중...</div>';
+  modal.style.display = 'flex';
+
+  db.ref('mandoApprovalHistory/' + pid).once('value').then(function(snap){
+    var data = snap.val();
+    if(!data){ body.innerHTML = '<div style="color:#888;text-align:center;padding:20px">이력이 없습니다.</div>'; return; }
+    var rows = Object.values(data).reverse();
+    var html = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+    html += '<thead><tr><th style="padding:8px 12px;text-align:left;background:#f8f8f8;border-bottom:2px solid #eee;color:#888;font-size:11px">일시</th><th style="padding:8px 12px;text-align:center;background:#f8f8f8;border-bottom:2px solid #eee;color:#888;font-size:11px">처리내용</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      var isApp = r.action === 'approved';
+      var badge = isApp
+        ? '<span style="background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:5px;font-size:12px;font-weight:700">✅ 승인완료</span>'
+        : '<span style="background:#fff3cd;color:#856404;padding:3px 10px;border-radius:5px;font-size:12px;font-weight:700">⏳ 승인취소</span>';
+      html += '<tr><td style="padding:10px 12px;border-bottom:1px solid #f2f2f2;color:#555">' + (r.at||'-') + '</td><td style="padding:10px 12px;border-bottom:1px solid #f2f2f2;text-align:center">' + badge + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    body.innerHTML = html;
+  }).catch(function(){ body.innerHTML = '<div style="color:#c0392b;padding:20px">불러오기 실패</div>'; });
 }
 
 // ===== 전체 현황판 =====
@@ -2986,6 +3135,24 @@ function buildOverviewPanel(){
       (c.lastDate?'<div style="font-size:9px;color:#9ca3af;margin-top:5px">'+c.lastDate+'</div>':'')+
     '</div>';
   }).join('');
+}
+
+// ===== 숫자 카운트업 애니메이션 =====
+function countUp(el, target, duration){
+  if(!el) return;
+  var start = 0;
+  var startTime = null;
+  var num = parseInt(target) || 0;
+  if(num === 0){ el.textContent = 0; return; }
+  function step(ts){
+    if(!startTime) startTime = ts;
+    var progress = Math.min((ts - startTime) / duration, 1);
+    var ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    el.textContent = Math.floor(ease * num);
+    if(progress < 1) requestAnimationFrame(step);
+    else el.textContent = num;
+  }
+  requestAnimationFrame(step);
 }
 
 // ===== 히어로 배너 시계 =====
@@ -4189,6 +4356,23 @@ showScreen = function(id){
   updateBottomNav();
 };
 </script>
+
+<!-- 승인 히스토리 모달 -->
+<div id="approvalHistoryModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;width:90%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="background:linear-gradient(135deg,#1a1a2e,#2d2d5e);padding:18px 22px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:0.1em;margin-bottom:3px">APPROVAL HISTORY</div>
+        <div id="ahm-title" style="font-size:16px;font-weight:700;color:#fff">승인 이력</div>
+      </div>
+      <button onclick="document.getElementById('approvalHistoryModal').style.display='none'" style="background:rgba(255,255,255,0.1);border:none;border-radius:8px;color:#fff;font-size:18px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <div id="ahm-body" style="overflow-y:auto;padding:16px;flex:1"></div>
+    <div style="padding:12px 16px;border-top:1px solid #eee;text-align:center">
+      <button onclick="document.getElementById('approvalHistoryModal').style.display='none'" style="padding:8px 24px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">닫기</button>
+    </div>
+  </div>
+</div>
 
 <nav class="bottom-nav">
   <div class="bottom-nav-inner">
