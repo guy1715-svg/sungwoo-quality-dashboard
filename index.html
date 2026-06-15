@@ -232,57 +232,49 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
   <div id="screen-home" class="screen active">
 
     <!-- 히어로 배너 -->
-    <div id="heroBanner" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-      <div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;letter-spacing:0.08em;margin-bottom:4px">SUNGWOO ELECTRONICS · GLOBAL PRODUCT MANAGEMENT</div>
-        <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:2px">성우전자 글로벌 제품관리 시스템</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.55)" id="heroClock">로딩 중...</div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 16px;text-align:center;border:1px solid rgba(255,255,255,0.12)">
-          <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:2px">시스템 상태</div>
-          <div style="font-size:13px;font-weight:700;color:#4ade80">🟢 정상 운영</div>
+    <div id="heroBanner" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);border-radius:16px;padding:24px 28px;margin-bottom:20px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.12em;margin-bottom:6px">SUNGWOO ELECTRONICS · GLOBAL PRODUCT MANAGEMENT</div>
+          <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:4px">성우전자 글로벌 제품관리 시스템</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.45)" id="heroClock"></div>
         </div>
-        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 16px;text-align:center;border:1px solid rgba(255,255,255,0.12)">
-          <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:2px">만도 승인 진행률</div>
-          <div style="font-size:13px;font-weight:700;color:#60a5fa" id="hero-mando-pct">- / 4</div>
-          <div style="width:80px;height:5px;background:rgba(255,255,255,0.15);border-radius:3px;margin-top:4px;overflow:hidden">
-            <div id="hero-mando-bar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:3px;width:0%;transition:width 0.6s"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 18px;min-width:90px;text-align:center">
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.06em;margin-bottom:4px">시스템 상태</div>
+            <div style="font-size:13px;font-weight:700;color:#4ade80">🟢 정상</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 18px;min-width:110px;text-align:center">
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.06em;margin-bottom:4px">만도 승인진행</div>
+            <div style="font-size:16px;font-weight:800;color:#60a5fa" id="hero-mando-pct">-</div>
+            <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:6px;overflow:hidden">
+              <div id="hero-mando-bar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);width:0%;transition:width 0.8s ease;border-radius:2px"></div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 18px;min-width:90px;text-align:center">
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.06em;margin-bottom:4px">승인 완료</div>
+            <div style="font-size:16px;font-weight:800;color:#a78bfa" id="hero-approved-total">-</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px" id="hero-approved-sub">/ - 제품</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 빠른 액세스 -->
-    <div style="margin-bottom:20px">
-      <div class="sec-title" style="margin-bottom:10px">⚡ 빠른 액세스</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="goDashboard('br0035')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#3b82f6';this.style.color='#3b82f6'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">BR0035 FRT BRKT LH#1</button>
-        <button onclick="goDashboard('br0036')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#3b82f6';this.style.color='#3b82f6'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">BR0036 RR BRKT LH#1</button>
-        <button onclick="goDashboard('br0037')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">BR0037 RR BRKT LH#2 ✅</button>
-        <button onclick="goDashboard('br0038')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#3b82f6';this.style.color='#3b82f6'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">BR0038 RR BRKT LH#3</button>
-        <button onclick="goDashboard('at5851')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">AT5851 BT SHIELD CAN ✅</button>
-        <button onclick="goDashboard('ap5010')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">AP5010 SHIELD CAN A/B ✅</button>
-        <button onclick="goDashboard('ap5030')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">AP5030 LCD GND SPRING ✅</button>
-      </div>
-    </div>
-
-    </div>
-
     <!-- 전체 현황판 -->
-    <div class="card" style="margin-bottom:20px;padding:18px 20px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div class="sec-title" style="margin-bottom:0">📋 전체 제품 현황판</div>
-        <div style="display:flex;gap:6px;font-size:11px">
-          <span style="background:#fef2f2;color:#e74c3c;padding:3px 8px;border-radius:4px;font-weight:700" id="overview-red-badge">즉시수리 -</span>
-          <span style="background:#fffbeb;color:#f39c12;padding:3px 8px;border-radius:4px;font-weight:700" id="overview-yellow-badge">주의관찰 -</span>
-          <span style="background:#f0fdf4;color:#27ae60;padding:3px 8px;border-radius:4px;font-weight:700" id="overview-green-badge">정상 -</span>
+    <div class="card" style="margin-bottom:20px;padding:20px 22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div class="sec-title" style="margin-bottom:0">전체 제품 현황</div>
+        <div style="display:flex;gap:6px;font-size:11px;font-weight:700">
+          <span style="background:#fef2f2;color:#e74c3c;padding:4px 10px;border-radius:6px;border:1px solid #fecaca" id="overview-red-badge">🔴 즉시수리 -</span>
+          <span style="background:#fffbeb;color:#d97706;padding:4px 10px;border-radius:6px;border:1px solid #fde68a" id="overview-yellow-badge">🟡 주의 -</span>
+          <span style="background:#f0fdf4;color:#16a34a;padding:4px 10px;border-radius:6px;border:1px solid #bbf7d0" id="overview-green-badge">🟢 정상 -</span>
         </div>
       </div>
-      <div id="overviewGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px"></div>
+      <div id="overviewGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px"></div>
     </div>
 
-    <div class="stats-row" style="margin-bottom:24px">
+    <!-- KPI 요약 -->
+    <div class="stats-row" style="margin-bottom:20px">
       <div class="stat-box">
         <div class="stat-val blue" id="kpi-cust">⋯</div>
         <div class="stat-label">고객사</div>
@@ -2230,6 +2222,11 @@ function refreshHomeKPI(){
     if(elModel)       elModel.textContent       = totalModels;
     if(elApproved)    elApproved.textContent    = totalApproved;
     if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+    // 히어로 배너 승인완료 연동
+    var heroAT = document.getElementById('hero-approved-total');
+    var heroAS = document.getElementById('hero-approved-sub');
+    if(heroAT) heroAT.textContent = totalApproved;
+    if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
   }).catch(function(err){
     console.error('KPI 로드 실패:', err);
   });
@@ -2854,7 +2851,6 @@ function refreshMandoHomeKPI(){
   if(progressText) progressText.textContent = '승인완료 ' + mandoApproved + ' / ' + total;
   if(pctEl) pctEl.textContent = pct + '% (' + mandoApproved + '/' + total + ')';
   if(pctBar) pctBar.style.width = pct + '%';
-  // 히어로 배너 연동
   var heroMandoPct = document.getElementById('hero-mando-pct');
   var heroMandoBar = document.getElementById('hero-mando-bar');
   if(heroMandoPct) heroMandoPct.textContent = mandoApproved + ' / ' + total;
@@ -2942,48 +2938,52 @@ function buildOverviewPanel(){
   var redBadge = document.getElementById('overview-red-badge');
   var yelBadge = document.getElementById('overview-yellow-badge');
   var grnBadge = document.getElementById('overview-green-badge');
-  if(redBadge) redBadge.textContent = '즉시수리 ' + totalRed;
-  if(yelBadge) yelBadge.textContent = '주의관찰 ' + totalYellow;
-  if(grnBadge) grnBadge.textContent = '정상 ' + totalGreen;
+  if(redBadge) redBadge.textContent = '🔴 즉시수리 ' + totalRed;
+  if(yelBadge) yelBadge.textContent = '🟡 주의 ' + totalYellow;
+  if(grnBadge) grnBadge.textContent = '🟢 정상 ' + totalGreen;
 
   grid.innerHTML = cards.map(function(c){
     if(!c.hasData){
-      return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:#f8f9fb;border:1.5px dashed #ddd;border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor=\'#3b82f6\'" onmouseout="this.style.borderColor=\'#ddd\'">'+
-        '<div style="font-size:11px;font-weight:700;color:#888;margin-bottom:4px">'+esc(c.name)+'</div>'+
-        '<div style="font-size:11px;color:#bbb">데이터 없음</div>'+
+      return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:#f8f9fb;border:2px dashed #e0e4ef;border-radius:12px;padding:16px 14px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor=\'#93c5fd\'" onmouseout="this.style.borderColor=\'#e0e4ef\'">'+
+        '<div style="font-size:11px;font-weight:700;color:#aaa;margin-bottom:6px">'+esc(c.name)+'</div>'+
+        '<div style="font-size:10px;color:#ccc">📂 데이터 없음</div>'+
       '</div>';
     }
     if(c.isApproved){
-      return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(39,174,96,0.15)\'" onmouseout="this.style.boxShadow=\'none\'">'+
-        '<div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:2px">'+esc(c.name)+'</div>'+
-        '<div style="font-size:10px;color:#4ade80;font-weight:700;margin-bottom:6px">✅ 승인완료</div>'+
-        '<div style="height:5px;background:#bbf7d0;border-radius:3px;overflow:hidden"><div style="height:100%;width:100%;background:#22c55e;border-radius:3px"></div></div>'+
-        (c.lastDate?'<div style="font-size:9px;color:#86efac;margin-top:4px">최근: '+c.lastDate+'</div>':'') +
+      return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:linear-gradient(145deg,#f0fdf4,#dcfce7);border:2px solid #86efac;border-radius:12px;padding:16px 14px;cursor:pointer;transition:all 0.2s;box-shadow:0 1px 6px rgba(39,174,96,0.1)" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 6px 16px rgba(39,174,96,0.18)\'" onmouseout="this.style.transform=\'none\';this.style.boxShadow=\'0 1px 6px rgba(39,174,96,0.1)\'">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'+
+          '<div style="font-size:12px;font-weight:700;color:#166534;line-height:1.3">'+esc(c.name)+'</div>'+
+          '<span style="font-size:16px;line-height:1">✅</span>'+
+        '</div>'+
+        '<div style="font-size:10px;color:#16a34a;font-weight:700;margin-bottom:8px">승인완료</div>'+
+        '<div style="height:4px;background:#bbf7d0;border-radius:2px;overflow:hidden"><div style="height:100%;width:100%;background:linear-gradient(90deg,#22c55e,#4ade80)"></div></div>'+
+        (c.lastDate?'<div style="font-size:9px;color:#86efac;margin-top:5px">'+c.lastDate+'</div>':'') +
       '</div>';
     }
     var total = c.total || 1;
     var redPct = Math.round(c.red/total*100);
     var yelPct = Math.round(c.yellow/total*100);
     var grnPct = 100-redPct-yelPct;
-    var borderColor = c.red>0 ? '#fca5a5' : c.yellow>0 ? '#fcd34d' : '#86efac';
+    var borderColor = c.red>0 ? '#fca5a5' : c.yellow>0 ? '#fde68a' : '#86efac';
     var bgColor = c.red>0 ? '#fff5f5' : c.yellow>0 ? '#fffbeb' : '#f0fdf4';
     var statusIcon = c.red>0 ? '🔴' : c.yellow>0 ? '🟡' : '🟢';
-    return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:'+bgColor+';border:1.5px solid '+borderColor+';border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.1)\'" onmouseout="this.style.boxShadow=\'none\'">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">'+
-        '<div style="font-size:11px;font-weight:700;color:#1a1a2e">'+esc(c.name)+'</div>'+
-        '<span style="font-size:14px">'+statusIcon+'</span>'+
+    var shadow = c.red>0 ? '0 1px 6px rgba(239,68,68,0.12)' : c.yellow>0 ? '0 1px 6px rgba(245,158,11,0.1)' : '0 1px 6px rgba(39,174,96,0.08)';
+    return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:'+bgColor+';border:2px solid '+borderColor+';border-radius:12px;padding:16px 14px;cursor:pointer;transition:all 0.2s;box-shadow:'+shadow+'" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 6px 16px rgba(0,0,0,0.12)\'" onmouseout="this.style.transform=\'none\';this.style.boxShadow=\''+shadow+'\'">'+
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">'+
+        '<div style="font-size:12px;font-weight:700;color:#1a1a2e;line-height:1.3">'+esc(c.name)+'</div>'+
+        '<span style="font-size:15px;line-height:1;flex-shrink:0;margin-left:4px">'+statusIcon+'</span>'+
       '</div>'+
-      '<div style="display:flex;gap:6px;font-size:10px;margin-bottom:7px;font-weight:600">'+
-        (c.red>0?'<span style="color:#e74c3c">🔴'+c.red+'</span>':'')+
-        (c.yellow>0?'<span style="color:#f39c12">🟡'+c.yellow+'</span>':'')+
-        '<span style="color:#27ae60">🟢'+c.green+'</span>'+
+      '<div style="display:flex;gap:5px;font-size:10px;font-weight:700;margin-bottom:8px">'+
+        (c.red>0?'<span style="color:#dc2626;background:#fee2e2;padding:1px 6px;border-radius:4px">🔴 '+c.red+'</span>':'')+
+        (c.yellow>0?'<span style="color:#d97706;background:#fef3c7;padding:1px 6px;border-radius:4px">🟡 '+c.yellow+'</span>':'')+
+        '<span style="color:#16a34a;background:#dcfce7;padding:1px 6px;border-radius:4px">🟢 '+c.green+'</span>'+
       '</div>'+
-      '<div style="display:flex;height:5px;border-radius:3px;overflow:hidden;background:#e5e7eb">'+
-        (redPct>0?'<div style="width:'+redPct+'%;background:#e74c3c"></div>':'')+
-        (yelPct>0?'<div style="width:'+yelPct+'%;background:#f39c12"></div>':'')+
-        (grnPct>0?'<div style="width:'+grnPct+'%;background:#27ae60"></div>':'')+
+      '<div style="display:flex;height:4px;border-radius:2px;overflow:hidden;background:#e5e7eb">'+
+        (redPct>0?'<div style="width:'+redPct+'%;background:#ef4444"></div>':'')+
+        (yelPct>0?'<div style="width:'+yelPct+'%;background:#f59e0b"></div>':'')+
+        (grnPct>0?'<div style="width:'+grnPct+'%;background:#22c55e"></div>':'')+
       '</div>'+
-      (c.lastDate?'<div style="font-size:9px;color:#aaa;margin-top:4px">최근: '+c.lastDate+'</div>':'')+
+      (c.lastDate?'<div style="font-size:9px;color:#9ca3af;margin-top:5px">'+c.lastDate+'</div>':'')+
     '</div>';
   }).join('');
 }
