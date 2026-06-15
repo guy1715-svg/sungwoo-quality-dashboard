@@ -8,213 +8,262 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0f2f5;color:#222;}
-.topbar{background:#1a1a2e;color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;}
-.topbar h1{font-size:15px;font-weight:700;}
-.topbar p{font-size:11px;opacity:0.5;margin-top:3px;}
-.topbar-right{font-size:11px;opacity:0.55;text-align:right;line-height:1.9;}
-.container{max-width:1200px;margin:0 auto;padding:20px 16px;}
-.breadcrumb{font-size:12px;color:#888;margin-bottom:20px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.crumb{cursor:pointer;padding:3px 6px;border-radius:4px;}
-.crumb:hover{background:#e8e8e8;color:#1a1a2e;}
-.bc-active{color:#1a1a2e;font-weight:700;}
-.sep{color:#ccc;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;background:#f1f3f6;color:#1e293b;font-size:13px;}
+
+/* ===== 상단 헤더 ===== */
+.topbar{background:#0f2040;color:#fff;height:56px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-logo{display:flex;align-items:center;gap:12px;}
+.topbar-logo-badge{width:32px;height:32px;background:#2563eb;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;letter-spacing:-0.5px;flex-shrink:0;}
+.topbar-title{font-size:14px;font-weight:700;color:#fff;letter-spacing:-0.2px;}
+.topbar-sub{font-size:10px;color:rgba(255,255,255,0.45);margin-top:1px;letter-spacing:0.02em;}
+.topbar-nav{display:flex;align-items:center;height:56px;gap:0;margin:0 32px;}
+.topbar-nav-item{height:56px;padding:0 16px;display:flex;align-items:center;font-size:12px;font-weight:600;color:rgba(255,255,255,0.55);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;}
+.topbar-nav-item:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.topbar-nav-item.active{color:#fff;border-bottom-color:#2563eb;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.topbar-badge{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);border-radius:4px;padding:4px 10px;font-size:11px;font-weight:600;}
+.topbar-clock{font-size:11px;color:rgba(255,255,255,0.45);min-width:160px;text-align:right;}
+
+/* ===== 레이아웃 ===== */
+.container{max-width:1440px;margin:0 auto;padding:20px 24px 32px;}
+.breadcrumb{font-size:12px;color:#94a3b8;margin-bottom:16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.crumb{cursor:pointer;padding:2px 4px;color:#94a3b8;transition:color 0.15s;}
+.crumb:hover{color:#1e293b;}
+.bc-active{color:#1e293b;font-weight:600;}
+.sep{color:#cbd5e1;}
 .screen{display:none;}
-.screen.active{display:block;animation:fadeIn 0.25s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.screen.active{display:block;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
 @keyframes spin{to{transform:rotate(360deg);}}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
-.stat-box{background:#fff;border-radius:14px;padding:18px 20px;border:1px solid #e8eaf0;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);transition:box-shadow 0.2s;}
-.stat-box:hover{box-shadow:0 4px 16px rgba(0,0,0,0.1);}
-.stat-val{font-size:26px;font-weight:800;}
-.stat-label{font-size:11px;color:#999;margin-top:4px;font-weight:500;}
-.sec-title{font-size:12px;font-weight:800;color:#1a1a2e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.sec-title::before{content:'';display:inline-block;width:3px;height:14px;background:#3b82f6;border-radius:2px;}
-.customer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:32px;}
-.customer-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #e4e4e4;cursor:pointer;transition:all 0.2s;}
-.customer-card:hover{border-color:#1a1a2e;box-shadow:0 4px 20px rgba(0,0,0,0.08);transform:translateY(-2px);}
-.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:32px;}
-.model-card{background:#fff;border-radius:10px;padding:16px;border:1px solid #e4e4e4;cursor:pointer;transition:all 0.2s;}
-.model-card:hover{border-color:#3b82f6;box-shadow:0 4px 16px rgba(59,130,246,0.1);}
-.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
-.product-card{background:#fff;border-radius:12px;padding:18px;border:1px solid #e4e4e4;cursor:pointer;transition:all 0.2s;position:relative;}
-.product-card:hover{border-color:#27ae60;box-shadow:0 4px 20px rgba(39,174,96,0.1);transform:translateY(-2px);}
-.product-card.disabled{opacity:0.5;cursor:default;}
-.product-card.disabled:hover{transform:none;box-shadow:none;border-color:#e4e4e4;}
-.p-tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;}
-.tag-vina{background:#dbeafe;color:#1e40af;}.tag-hq{background:#d1fae5;color:#065f46;}.tag-none{background:#f0f0f0;color:#888;}
-.p-bar{height:4px;border-radius:2px;background:#eee;margin-top:12px;overflow:hidden;}
+
+/* ===== KPI 통계 박스 ===== */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-bottom:24px;background:#e2e8f0;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;}
+.stat-box{background:#fff;padding:18px 20px;border:none;text-align:left;transition:background 0.15s;position:relative;}
+.stat-box::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.stat-box:nth-child(1)::before{background:#2563eb;}
+.stat-box:nth-child(2)::before{background:#7c3aed;}
+.stat-box:nth-child(3)::before{background:#ea580c;}
+.stat-box:nth-child(4)::before{background:#16a34a;}
+.stat-box:hover{background:#f8fafc;}
+.stat-val{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:6px;}
+.stat-label{font-size:11px;color:#64748b;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;}
+
+/* ===== 섹션 타이틀 ===== */
+.sec-title{font-size:12px;font-weight:700;color:#374151;letter-spacing:0.04em;margin-bottom:14px;display:flex;align-items:center;gap:8px;padding-left:9px;border-left:3px solid #2563eb;text-transform:uppercase;}
+
+/* ===== 카드 ===== */
+.card{background:#fff;border-radius:4px;padding:18px;border:1px solid #e2e8f0;margin-bottom:12px;}
+.card-title{font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+
+/* ===== 고객사 / 모델 / 제품 그리드 ===== */
+.customer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:28px;}
+.customer-card{background:#fff;border-radius:4px;padding:18px;border:1px solid #e2e8f0;cursor:pointer;transition:all 0.15s;}
+.customer-card:hover{border-color:#2563eb;box-shadow:0 2px 12px rgba(37,99,235,0.1);}
+.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:28px;}
+.model-card{background:#fff;border-radius:4px;padding:14px 16px;border:1px solid #e2e8f0;cursor:pointer;transition:all 0.15s;}
+.model-card:hover{border-color:#2563eb;box-shadow:0 2px 8px rgba(37,99,235,0.08);}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.product-card{background:#fff;border-radius:4px;padding:16px;border:1px solid #e2e8f0;cursor:pointer;transition:all 0.15s;position:relative;}
+.product-card:hover{border-color:#16a34a;box-shadow:0 2px 8px rgba(22,163,74,0.08);}
+.product-card.disabled{opacity:0.45;cursor:default;}
+.product-card.disabled:hover{box-shadow:none;border-color:#e2e8f0;}
+
+/* ===== 태그 / 배지 ===== */
+.p-tag{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:600;}
+.tag-vina{background:#dbeafe;color:#1e40af;}.tag-hq{background:#dcfce7;color:#15803d;}.tag-none{background:#f1f5f9;color:#64748b;}
+.p-bar{height:3px;border-radius:2px;background:#e2e8f0;margin-top:10px;overflow:hidden;}
 .p-bar-fill{height:100%;border-radius:2px;}
-.p-arrow{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:18px;color:#ddd;}
-.product-card:hover .p-arrow{color:#27ae60;}
-.tabs{display:flex;gap:4px;margin-bottom:20px;background:#fff;border-radius:10px;padding:6px;border:1px solid #e4e4e4;}
-.tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;border-radius:7px;cursor:pointer;color:#888;transition:all 0.2s;}
-.tab:hover{color:#1a1a2e;background:#f5f5f5;}
-.tab.active{background:#1a1a2e;color:#fff;}
+.p-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;color:#cbd5e1;}
+.product-card:hover .p-arrow{color:#16a34a;}
+.badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:700;}
+.br{background:#fef2f2;color:#dc2626;}.by{background:#fefce8;color:#ca8a04;}.bg{background:#f0fdf4;color:#16a34a;}.bk{background:#f1f5f9;color:#64748b;}
+
+/* ===== 탭 ===== */
+.tabs{display:flex;gap:0;margin-bottom:18px;background:#fff;border-radius:4px;border:1px solid #e2e8f0;overflow:hidden;}
+.tab{flex:1;padding:9px 12px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;transition:all 0.15s;border-right:1px solid #e2e8f0;}
+.tab:last-child{border-right:none;}
+.tab:hover{color:#1e293b;background:#f8fafc;}
+.tab.active{background:#0f2040;color:#fff;}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
-.kpi{background:#fff;border-radius:10px;padding:14px 16px;border:1px solid #e4e4e4;}
-.kpi-label{font-size:11px;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em;}
-.kpi-val{font-size:26px;font-weight:700;}
-.kpi-sub{font-size:11px;color:#aaa;margin-top:3px;}
-.red{color:#c0392b;}.yellow{color:#d68910;}.green{color:#1e8449;}.blue{color:#1a1a2e;}.gray{color:#888;}
-.row2{display:grid;grid-template-columns:220px 1fr;gap:14px;margin-bottom:14px;}
-.card{background:#fff;border-radius:10px;padding:18px;border:1px solid #e4e4e4;margin-bottom:12px;}
-.card-title{font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;}
-.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;font-size:11px;color:#666;}
+
+/* ===== KPI 그리드 (대시보드) ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;margin-bottom:16px;background:#e2e8f0;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden;}
+.kpi{background:#fff;padding:12px 14px;}
+.kpi-label{font-size:10px;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
+.kpi-val{font-size:22px;font-weight:700;letter-spacing:-0.5px;}
+.kpi-sub{font-size:10px;color:#94a3b8;margin-top:2px;}
+
+/* ===== 색상 ===== */
+.red{color:#dc2626;}.yellow{color:#ca8a04;}.green{color:#16a34a;}.blue{color:#2563eb;}.gray{color:#64748b;}
+
+/* ===== 레이아웃 그리드 ===== */
+.row2{display:grid;grid-template-columns:220px 1fr;gap:12px;margin-bottom:12px;}
+
+/* ===== 테이블 ===== */
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{padding:8px 10px;text-align:center;font-size:10px;color:#64748b;font-weight:700;border-bottom:2px solid #e2e8f0;background:#f8fafc;text-transform:uppercase;white-space:nowrap;letter-spacing:0.04em;}
+td{padding:7px 10px;text-align:center;border-bottom:1px solid #f1f5f9;white-space:nowrap;}
+td.left{text-align:left;}
+tr:hover td{background:#f8fafc;}
+tr.angle-row td{background:#f8fafc;color:#94a3b8;}
+
+/* ===== 필터 바 ===== */
+.filter-bar{background:#fff;border-radius:4px;padding:10px 14px;border:1px solid #e2e8f0;margin-bottom:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.filter-btn{padding:4px 10px;border:1px solid #e2e8f0;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer;background:#fff;color:#475569;transition:all 0.15s;}
+.filter-btn:hover{border-color:#2563eb;color:#2563eb;}
+.filter-btn.active{background:#0f2040;color:#fff;border-color:#0f2040;}
+.filter-btn.lh-active{background:#2563eb;color:#fff;border-color:#2563eb;}
+.filter-btn.rh-active{background:#dc2626;color:#fff;border-color:#dc2626;}
+.filter-sep{width:1px;height:20px;background:#e2e8f0;margin:0 2px;}
+
+/* ===== 업로드 ===== */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.upload-box{background:#fff;border-radius:4px;border:2px dashed #cbd5e1;padding:24px 18px;text-align:center;cursor:pointer;transition:all 0.15s;position:relative;}
+.upload-box:hover{border-color:#2563eb;background:#f8fbff;}
+.upload-box.done{border-color:#16a34a;border-style:solid;background:#f0fdf4;}
+.upload-icon{font-size:28px;margin-bottom:8px;}
+.upload-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+.upload-sub{font-size:11px;color:#64748b;}
+.upload-filename{font-size:11px;color:#16a34a;font-weight:600;margin-top:6px;}
+.upload-input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+.run-btn{width:100%;padding:12px;background:#0f2040;color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:18px;transition:background 0.15s;}
+.run-btn:hover{background:#1e3a5f;}
+.run-btn:disabled{background:#94a3b8;cursor:not-allowed;}
+
+/* ===== 비교 카드 ===== */
+.cmp-card{background:#fff;border-radius:4px;padding:16px 18px;border:1px solid #e2e8f0;margin-bottom:8px;}
+.cmp-card.danger{border-left:3px solid #dc2626;}.cmp-card.warn{border-left:3px solid #ca8a04;}.cmp-card.ok{border-left:3px solid #16a34a;}.cmp-card.ref{border-left:3px solid #cbd5e1;opacity:0.6;}
+
+/* ===== 기타 ===== */
+.sec-div{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid #e2e8f0;}
+.legend-bar{background:#fff;border-radius:4px;padding:10px 16px;border:1px solid #e2e8f0;margin-bottom:14px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:11px;}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;font-size:11px;color:#475569;}
 .legend span{display:flex;align-items:center;gap:4px;}
 .ld{width:10px;height:10px;border-radius:2px;display:inline-block;}
-table{width:100%;border-collapse:collapse;font-size:12px;}
-th{padding:8px 10px;text-align:center;font-size:10px;color:#666;font-weight:700;border-bottom:1px solid #eee;background:#f8f8f8;text-transform:uppercase;white-space:nowrap;}
-td{padding:7px 10px;text-align:center;border-bottom:1px solid #f2f2f2;white-space:nowrap;}
-td.left{text-align:left;}
-tr:hover td{background:#fafafa;}
-tr.angle-row td{background:#f9f9f9;color:#bbb;}
-.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
-.br{background:#fdedec;color:#c0392b;}.by{background:#fef9e7;color:#d68910;}.bg{background:#eafaf1;color:#1e8449;}.bk{background:#f0f0f0;color:#999;}
-.trend-up{color:#c0392b;}.trend-dn{color:#1e8449;}.trend-fl{color:#999;}
-.part-name{font-weight:600;}
-.notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 16px;font-size:11px;color:#92400e;margin-bottom:14px;}
-.gap-info{background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 16px;font-size:11px;color:#1e40af;margin-bottom:14px;}
-.filter-bar{background:#fff;border-radius:10px;padding:12px 16px;border:1px solid #e4e4e4;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.filter-btn{padding:5px 12px;border:1px solid #e4e4e4;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#555;transition:all 0.2s;}
-.filter-btn:hover{border-color:#1a1a2e;color:#1a1a2e;}
-.filter-btn.active{background:#1a1a2e;color:#fff;border-color:#1a1a2e;}
-.filter-btn.lh-active{background:#2980b9;color:#fff;border-color:#2980b9;}
-.filter-btn.rh-active{background:#e74c3c;color:#fff;border-color:#e74c3c;}
-.filter-sep{width:1px;height:24px;background:#e4e4e4;margin:0 4px;}
-.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-.upload-box{background:#fff;border-radius:12px;border:2px dashed #e4e4e4;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
-.upload-box:hover{border-color:#3b82f6;background:#f8fbff;}
-.upload-box.done{border-color:#27ae60;border-style:solid;background:#f0fdf4;}
-.upload-icon{font-size:32px;margin-bottom:10px;}
-.upload-title{font-size:14px;font-weight:700;margin-bottom:4px;}
-.upload-sub{font-size:11px;color:#888;}
-.upload-filename{font-size:11px;color:#27ae60;font-weight:600;margin-top:8px;}
-.upload-input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;}
-.run-btn{width:100%;padding:14px;background:#1a1a2e;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;transition:background 0.2s;}
-.run-btn:hover{background:#2d2d4e;}
-.run-btn:disabled{background:#ccc;cursor:not-allowed;}
-.cmp-card{background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #e4e4e4;margin-bottom:10px;}
-.cmp-card.danger{border-left:4px solid #e74c3c;}.cmp-card.warn{border-left:4px solid #f39c12;}.cmp-card.ok{border-left:4px solid #27ae60;}.cmp-card.ref{border-left:4px solid #ccc;opacity:0.65;}
-.sec-div{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #eee;}
-.legend-bar{background:#fff;border-radius:10px;padding:12px 20px;border:1px solid #e4e4e4;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;font-size:12px;}
-.error-msg{background:#fdedec;border:1px solid #f5c6cb;border-radius:8px;padding:12px 16px;font-size:12px;color:#c0392b;margin-bottom:16px;display:none;}
-.pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#fff;border:1px solid #e4e4e4;border-radius:8px;font-size:12px;font-weight:600;color:#555;cursor:pointer;margin-bottom:16px;transition:all 0.2s;float:right;}
-.pdf-btn:hover{border-color:#1a1a2e;color:#1a1a2e;}
+.notice{background:#fefce8;border:1px solid #fde68a;border-left:3px solid #ca8a04;border-radius:4px;padding:10px 14px;font-size:11px;color:#92400e;margin-bottom:12px;}
+.gap-info{background:#eff6ff;border:1px solid #bfdbfe;border-left:3px solid #2563eb;border-radius:4px;padding:10px 14px;font-size:11px;color:#1e40af;margin-bottom:12px;}
+.error-msg{background:#fef2f2;border:1px solid #fecaca;border-left:3px solid #dc2626;border-radius:4px;padding:10px 14px;font-size:11px;color:#dc2626;margin-bottom:12px;display:none;}
+.pdf-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:#fff;border:1px solid #e2e8f0;border-radius:3px;font-size:11px;font-weight:600;color:#475569;cursor:pointer;margin-bottom:14px;transition:all 0.15s;float:right;}
+.pdf-btn:hover{border-color:#0f2040;color:#0f2040;}
+.footer{text-align:center;font-size:11px;color:#94a3b8;padding:14px 0;border-top:1px solid #e2e8f0;margin-top:14px;}
+
+/* ===== 스파크라인 ===== */
 .sp-wrap{position:relative;height:38px;margin-top:10px;}
-.sp-track{position:absolute;top:14px;left:0;right:0;height:8px;background:#f0f0f0;border-radius:4px;}
-.sp-range{position:absolute;top:14px;height:8px;background:#dbeafe;border:1px solid #93c5fd;border-radius:3px;}
+.sp-track{position:absolute;top:14px;left:0;right:0;height:8px;background:#f1f5f9;border-radius:3px;}
+.sp-range{position:absolute;top:14px;height:8px;background:#dbeafe;border:1px solid #93c5fd;border-radius:2px;}
 .sp-nom{position:absolute;top:14px;width:2px;height:8px;background:#93c5fd;}
-.dot-hq{position:absolute;top:8px;width:20px;height:20px;border-radius:50%;background:#2980b9;border:2px solid #fff;box-shadow:0 2px 6px rgba(41,128,185,0.4);transform:translateX(-50%);z-index:2;}
-.dot-vina{position:absolute;top:8px;width:20px;height:20px;border-radius:50%;background:#e74c3c;border:2px solid #fff;box-shadow:0 2px 6px rgba(231,76,60,0.4);transform:translateX(-50%);z-index:2;}
-.sp-lbl{position:absolute;bottom:0;font-size:9px;color:#aaa;transform:translateX(-50%);}
-.sp-lbl-c{color:#3b82f6;font-weight:600;}
-.footer{text-align:center;font-size:11px;color:#bbb;padding:16px 0;border-top:1px solid #e8e8e8;margin-top:16px;}
+.dot-hq{position:absolute;top:8px;width:20px;height:20px;border-radius:50%;background:#2563eb;border:2px solid #fff;box-shadow:0 2px 4px rgba(37,99,235,0.35);transform:translateX(-50%);z-index:2;}
+.dot-vina{position:absolute;top:8px;width:20px;height:20px;border-radius:50%;background:#dc2626;border:2px solid #fff;box-shadow:0 2px 4px rgba(220,38,38,0.35);transform:translateX(-50%);z-index:2;}
+.sp-lbl{position:absolute;bottom:0;font-size:9px;color:#94a3b8;transform:translateX(-50%);}
+.sp-lbl-c{color:#2563eb;font-weight:600;}
+
+/* ===== 모바일 네비게이션 ===== */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;z-index:1000;padding:6px 0 env(safe-area-inset-bottom,0);}
+.bottom-nav-inner{display:flex;justify-content:space-around;align-items:center;}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px;cursor:pointer;border:none;background:none;color:#94a3b8;font-size:10px;font-weight:600;min-width:56px;}
+.bn-item .bn-icon{font-size:20px;line-height:1;}
+.bn-item.active{color:#0f2040;}
+@media(max-width:520px){.bottom-nav{display:block;}}
+
+/* ===== 테이블 스크롤 ===== */
+.table-scroll{overflow-x:auto;overflow-y:auto;max-height:540px;-webkit-overflow-scrolling:touch;}
+.table-scroll thead th{position:sticky;top:0;z-index:2;}
+
+/* ===== 반응형 ===== */
 @media(max-width:800px){
   .kpi-grid{grid-template-columns:repeat(2,1fr);}
   .row2{grid-template-columns:1fr;}
   .upload-grid{grid-template-columns:1fr;}
   .stats-row{grid-template-columns:repeat(2,1fr);}
+  .topbar-nav{display:none;}
 }
 @media(max-width:520px){
   .stats-row{grid-template-columns:1fr 1fr;}
-  .topbar h1{font-size:12px;}
-  .topbar-right{display:none;}
-  .container{padding:12px 8px;padding-bottom:72px;}
+  .topbar-title{font-size:12px;}
+  .topbar-clock{display:none;}
+  .container{padding:12px 12px;padding-bottom:72px;}
   .customer-grid{grid-template-columns:1fr;}
 }
-/* 하단 모바일 네비게이션 */
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e4e4e4;z-index:1000;padding:6px 0 env(safe-area-inset-bottom,0);}
-.bottom-nav-inner{display:flex;justify-content:space-around;align-items:center;}
-.bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 12px;cursor:pointer;border:none;background:none;color:#888;font-size:10px;font-weight:600;min-width:56px;}
-.bn-item .bn-icon{font-size:20px;line-height:1;}
-.bn-item.active{color:#1a1a2e;}
-.bn-item.active .bn-icon{filter:drop-shadow(0 0 2px rgba(59,130,246,0.5));}
-@media(max-width:520px){.bottom-nav{display:block;}}
-body.dark .bottom-nav{background:#1c1f2e;border-color:#2a2d3e;}
-body.dark .bn-item{color:#666;}
-body.dark .bn-item.active{color:#e0e0e0;}
-/* 데이터 테이블 스크롤 */
-.table-scroll{overflow-x:auto;overflow-y:auto;max-height:540px;-webkit-overflow-scrolling:touch;}
-.table-scroll thead th{position:sticky;top:0;z-index:2;}
 
 /* ===== 다크모드 ===== */
-body.dark{background:#0f1117;color:#e0e0e0;}
-body.dark .topbar{background:#0a0a14;}
-body.dark .container{}
-body.dark .card,body.dark .stat-box,body.dark .customer-card,body.dark .model-card,body.dark .product-card{background:#1c1f2e;border-color:#2a2d3e;color:#e0e0e0;}
-body.dark .customer-card:hover,body.dark .model-card:hover,body.dark .product-card:hover{border-color:#3b82f6;box-shadow:0 4px 20px rgba(59,130,246,0.2);}
-body.dark .tabs{background:#1c1f2e;border-color:#2a2d3e;}
-body.dark .tab{color:#aaa;}
-body.dark .tab.active{background:#2a2d3e;color:#e0e0e0;}
-body.dark .filter-bar{background:#1c1f2e;border-color:#2a2d3e;}
-body.dark .filter-btn{background:#2a2d3e;color:#bbb;border-color:#3a3d4e;}
-body.dark .filter-btn.active{background:#3b82f6;color:#fff;border-color:#3b82f6;}
-body.dark .filter-btn.lh-active{background:#27ae60;color:#fff;}
-body.dark .filter-btn.rh-active{background:#e74c3c;color:#fff;}
-body.dark table{color:#e0e0e0;}
-body.dark thead th{background:#1c1f2e;color:#bbb;border-color:#2a2d3e;}
-body.dark tbody tr{border-color:#2a2d3e;}
-body.dark tbody tr:hover{background:#252838;}
-body.dark .breadcrumb{color:#888;}
-body.dark .crumb:hover{background:#2a2d3e;color:#e0e0e0;}
-body.dark .bc-active{color:#e0e0e0;}
-body.dark .notice,body.dark .gap-info{background:#1c1f2e;border-color:#2a2d3e;color:#aaa;}
-body.dark input[type="text"],body.dark input[type="number"],body.dark select,body.dark textarea{background:#2a2d3e;border-color:#3a3d4e;color:#e0e0e0;}
-body.dark .sec-title{color:#e0e0e0;}
-body.dark .stat-label{color:#888;}
-body.dark #warningBanner{background:#2d2410;border-color:#f0ad4e;}
-body.dark #warningBanner strong{color:#fcd34d;}
+body.dark{background:#0d1117;color:#e2e8f0;}
+body.dark .topbar{background:#060d18;}
+body.dark .card,body.dark .stat-box,body.dark .customer-card,body.dark .model-card,body.dark .product-card{background:#161b22;border-color:#21262d;color:#e2e8f0;}
+body.dark .stats-row{background:#21262d;border-color:#21262d;}
+body.dark .customer-card:hover,body.dark .model-card:hover,body.dark .product-card:hover{border-color:#2563eb;box-shadow:0 2px 12px rgba(37,99,235,0.2);}
+body.dark .tabs{background:#161b22;border-color:#21262d;}
+body.dark .tab{color:#94a3b8;border-color:#21262d;}
+body.dark .tab:hover{color:#e2e8f0;background:#21262d;}
+body.dark .tab.active{background:#0f2040;color:#fff;}
+body.dark .filter-bar{background:#161b22;border-color:#21262d;}
+body.dark .filter-btn{background:#21262d;color:#94a3b8;border-color:#30363d;}
+body.dark .filter-btn.active{background:#2563eb;color:#fff;border-color:#2563eb;}
+body.dark .filter-btn.lh-active{background:#16a34a;color:#fff;}
+body.dark .filter-btn.rh-active{background:#dc2626;color:#fff;}
+body.dark table{color:#e2e8f0;}
+body.dark thead th{background:#161b22;color:#94a3b8;border-color:#21262d;}
+body.dark tbody tr{border-color:#21262d;}
+body.dark tbody tr:hover{background:#1c2128;}
+body.dark .breadcrumb{color:#64748b;}
+body.dark .crumb:hover{color:#e2e8f0;}
+body.dark .bc-active{color:#e2e8f0;}
+body.dark .notice,body.dark .gap-info{background:#161b22;border-color:#21262d;color:#94a3b8;}
+body.dark input[type="text"],body.dark input[type="number"],body.dark select,body.dark textarea{background:#21262d;border-color:#30363d;color:#e2e8f0;}
+body.dark .sec-title{color:#e2e8f0;}
+body.dark .stat-label{color:#64748b;}
+body.dark #warningBanner{background:#1f1205;border-color:#78350f;}
+body.dark #warningBanner strong{color:#fbbf24;}
 body.dark #warningList{color:#fde68a;}
-body.dark #memoList div{background:#252838;border-color:#2a2d3e;}
-body.dark #paretoSection{background:#1c1f2e;}
-/* 다크모드: 고객사 카드 내부 텍스트 */
-body.dark #homeQualityRow{background:#1c1f2e;border-color:#2a2d3e;}
-body.dark #homeQualityList > div{border-color:#2a2d3e;}
-body.dark #homeQualityList .prod-name{color:#e0e0e0;}
-/* 다크모드: stat-box 내 숫자/텍스트 */
-body.dark .stat-val{color:#e0e0e0;}
+body.dark #memoList div{background:#1c2128;border-color:#21262d;}
+body.dark #paretoSection{background:#161b22;}
+body.dark #homeQualityRow{background:#161b22;border-color:#21262d;}
+body.dark #homeQualityList > div{border-color:#21262d;}
+body.dark #homeQualityList .prod-name{color:#e2e8f0;}
+body.dark .stat-val{color:#e2e8f0;}
 body.dark .stat-val.blue{color:#60a5fa;}
 body.dark .stat-val.green{color:#4ade80;}
-body.dark .stat-box{color:#e0e0e0;}
-/* 다크모드: homeQualityList 제품명 */
-body.dark #homeQualityList div[style*="color:#1a1a2e"]{color:#e0e0e0 !important;}
-body.dark #homeQualityList div[style*="background:#f0f0f0"]{background:#2a2d3e !important;}
-/* 다크모드: 모달 */
-body.dark #modalOverlay > div{background:#1c1f2e;color:#e0e0e0;}
-body.dark #modalOverlay label{color:#bbb;}
-body.dark #modalOverlay h3{color:#e0e0e0;}
-/* 다크모드: 트렌드 항목 선택 박스 */
-body.dark #trendItemSelector{background:#2a2d3e;border-color:#3a3d4e;}
-body.dark #trendItemBtns button{background:#1c1f2e;border-color:#3a3d4e;color:#bbb;}
-/* 다크모드: 수동입력 그리드 */
-body.dark #manualInputGrid > div{background:#252838;border-color:#2a2d3e;}
-body.dark #manualInputGrid > div > div{color:#bbb;}
-body.dark #heroBanner{background:linear-gradient(135deg,#0a0a14 0%,#0d1a2e 50%,#0a2040 100%);}
-body.dark #screen-home .sec-title{color:#e0e0e0;}
-/* 다크모드: 관리 화면 */
-body.dark #screen-admin .card{background:#1c1f2e;border-color:#2a2d3e;}
-body.dark #admin-product-table table{color:#e0e0e0;}
-body.dark #admin-product-table thead th{background:#252838;color:#bbb;}
-body.dark #admin-product-table tbody td{border-color:#2a2d3e;color:#ccc;}
-body.dark #admin-mando-list > div{filter:brightness(0.75);}
-/* 다크모드: 시스템 소개 카드 */
-body.dark #systemIntroRow > div:nth-child(1){background:linear-gradient(135deg,#0f1f3d,#1a2d4a) !important;border-color:#2a3a5e !important;}
-body.dark #systemIntroRow > div:nth-child(2){background:linear-gradient(135deg,#0a2418,#0f3020) !important;border-color:#1a3d28 !important;}
-body.dark #systemIntroRow > div:nth-child(3){background:linear-gradient(135deg,#1a0d2e,#251445) !important;border-color:#3a2060 !important;}
+body.dark .stat-box{color:#e2e8f0;}
+body.dark #homeQualityList div[style*="color:#1a1a2e"]{color:#e2e8f0 !important;}
+body.dark #homeQualityList div[style*="background:#f0f0f0"]{background:#21262d !important;}
+body.dark #modalOverlay > div{background:#161b22;color:#e2e8f0;}
+body.dark #modalOverlay label{color:#94a3b8;}
+body.dark #modalOverlay h3{color:#e2e8f0;}
+body.dark #trendItemSelector{background:#21262d;border-color:#30363d;}
+body.dark #trendItemBtns button{background:#161b22;border-color:#30363d;color:#94a3b8;}
+body.dark #manualInputGrid > div{background:#1c2128;border-color:#21262d;}
+body.dark #manualInputGrid > div > div{color:#94a3b8;}
+body.dark #heroBanner{background:linear-gradient(135deg,#060d18 0%,#0d1a2e 60%,#0a1f3a 100%);}
+body.dark #screen-home .sec-title{color:#e2e8f0;}
+body.dark #screen-admin .card{background:#161b22;border-color:#21262d;}
+body.dark #admin-product-table table{color:#e2e8f0;}
+body.dark #admin-product-table thead th{background:#1c2128;color:#94a3b8;}
+body.dark #admin-product-table tbody td{border-color:#21262d;color:#cbd5e1;}
+body.dark #admin-mando-list > div{filter:brightness(0.7);}
+body.dark #systemIntroRow > div:nth-child(1){background:linear-gradient(135deg,#0d1f3d,#142d4a) !important;border-color:#1e3a5e !important;}
+body.dark #systemIntroRow > div:nth-child(2){background:linear-gradient(135deg,#0a2418,#0f3020) !important;border-color:#163d28 !important;}
+body.dark #systemIntroRow > div:nth-child(3){background:linear-gradient(135deg,#18082e,#221245) !important;border-color:#32185e !important;}
 body.dark #systemIntroRow > div > div:nth-child(2){color:#93c5fd !important;}
 body.dark #systemIntroRow > div:nth-child(2) > div:nth-child(2){color:#4ade80 !important;}
 body.dark #systemIntroRow > div:nth-child(3) > div:nth-child(2){color:#c084fc !important;}
-body.dark #systemIntroRow > div > div:last-child{color:#aaa !important;}
-/* 다크모드: 승인 히스토리 모달 */
-body.dark #approvalHistoryModal > div{background:#1c1f2e !important;}
-body.dark #ahm-body table{color:#e0e0e0;}
-body.dark #ahm-body thead th{background:#252838 !important;color:#888 !important;}
-body.dark #ahm-body tbody td{border-color:#2a2d3e !important;color:#ccc !important;}
-body.dark #screen-home button[onclick*="goDashboard"]{background:#1c1f2e;border-color:#2a2d3e;color:#e0e0e0;}
-body.dark #overviewGrid > div{filter:brightness(0.85);}
+body.dark #systemIntroRow > div > div:last-child{color:#94a3b8 !important;}
+body.dark #approvalHistoryModal > div{background:#161b22 !important;}
+body.dark #ahm-body table{color:#e2e8f0;}
+body.dark #ahm-body thead th{background:#1c2128 !important;color:#64748b !important;}
+body.dark #ahm-body tbody td{border-color:#21262d !important;color:#cbd5e1 !important;}
+body.dark #screen-home button[onclick*="goDashboard"]{background:#161b22;border-color:#21262d;color:#e2e8f0;}
+body.dark #overviewGrid > div{filter:brightness(0.8);}
+body.dark .bottom-nav{background:#161b22;border-color:#21262d;}
+body.dark .bn-item{color:#475569;}
+body.dark .bn-item.active{color:#e2e8f0;}
+body.dark .kpi-grid{background:#21262d;border-color:#21262d;}
+body.dark .kpi{background:#161b22;}
+body.dark .legend-bar{background:#161b22;border-color:#21262d;}
+body.dark .cmp-card{background:#161b22;border-color:#21262d;}
+body.dark .upload-box{background:#161b22;border-color:#30363d;}
+body.dark .topbar-nav-item{color:rgba(255,255,255,0.45);}
+body.dark .topbar-nav-item:hover{color:#fff;background:rgba(255,255,255,0.04);}
+body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
 </style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -223,13 +272,24 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
 <body>
 
 <div class="topbar">
-  <div>
-    <h1>성우전자 &nbsp;|&nbsp; 글로벌 제품관리 시스템</h1>
-    <p>SUNGWOO ELECTRONICS · Global Quality Management</p>
+  <div class="topbar-logo">
+    <div class="topbar-logo-badge">SW</div>
+    <div>
+      <div class="topbar-title">성우전자 &nbsp;·&nbsp; 글로벌 제품관리 시스템</div>
+      <div class="topbar-sub">SUNGWOO ELECTRONICS · Global Quality Management System</div>
+    </div>
   </div>
-  <div style="display:flex;align-items:center;gap:14px">
-    <button id="darkToggleBtn" onclick="toggleDarkMode()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600;transition:background 0.2s">🌙 다크</button>
-    <div class="topbar-right" id="topbarRight">관리자: 성우전자 개발팀<br>업데이트: 2026-05-26</div>
+  <nav class="topbar-nav" id="topbarNav">
+    <div class="topbar-nav-item active" onclick="goHome()" id="tnav-home">홈</div>
+    <div class="topbar-nav-item" onclick="goModel()" id="tnav-mando">만도</div>
+    <div class="topbar-nav-item" onclick="showScreen('model-am');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사'}])" id="tnav-am">AM사</div>
+    <div class="topbar-nav-item" onclick="goCompare()" id="tnav-compare">비교분석</div>
+    <div class="topbar-nav-item" onclick="goAdmin()" id="tnav-admin">관리</div>
+  </nav>
+  <div class="topbar-right">
+    <div class="topbar-clock" id="heroClock2"></div>
+    <div class="topbar-badge" id="topbarRight">관리자: 성우전자 개발팀</div>
+    <button id="darkToggleBtn" onclick="toggleDarkMode()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);border-radius:3px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;transition:all 0.15s">🌙</button>
   </div>
 </div>
 
@@ -237,64 +297,56 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
   <div class="breadcrumb" id="breadcrumb"><span class="bc-active">🏠 홈</span></div>
 
   <!-- 전체 검색바 -->
-  <div style="position:relative;margin-bottom:20px">
-    <input id="globalSearch" type="text" placeholder="🔍  제품 코드, 고객사, 모델명 검색..." autocomplete="off"
-      style="width:100%;padding:12px 16px 12px 42px;border:2px solid #e0e4ef;border-radius:12px;font-size:13px;outline:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.05);transition:border-color 0.2s;box-sizing:border-box"
-      onfocus="this.style.borderColor='#3b82f6';showSearchResults()"
+  <div style="position:relative;margin-bottom:16px">
+    <input id="globalSearch" type="text" placeholder="제품 코드, 고객사, 모델명 검색..." autocomplete="off"
+      style="width:100%;padding:9px 14px 9px 36px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;outline:none;background:#fff;transition:border-color 0.15s;box-sizing:border-box"
+      onfocus="this.style.borderColor='#2563eb';showSearchResults()"
       onblur="setTimeout(hideSearchResults,200)"
       oninput="showSearchResults()">
-    <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none">🔍</span>
-    <div id="searchResults" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #e0e4ef;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:500;max-height:320px;overflow-y:auto"></div>
+    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;color:#94a3b8">🔍</span>
+    <div id="searchResults" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:500;max-height:320px;overflow-y:auto"></div>
   </div>
 
   <!-- 홈 -->
   <div id="screen-home" class="screen active">
 
-    <!-- 히어로 배너 -->
-    <div id="heroBanner" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);border-radius:16px;padding:24px 28px;margin-bottom:20px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
-        <div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.12em;margin-bottom:6px">SUNGWOO ELECTRONICS · GLOBAL PRODUCT MANAGEMENT</div>
-          <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:4px">성우전자 글로벌 제품관리 시스템</div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-style:italic">해외법인·본사 품질 데이터 통합 · 실시간 Cpk 분석 · 고객 승인 이력 관리</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.45)" id="heroClock"></div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
-          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 18px;min-width:90px;text-align:center">
-            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.06em;margin-bottom:4px">시스템 상태</div>
-            <div style="font-size:13px;font-weight:700;color:#4ade80">🟢 정상</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 18px;min-width:110px;text-align:center">
-            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.06em;margin-bottom:4px">만도 승인진행</div>
-            <div style="font-size:16px;font-weight:800;color:#60a5fa" id="hero-mando-pct">-</div>
-            <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:6px;overflow:hidden">
-              <div id="hero-mando-bar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);width:0%;transition:width 0.8s ease;border-radius:2px"></div>
-            </div>
-          </div>
-          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 18px;min-width:90px;text-align:center">
-            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.06em;margin-bottom:4px">승인 완료</div>
-            <div style="font-size:16px;font-weight:800;color:#a78bfa" id="hero-approved-total">-</div>
-            <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px" id="hero-approved-sub">/ - 제품</div>
-          </div>
-        </div>
+    <!-- 헤더 KPI 바 (기업형) -->
+    <div id="heroBanner" style="background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:0.1em;margin-bottom:3px">CONSOLIDATED PRODUCT MANAGEMENT · 2026 FY</div>
+        <div style="font-size:16px;font-weight:700;color:#0f2040">성우전자 글로벌 제품관리 현황</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:2px" id="heroClock">해외법인·본사 품질 데이터 통합 · 실시간 Cpk 분석 · 고객 승인 이력 관리</div>
       </div>
-      <!-- 전체 승인 진행률 게이지 -->
-      <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:0.08em;font-weight:700">전체 승인 진행률 (GLOBAL APPROVAL PROGRESS)</div>
-          <div style="font-size:12px;font-weight:800;color:#a78bfa" id="hero-total-pct">-</div>
+      <div style="display:flex;gap:1px;background:#e2e8f0;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden">
+        <div style="background:#fff;padding:10px 18px;text-align:center;min-width:100px">
+          <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:0.06em;margin-bottom:3px">시스템 상태</div>
+          <div style="font-size:12px;font-weight:700;color:#16a34a">● 정상 운영</div>
         </div>
-        <div style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden">
-          <div id="hero-total-bar" style="height:100%;background:linear-gradient(90deg,#a78bfa,#c084fc,#4ade80);width:0%;transition:width 1s ease;border-radius:3px"></div>
+        <div style="background:#fff;padding:10px 18px;text-align:center;min-width:120px">
+          <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:0.06em;margin-bottom:3px">만도 승인진행</div>
+          <div style="font-size:14px;font-weight:700;color:#2563eb" id="hero-mando-pct">-</div>
+          <div style="height:3px;background:#e2e8f0;border-radius:2px;margin-top:5px;overflow:hidden">
+            <div id="hero-mando-bar" style="height:100%;background:#2563eb;width:0%;transition:width 0.8s ease;border-radius:2px"></div>
+          </div>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-top:6px">
-          <div style="font-size:10px;color:rgba(255,255,255,0.3)" id="hero-total-breakdown">만도 · AM사 · Firebase 전체 통합</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.3)">IATF 16949 기준</div>
+        <div style="background:#fff;padding:10px 18px;text-align:center;min-width:100px">
+          <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:0.06em;margin-bottom:3px">전체 승인완료</div>
+          <div style="font-size:14px;font-weight:700;color:#16a34a" id="hero-approved-total">-</div>
+          <div style="font-size:9px;color:#94a3b8;margin-top:1px" id="hero-approved-sub">/ - 제품</div>
+        </div>
+        <div style="background:#fff;padding:10px 18px;text-align:center;min-width:110px">
+          <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:0.06em;margin-bottom:3px">승인 진행률</div>
+          <div style="font-size:14px;font-weight:700;color:#7c3aed" id="hero-total-pct">-</div>
+          <div style="height:3px;background:#e2e8f0;border-radius:2px;margin-top:5px;overflow:hidden">
+            <div id="hero-total-bar" style="height:100%;background:linear-gradient(90deg,#7c3aed,#16a34a);width:0%;transition:width 1s ease;border-radius:2px"></div>
+          </div>
         </div>
       </div>
     </div>
+    <!-- hidden: 하위 호환성 -->
+    <div style="display:none" id="hero-total-breakdown"></div>
     <!-- Cpk 경고 배너 -->
-    <div id="cpkWarningBanner" style="display:none;background:linear-gradient(135deg,#fef2f2,#fef9f9);border:1px solid #fca5a5;border-radius:12px;padding:14px 18px;margin-bottom:16px">
+    <div id="cpkWarningBanner" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-left:3px solid #dc2626;border-radius:4px;padding:10px 14px;margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <span style="font-size:18px">⚠️</span>
         <div style="flex:1">
@@ -306,32 +358,32 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
     </div>
 
     <!-- 시스템 소개 카드 (발표용) -->
-    <div id="systemIntroRow" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
-      <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:14px;padding:18px 20px">
-        <div style="font-size:22px;margin-bottom:8px">🎯</div>
-        <div style="font-size:13px;font-weight:800;color:#1e40af;margin-bottom:4px">개발 목적</div>
-        <div style="font-size:11px;color:#3b82f6;line-height:1.6">해외 법인(VINA)과 본사(HQ) 간 품질 데이터를 실시간으로 통합 관리하여 고객 승인 대응 속도를 극대화</div>
+    <div id="systemIntroRow" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-bottom:16px;background:#e2e8f0;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden">
+      <div style="background:#fff;padding:14px 18px;border-left:3px solid #2563eb">
+        <div style="font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">개발 목적</div>
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:4px">VINA · HQ 품질 통합 관리</div>
+        <div style="font-size:11px;color:#64748b;line-height:1.6">해외 법인과 본사 간 품질 데이터 실시간 통합 → 고객 승인 대응 속도 극대화</div>
       </div>
-      <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;border-radius:14px;padding:18px 20px">
-        <div style="font-size:22px;margin-bottom:8px">⚡</div>
-        <div style="font-size:13px;font-weight:800;color:#065f46;margin-bottom:4px">실용성</div>
-        <div style="font-size:11px;color:#16a34a;line-height:1.6">Excel 파일 업로드 → 자동 Cpk 계산 → 불량항목 즉시 식별 → PDF 리포트 출력까지 원스톱 처리</div>
+      <div style="background:#fff;padding:14px 18px;border-left:3px solid #16a34a">
+        <div style="font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">실용성</div>
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:4px">원스톱 품질 분석 워크플로우</div>
+        <div style="font-size:11px;color:#64748b;line-height:1.6">Excel 업로드 → 자동 Cpk 계산 → 불량 식별 → PDF 리포트 출력</div>
       </div>
-      <div style="background:linear-gradient(135deg,#fdf4ff,#f3e8ff);border:1px solid #e9d5ff;border-radius:14px;padding:18px 20px">
-        <div style="font-size:22px;margin-bottom:8px">🏆</div>
-        <div style="font-size:13px;font-weight:800;color:#6b21a8;margin-bottom:4px">기대 효과</div>
-        <div style="font-size:11px;color:#9333ea;line-height:1.6">IATF 16949 품질 기준 준수 · 고객사 승인 이력 추적 · 글로벌 품질 가시성 확보</div>
+      <div style="background:#fff;padding:14px 18px;border-left:3px solid #7c3aed">
+        <div style="font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">기대 효과</div>
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:4px">IATF 16949 품질 기준 준수</div>
+        <div style="font-size:11px;color:#64748b;line-height:1.6">고객사 승인 이력 추적 · 글로벌 품질 가시성 확보 · 품질 리스크 조기 경보</div>
       </div>
     </div>
 
     <!-- 전체 현황판 -->
-    <div class="card" style="margin-bottom:20px;padding:20px 22px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div class="card" style="margin-bottom:16px;padding:16px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div class="sec-title" style="margin-bottom:0">전체 제품 현황</div>
-        <div style="display:flex;gap:6px;font-size:11px;font-weight:700">
-          <span style="background:#fef2f2;color:#e74c3c;padding:4px 10px;border-radius:6px;border:1px solid #fecaca" id="overview-red-badge">🔴 즉시수리 -</span>
-          <span style="background:#fffbeb;color:#d97706;padding:4px 10px;border-radius:6px;border:1px solid #fde68a" id="overview-yellow-badge">🟡 주의 -</span>
-          <span style="background:#f0fdf4;color:#16a34a;padding:4px 10px;border-radius:6px;border:1px solid #bbf7d0" id="overview-green-badge">🟢 정상 -</span>
+        <div style="display:flex;gap:6px;font-size:11px;font-weight:600">
+          <span style="background:#fef2f2;color:#dc2626;padding:3px 8px;border-radius:3px;border:1px solid #fecaca" id="overview-red-badge">즉시수리 -</span>
+          <span style="background:#fefce8;color:#ca8a04;padding:3px 8px;border-radius:3px;border:1px solid #fde68a" id="overview-yellow-badge">주의 -</span>
+          <span style="background:#f0fdf4;color:#16a34a;padding:3px 8px;border-radius:3px;border:1px solid #bbf7d0" id="overview-green-badge">정상 -</span>
         </div>
       </div>
       <div id="overviewGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px"></div>
@@ -3432,12 +3484,14 @@ function countUp(el, target, duration){
 (function(){
   var days = ['일','월','화','수','목','금','토'];
   function tick(){
-    var el = document.getElementById('heroClock');
-    if(!el) return;
     var now = new Date();
     var y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
     var hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0'), ss=String(now.getSeconds()).padStart(2,'0');
-    el.textContent = y+'-'+m+'-'+d+' ('+days[now.getDay()]+') · '+hh+':'+mm+':'+ss;
+    var timeStr = y+'-'+m+'-'+d+' ('+days[now.getDay()]+') · '+hh+':'+mm+':'+ss;
+    var el = document.getElementById('heroClock');
+    if(el) el.textContent = timeStr;
+    var el2 = document.getElementById('heroClock2');
+    if(el2) el2.textContent = timeStr;
   }
   tick();
   setInterval(tick, 1000);
