@@ -477,8 +477,9 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
             <div id="mando-home-pct-bar" style="height:100%;width:25%;background:#16a34a;border-radius:2px"></div>
           </div>
         </div>
-        <div style="padding:0 20px 14px;display:flex;justify-content:flex-end">
-          <span style="font-size:11px;color:#fff;font-weight:700;background:#0f2040;padding:5px 14px;border-radius:3px;letter-spacing:0.03em">상세보기 →</span>
+        <div style="padding:0 20px 14px;display:flex;justify-content:space-between;align-items:center">
+          <button onclick="event.stopPropagation();showToast('⚠️ 만도는 고정 고객사입니다. Firebase 고객사에서 모델 추가를 이용하세요.','info')" style="font-size:11px;color:#64748b;background:none;border:1px solid #e2e8f0;border-radius:3px;padding:4px 10px;cursor:pointer">+ 모델 추가</button>
+          <span onclick="goModel()" style="font-size:11px;color:#fff;font-weight:700;background:#0d1b33;padding:5px 14px;border-radius:3px;letter-spacing:0.03em;cursor:pointer">상세보기 →</span>
         </div>
       </div>
 
@@ -539,8 +540,9 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
             <div style="height:100%;width:100%;background:#16a34a;border-radius:2px"></div>
           </div>
         </div>
-        <div style="padding:0 20px 14px;display:flex;justify-content:flex-end">
-          <span style="font-size:11px;color:#fff;font-weight:700;background:#0f2040;padding:5px 14px;border-radius:3px;letter-spacing:0.03em">상세보기 →</span>
+        <div style="padding:0 20px 14px;display:flex;justify-content:space-between;align-items:center">
+          <button onclick="event.stopPropagation();showToast('⚠️ AM사는 고정 고객사입니다. Firebase 고객사에서 모델 추가를 이용하세요.','info')" style="font-size:11px;color:#64748b;background:none;border:1px solid #e2e8f0;border-radius:3px;padding:4px 10px;cursor:pointer">+ 모델 추가</button>
+          <span onclick="goModelAM()" style="font-size:11px;color:#fff;font-weight:700;background:#0d1b33;padding:5px 14px;border-radius:3px;letter-spacing:0.03em;cursor:pointer">상세보기 →</span>
         </div>
       </div>
 
