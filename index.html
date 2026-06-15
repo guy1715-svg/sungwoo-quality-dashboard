@@ -282,8 +282,8 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
   </div>
   <nav class="topbar-nav" id="topbarNav">
     <div class="topbar-nav-item active" onclick="goHome()" id="tnav-home">홈</div>
-    <div class="topbar-nav-item" onclick="goModel()" id="tnav-mando">만도</div>
-    <div class="topbar-nav-item" onclick="showScreen('model-am');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사'}])" id="tnav-am">AM사</div>
+    <div class="topbar-nav-item" onclick="goMandoCustomerScreen()" id="tnav-mando">만도</div>
+    <div class="topbar-nav-item" onclick="goAMCustomerScreen()" id="tnav-am">AM사</div>
     <div class="topbar-nav-item" onclick="goCompare()" id="tnav-compare">비교분석</div>
     <div class="topbar-nav-item" onclick="goAdmin()" id="tnav-admin">관리</div>
   </nav>
@@ -419,7 +419,7 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
     <div class="sec-title">고객사 현황</div>
     <div id="customerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:24px">
 
-      <div style="background:#fff;border-radius:4px;border:1px solid #e2e8f0;border-top:3px solid #0d1b33;overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);transition:box-shadow 0.15s,border-color 0.15s" onclick="goModel()" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)';this.style.borderColor='#1d4ed8'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)';this.style.borderColor='#e2e8f0'">
+      <div style="background:#fff;border-radius:4px;border:1px solid #e2e8f0;border-top:3px solid #0d1b33;overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);transition:box-shadow 0.15s,border-color 0.15s" onclick="goMandoCustomerScreen()" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)';this.style.borderColor='#1d4ed8'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)';this.style.borderColor='#e2e8f0'">
         <div style="background:#0d1b33;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
           <div>
             <div style="font-size:16px;font-weight:700;color:#fff">만도</div>
@@ -484,7 +484,7 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
       </div>
 
       <!-- AM사 카드 -->
-      <div style="background:#fff;border-radius:4px;border:1px solid #e2e8f0;border-top:3px solid #16a34a;overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);transition:box-shadow 0.15s,border-color 0.15s" onclick="goModelAM()" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)';this.style.borderColor='#16a34a'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)';this.style.borderColor='#e2e8f0'">
+      <div style="background:#fff;border-radius:4px;border:1px solid #e2e8f0;border-top:3px solid #16a34a;overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);transition:box-shadow 0.15s,border-color 0.15s" onclick="goAMCustomerScreen()" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)';this.style.borderColor='#16a34a'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)';this.style.borderColor='#e2e8f0'">
         <div style="background:#15803d;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
           <div>
             <div style="font-size:16px;font-weight:700;color:#fff">AM사</div>
@@ -650,9 +650,12 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
 
   <!-- 제품 -->
   <div id="screen-product" class="screen">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div class="sec-title" style="margin-bottom:0">제품 선택 — MX5A EREV</div>
-      <button onclick="goCompare()" style="padding:10px 20px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 HQ vs VINA 파일 비교</button>
+      <div style="display:flex;gap:8px">
+        <button onclick="openAddProduct('mando','만도','MX5A EREV')" style="padding:7px 14px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer">+ 제품 추가</button>
+        <button onclick="goCompare()" style="padding:7px 14px;background:#0d1b33;color:#fff;border:none;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer">📂 HQ vs VINA 비교</button>
+      </div>
     </div>
     <div class="product-grid">
       <div class="product-card" onclick="goDashboard('br0035')">
@@ -732,48 +735,66 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
 
   <!-- AM사 제품 화면 -->
   <div id="screen-product-am" class="screen">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div class="sec-title" style="margin-bottom:0">제품 선택 — SHIELD CAN</div>
-      <button onclick="goCompare()" style="padding:10px 20px;background:#2980b9;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">📂 HQ vs VINA 파일 비교</button>
+      <div style="display:flex;gap:8px">
+        <button onclick="openAddProduct('am','AM사','SHIELD CAN')" style="padding:7px 14px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer">+ 제품 추가</button>
+        <button onclick="goCompare()" style="padding:7px 14px;background:#0d1b33;color:#fff;border:none;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer">📂 HQ vs VINA 비교</button>
+      </div>
     </div>
     <div class="product-grid">
-      <div class="product-card" onclick="goDashboard('at5851')" style="border-color:#27ae60">
-        <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">AT5851</div>
-        <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">BT SHIELD CAN</div>
+      <div class="product-card" onclick="goDashboard('at5851')" style="border-color:#16a34a">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <div style="font-size:11px;color:#888;font-weight:600">AT5851</div>
+          <div style="display:flex;gap:4px">
+            <button onclick="event.stopPropagation();toggleApproval('at5851','approved')" style="background:#fef3c7;border:none;border-radius:3px;color:#92400e;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">⏳ 취소</button>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:8px">BT SHIELD CAN</div>
         <div style="display:flex;gap:8px;margin-bottom:10px">
           <span class="p-tag tag-vina">VINA ✓</span>
           <span class="p-tag" style="background:#d1fae5;color:#065f46">✅ 승인완료</span>
         </div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:100%;background:#27ae60"></div></div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:100%;background:#16a34a"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>승인완료</span><span>2025-11-04</span></div>
-        <span class="p-arrow" style="color:#27ae60">→</span>
+        <span class="p-arrow" style="color:#16a34a">→</span>
       </div>
-      <div class="product-card" onclick="goDashboard('ap5010')" style="border-color:#27ae60">
-        <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">AP5010</div>
-        <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">SHIELD CAN A/B</div>
+      <div class="product-card" onclick="goDashboard('ap5010')" style="border-color:#16a34a">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <div style="font-size:11px;color:#888;font-weight:600">AP5010</div>
+          <div style="display:flex;gap:4px">
+            <button onclick="event.stopPropagation();toggleApproval('ap5010','approved')" style="background:#fef3c7;border:none;border-radius:3px;color:#92400e;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">⏳ 취소</button>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:8px">SHIELD CAN A/B</div>
         <div style="display:flex;gap:8px;margin-bottom:10px">
           <span class="p-tag tag-vina">VINA ✓</span>
           <span class="p-tag" style="background:#d1fae5;color:#065f46">✅ 승인완료</span>
         </div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:100%;background:#27ae60"></div></div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:100%;background:#16a34a"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>승인완료</span><span>2025-06-27</span></div>
-        <span class="p-arrow" style="color:#27ae60">→</span>
+        <span class="p-arrow" style="color:#16a34a">→</span>
       </div>
-      <div class="product-card" onclick="goDashboard('ap5030')" style="border-color:#27ae60">
-        <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">AP5030</div>
-        <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">LCD GND SPRING</div>
+      <div class="product-card" onclick="goDashboard('ap5030')" style="border-color:#16a34a">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <div style="font-size:11px;color:#888;font-weight:600">AP5030</div>
+          <div style="display:flex;gap:4px">
+            <button onclick="event.stopPropagation();toggleApproval('ap5030','approved')" style="background:#fef3c7;border:none;border-radius:3px;color:#92400e;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">⏳ 취소</button>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:8px">LCD GND SPRING</div>
         <div style="display:flex;gap:8px;margin-bottom:10px">
           <span class="p-tag tag-vina">VINA ✓</span>
           <span class="p-tag" style="background:#d1fae5;color:#065f46">✅ 승인완료</span>
         </div>
-        <div class="p-bar"><div class="p-bar-fill" style="width:100%;background:#27ae60"></div></div>
+        <div class="p-bar"><div class="p-bar-fill" style="width:100%;background:#16a34a"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>승인완료</span><span>2025-08-21</span></div>
-        <span class="p-arrow" style="color:#27ae60">→</span>
+        <span class="p-arrow" style="color:#16a34a">→</span>
       </div>
-      <div class="product-card" onclick="showToast('⚠️ AM사 하드코딩 제품은 직접 추가가 불가합니다. Firebase 고객사를 이용하세요.','info')" style="border:2px dashed #d1d5db;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:120px;cursor:pointer">
-        <div style="font-size:28px;color:#9ca3af;margin-bottom:8px">+</div>
-        <div style="font-size:13px;font-weight:700;color:#6b7280">제품 추가</div>
-        <div style="font-size:11px;color:#aaa;margin-top:4px">Firebase 고객사 이용</div>
+      <div class="product-card" onclick="openAddProduct('am','AM사','SHIELD CAN')" style="border:1px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:120px">
+        <div style="font-size:24px;color:#94a3b8;margin-bottom:6px">+</div>
+        <div style="font-size:12px;font-weight:700;color:#64748b">제품 추가</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:3px">클릭하여 추가</div>
       </div>
     </div>
   </div>
@@ -3902,18 +3923,122 @@ function checkCpkWarning(){
     banner.style.display = 'none';
   }
 }
-function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
-function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
+function goModel(){goMandoCustomerScreen();}
+function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goMandoCustomerScreen()'},{label:'MX5A EREV'}]);}
+
+function goMandoCustomerScreen(){
+  var screenId = 'screen-dyn-mando';
+  if(!document.getElementById(screenId)){
+    var div = document.createElement('div');
+    div.id = screenId;
+    div.className = 'screen';
+    document.querySelector('.container').appendChild(div);
+  }
+  var screen = document.getElementById(screenId);
+  var mandoProds = ['br0035','br0036','br0037','br0038'].map(function(pid){ return PRODUCTS[pid]; }).filter(Boolean);
+  var trendId = 'mando-cust-trend';
+  screen.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
+      '<div class="sec-title" style="margin-bottom:0">모델 선택 — 만도</div>'+
+      '<button onclick="openAddModel(\'mando\',\'만도\')" style="font-size:11px;color:#1d4ed8;background:none;border:1px solid #bfdbfe;border-radius:3px;padding:3px 10px;cursor:pointer;font-weight:600">+ 모델 추가</button>'+
+    '</div>'+
+    '<div class="model-grid">'+
+      '<div class="model-card" onclick="goProduct()">'+
+        '<div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:3px">MX5A EREV</div>'+
+        '<div style="font-size:11px;color:#888">전기차 브레이크 브라켓</div>'+
+        '<div style="font-size:11px;color:#1d4ed8;margin-top:8px;font-weight:600">제품 4종 관리 중</div>'+
+      '</div>'+
+      '<div id="mando-extra-models"></div>'+
+    '</div>'+
+    buildCustomerQualityBar(mandoProds)+
+    '<div class="card" style="margin-top:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.05)">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
+        '<div class="sec-title" style="margin-bottom:0">항목별 불량 트렌드</div>'+
+        '<div style="font-size:11px;color:#888">최근 8회 측정 기준</div>'+
+      '</div>'+
+      '<div id="'+trendId+'"><div style="text-align:center;padding:20px;color:#888;font-size:12px">차트 불러오는 중...</div></div>'+
+    '</div>';
+  showScreen('dyn-mando');
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goMandoCustomerScreen()'}]);
+  document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>고객사: Mando Corporation';
+  setTimeout(function(){ buildCustomerTrendChart(mandoProds, trendId); }, 100);
+  // Firebase에 추가된 만도 모델 불러오기
+  db.ref('customers/mando/models').once('value').then(function(snap){
+    var extra = document.getElementById('mando-extra-models');
+    if(!extra) return;
+    var html = '';
+    snap.forEach(function(ch){
+      var m = ch.val();
+      html += '<div class="model-card" onclick="goProductDynamic(\'mando\',\''+esc(m.name)+'\',\'만도\')">'+
+        '<div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:3px">'+esc(m.name)+'</div>'+
+        '<div style="font-size:11px;color:#888">'+(m.desc||'')+'</div>'+
+        '<div style="font-size:11px;color:#1d4ed8;margin-top:8px;font-weight:600">Firebase 모델</div>'+
+      '</div>';
+    });
+    extra.outerHTML = html + '<div class="model-card" onclick="openAddModel(\'mando\',\'만도\')" style="border:1px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:20px;color:#94a3b8;margin-bottom:4px">+</div><div style="font-size:12px;font-weight:700;color:#64748b">모델 추가</div></div>';
+  });
+}
 
 function goModelAM(){
-  showScreen('model-am');
-  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사'}]);
+  goAMCustomerScreen();
+}
+
+function goAMCustomerScreen(){
+  var screenId = 'screen-dyn-am';
+  if(!document.getElementById(screenId)){
+    var div = document.createElement('div');
+    div.id = screenId;
+    div.className = 'screen';
+    document.querySelector('.container').appendChild(div);
+  }
+  var screen = document.getElementById(screenId);
+  var amProds = ['at5851','ap5010','ap5030'].map(function(pid){ return PRODUCTS[pid]; }).filter(Boolean);
+  var trendId = 'am-cust-trend';
+  screen.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
+      '<div class="sec-title" style="margin-bottom:0">모델 선택 — AM사</div>'+
+      '<button onclick="openAddModel(\'am\',\'AM사\')" style="font-size:11px;color:#1d4ed8;background:none;border:1px solid #bfdbfe;border-radius:3px;padding:3px 10px;cursor:pointer;font-weight:600">+ 모델 추가</button>'+
+    '</div>'+
+    '<div class="model-grid">'+
+      '<div class="model-card" onclick="goProductAM()">'+
+        '<div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:3px">SHIELD CAN</div>'+
+        '<div style="font-size:11px;color:#888">전자부품 쉴드캔</div>'+
+        '<div style="font-size:11px;color:#1d4ed8;margin-top:8px;font-weight:600">제품 3종 관리 중</div>'+
+      '</div>'+
+      '<div id="am-extra-models"></div>'+
+    '</div>'+
+    buildCustomerQualityBar(amProds)+
+    '<div class="card" style="margin-top:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.05)">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
+        '<div class="sec-title" style="margin-bottom:0">항목별 불량 트렌드</div>'+
+        '<div style="font-size:11px;color:#888">최근 8회 측정 기준</div>'+
+      '</div>'+
+      '<div id="'+trendId+'"><div style="text-align:center;padding:20px;color:#888;font-size:12px">차트 불러오는 중...</div></div>'+
+    '</div>';
+  showScreen('dyn-am');
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사',fn:'goAMCustomerScreen()'}]);
   document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>고객사: AM Corporation';
+  setTimeout(function(){ buildCustomerTrendChart(amProds, trendId); }, 100);
+  // Firebase에 추가된 AM 모델 불러오기
+  db.ref('customers/am/models').once('value').then(function(snap){
+    var extra = document.getElementById('am-extra-models');
+    if(!extra) return;
+    var html = '';
+    snap.forEach(function(ch){
+      var m = ch.val();
+      html += '<div class="model-card" onclick="goProductDynamic(\'am\',\''+esc(m.name)+'\',\'AM사\')">'+
+        '<div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:3px">'+esc(m.name)+'</div>'+
+        '<div style="font-size:11px;color:#888">'+(m.desc||'')+'</div>'+
+        '<div style="font-size:11px;color:#1d4ed8;margin-top:8px;font-weight:600">Firebase 모델</div>'+
+      '</div>';
+    });
+    extra.outerHTML = html + '<div class="model-card" onclick="openAddModel(\'am\',\'AM사\')" style="border:1px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:20px;color:#94a3b8;margin-bottom:4px">+</div><div style="font-size:12px;font-weight:700;color:#64748b">모델 추가</div></div>';
+  });
 }
 
 function goProductAM(){
   showScreen('product-am');
-  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사',fn:'goModelAM()'},{label:'SHIELD CAN'}]);
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사',fn:'goAMCustomerScreen()'},{label:'SHIELD CAN'}]);
 }
 
 function goCompare(){
