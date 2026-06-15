@@ -1697,9 +1697,9 @@ function addCustomerCard(customer, products){
   if(!addCard) addCard = grid.lastElementChild;
   var card = document.createElement('div');
   card.id = 'customer_' + customer.id;
-  card.style.cssText = 'background:#fff;border-radius:16px;border:1px solid #e0e4ef;overflow:hidden;cursor:pointer;transition:all 0.25s;box-shadow:0 2px 12px rgba(0,0,0,0.07)';
-  card.onmouseover = function(){ this.style.boxShadow='0 8px 28px rgba(0,0,0,0.13)';this.style.transform='translateY(-3px)'; };
-  card.onmouseout  = function(){ this.style.boxShadow='0 2px 12px rgba(0,0,0,0.07)';this.style.transform='translateY(0)'; };
+  card.style.cssText = 'background:#fff;border-radius:4px;border:1px solid #e2e8f0;border-top:3px solid '+customer.color+';overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);transition:box-shadow 0.15s,border-color 0.15s';
+  card.onmouseover = function(){ this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'; this.style.borderColor=customer.color; };
+  card.onmouseout  = function(){ this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)'; this.style.borderColor='#e2e8f0'; };
 
   // 고객사 클릭 시 동적 모델/제품 화면으로 이동
   card.onclick = function(){ goCustomerDynamic(customer, products); };
@@ -1722,7 +1722,7 @@ function addCustomerCard(customer, products){
     products.slice(0,4).forEach(function(p){
       var isApproved = p.approvalStatus === 'approved';
       previewHtml +=
-        '<div style="background:'+(isApproved?'#ecfdf5':'#f4f6fb')+';border-radius:10px;padding:11px 13px;border-left:3px solid '+(isApproved?'#27ae60':'#3b82f6')+';position:relative">'+
+        '<div style="background:'+(isApproved?'#f0fdf4':'#f8fafc')+';border-radius:3px;padding:11px 13px;border-left:3px solid '+(isApproved?'#16a34a':'#1d4ed8')+';position:relative">'+
           '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
             '<div style="font-size:10px;color:#888;margin-bottom:2px">'+p.productCode+'</div>'+
             '<div style="display:flex;gap:3px">'+
@@ -1740,44 +1740,46 @@ function addCustomerCard(customer, products){
         '</div>';
     });
     if(products.length > 4){
-      previewHtml += '<div style="background:#f8f9fc;border-radius:10px;padding:11px 13px;border:2px dashed #d1d5db;display:flex;align-items:center;justify-content:center"><div style="font-size:12px;color:#888;font-weight:600">+' + (products.length-4) + '개 더보기</div></div>';
+      previewHtml += '<div style="background:#f8fafc;border-radius:3px;padding:11px 13px;border:1px dashed #cbd5e1;display:flex;align-items:center;justify-content:center"><div style="font-size:12px;color:#888;font-weight:600">+' + (products.length-4) + '개 더보기</div></div>';
     }
     previewHtml += '</div>';
     // 승인 진행률
     var pct = products.length > 0 ? Math.round(approvedCount/products.length*100) : 0;
     previewHtml +=
-      '<div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:4px">'+
-        '<span>승인 진행률</span><span style="color:#27ae60;font-weight:600">'+pct+'% ('+approvedCount+'/'+products.length+')</span>'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:4px">'+
+        '<span>승인 진행률</span><span style="color:#16a34a;font-weight:600">'+pct+'% ('+approvedCount+'/'+products.length+')</span>'+
       '</div>'+
-      '<div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden">'+
-        '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#27ae60,#2ecc71);border-radius:3px"></div>'+
+      '<div style="height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden">'+
+        '<div style="height:100%;width:'+pct+'%;background:#16a34a;border-radius:2px"></div>'+
       '</div>';
   }
 
   var custJson = JSON.stringify(customer).replace(/'/g,"\\'");
   card.innerHTML =
-    '<div style="background:linear-gradient(135deg,'+customer.color+' 0%,'+customer.color+'cc 100%);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;position:relative">'+
+    '<div style="background:'+customer.color+';padding:14px 18px;display:flex;align-items:center;justify-content:space-between">'+
       '<div>'+
-        '<div style="font-size:16px;font-weight:700;color:#fff">'+esc(customer.name)+'</div>'+
+        '<div style="font-size:15px;font-weight:700;color:#fff">'+esc(customer.name)+'</div>'+
         '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">'+esc(customer.eng)+'</div>'+
       '</div>'+
       '<div style="display:flex;align-items:flex-start;gap:10px">'+
         '<div style="text-align:right">'+
           '<div style="font-size:11px;color:rgba(255,255,255,0.5)">모델 '+modelCount+'개 · 제품 '+products.length+'종</div>'+
-          '<div style="font-size:11px;color:#6ee7b7;margin-top:2px">승인완료 '+approvedCount+' / '+products.length+'</div>'+
+          '<div style="font-size:11px;color:#a7f3d0;margin-top:2px">승인완료 '+approvedCount+' / '+products.length+'</div>'+
         '</div>'+
-        '<button onclick="event.stopPropagation();openCustomerMenu(this,\''+customer.id+'\')" style="background:rgba(255,255,255,0.15);border:none;border-radius:6px;color:#fff;font-size:16px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">⋮</button>'+
+        '<button onclick="event.stopPropagation();openCustomerMenu(this,\''+customer.id+'\')" style="background:rgba(255,255,255,0.15);border:none;border-radius:3px;color:#fff;font-size:16px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">⋮</button>'+
       '</div>'+
     '</div>'+
-    '<div style="padding:18px 22px">'+
+    '<div style="padding:14px 18px">'+
       (modelCount > 0 ?
-        '<div style="font-size:11px;color:#555;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px">'+
-          '<span style="background:#eff6ff;color:#3b82f6;padding:2px 8px;border-radius:4px;font-size:10px">'+Object.keys(modelMap).join(', ')+'</span>'+
+        '<div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px">'+
+          '<span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:3px;font-size:10px">'+Object.keys(modelMap).join(', ')+'</span>'+
         '</div>' : '')+
       previewHtml+
-      '<button onclick="event.stopPropagation();openAddModel(window._customerCache[\''+customer.id+'\'])" style="width:100%;padding:8px;background:#f0f7ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px">+ 모델/제품 추가</button>'+
     '</div>'+
-    '<div style="padding:0 22px 16px;display:flex;justify-content:flex-end"><span style="font-size:12px;color:#fff;font-weight:600;background:#3b82f6;padding:5px 14px;border-radius:20px">상세보기 →</span></div>';
+    '<div style="padding:0 18px 14px;display:flex;justify-content:space-between;align-items:center">'+
+      '<button onclick="event.stopPropagation();openAddModel(window._customerCache[\''+customer.id+'\'])" style="font-size:11px;color:#64748b;background:none;border:1px solid #e2e8f0;border-radius:3px;padding:4px 10px;cursor:pointer;font-weight:600">+ 모델/제품 추가</button>'+
+      '<span style="font-size:11px;color:#fff;font-weight:700;background:#0d1b33;padding:5px 14px;border-radius:3px;letter-spacing:0.03em">상세보기 →</span>'+
+    '</div>';
 
   grid.insertBefore(card, addCard);
 }
