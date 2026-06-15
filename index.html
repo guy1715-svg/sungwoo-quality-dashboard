@@ -1443,6 +1443,7 @@ PRODUCTS['ap5030'] = {
   code: 'AP5030',
   lastDate: '2025-08-21',
   hasHQ: false,
+  approvalStatus: 'approved',
   angleNos: [],
   specMap: {1:38.0,2:60.7,3:56.5,4:0.15,5:1.2,6:0.25,7:0.7,8:1.4,9:1.4,10:1.4,11:1.4,12:0.7,13:0.7,14:0.7,15:0.7,16:0.7,17:0.7,18:0.7},
   tolMap:  {1:0.5,2:0.5,3:0.5,4:0.05,5:0.1,6:0.05,7:0.05,8:0.1,9:0.1,10:0.1,11:0.1,12:0.05,13:0.05,14:0.05,15:0.05,16:0.05,17:0.05,18:0.05},
@@ -1692,6 +1693,21 @@ function addCustomerCard(customer, products){
   products = products || [];
   window._customerCache = window._customerCache || {};
   window._customerCache[customer.id] = customer;
+
+  // 상단 네비게이션에 고객사 링크 동적 추가
+  var nav = document.getElementById('topbarNav');
+  var navId = 'tnav-fb-' + customer.id;
+  if(nav && !document.getElementById(navId)){
+    var compareItem = document.getElementById('tnav-compare');
+    var navItem = document.createElement('div');
+    navItem.id = navId;
+    navItem.className = 'topbar-nav-item';
+    navItem.textContent = customer.name;
+    navItem.style.borderBottom = '2px solid transparent';
+    (function(c,p){ navItem.onclick = function(){ goCustomerDynamic(c, p); }; })(customer, products);
+    if(compareItem) nav.insertBefore(navItem, compareItem);
+    else nav.appendChild(navItem);
+  }
   // 항상 addCustomerBtn 기준으로 삽입 (버튼이 밀리지 않게)
   var addCard = document.getElementById('addCustomerBtn');
   if(!addCard) addCard = grid.lastElementChild;
