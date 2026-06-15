@@ -194,6 +194,12 @@ body.dark #manualInputGrid > div{background:#252838;border-color:#2a2d3e;}
 body.dark #manualInputGrid > div > div{color:#bbb;}
 body.dark #heroBanner{background:linear-gradient(135deg,#0a0a14 0%,#0d1a2e 50%,#0a2040 100%);}
 body.dark #screen-home .sec-title{color:#e0e0e0;}
+/* 다크모드: 관리 화면 */
+body.dark #screen-admin .card{background:#1c1f2e;border-color:#2a2d3e;}
+body.dark #admin-product-table table{color:#e0e0e0;}
+body.dark #admin-product-table thead th{background:#252838;color:#bbb;}
+body.dark #admin-product-table tbody td{border-color:#2a2d3e;color:#ccc;}
+body.dark #admin-mando-list > div{filter:brightness(0.75);}
 /* 다크모드: 시스템 소개 카드 */
 body.dark #systemIntroRow > div:nth-child(1){background:linear-gradient(135deg,#0f1f3d,#1a2d4a) !important;border-color:#2a3a5e !important;}
 body.dark #systemIntroRow > div:nth-child(2){background:linear-gradient(135deg,#0a2418,#0f3020) !important;border-color:#1a3d28 !important;}
@@ -534,9 +540,9 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
         <div style="font-size:11px;color:#888">전기차 브레이크 브라켓</div>
         <div style="font-size:11px;color:#3b82f6;margin-top:8px;font-weight:600">제품 4종 관리 중</div>
       </div>
-      <div class="model-card" style="opacity:0.4;cursor:default">
-        <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:3px">+ 모델 추가</div>
-        <div style="font-size:11px;color:#888">준비 중</div>
+      <div class="model-card" onclick="showToast('⚠️ 하드코딩 고객사는 모델 추가가 불가합니다. Firebase 고객사를 이용하세요.','info')" style="border:2px dashed #d1d5db;background:#fafafa;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;cursor:pointer">
+        <div style="font-size:22px;color:#9ca3af;margin-bottom:6px">+</div>
+        <div style="font-size:13px;font-weight:700;color:#6b7280">모델 추가</div>
       </div>
     </div>
   </div>
@@ -616,9 +622,9 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
         <div style="font-size:11px;color:#888">전자부품 쉴드캔</div>
         <div style="font-size:11px;color:#3b82f6;margin-top:8px;font-weight:600">제품 3종 관리 중</div>
       </div>
-      <div class="model-card" style="opacity:0.4;cursor:default">
-        <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:3px">+ 모델 추가</div>
-        <div style="font-size:11px;color:#888">준비 중</div>
+      <div class="model-card" onclick="showToast('⚠️ 하드코딩 고객사는 모델 추가가 불가합니다. Firebase 고객사를 이용하세요.','info')" style="border:2px dashed #d1d5db;background:#fafafa;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;cursor:pointer">
+        <div style="font-size:22px;color:#9ca3af;margin-bottom:6px">+</div>
+        <div style="font-size:13px;font-weight:700;color:#6b7280">모델 추가</div>
       </div>
     </div>
   </div>
@@ -663,10 +669,10 @@ body.dark #overviewGrid > div{filter:brightness(0.85);}
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>승인완료</span><span>2025-08-21</span></div>
         <span class="p-arrow" style="color:#27ae60">→</span>
       </div>
-      <div class="product-card disabled">
-        <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">+ 제품 추가</div>
-        <div style="font-size:14px;font-weight:700;color:#aaa;margin-bottom:8px">준비 중</div>
-        <span class="p-arrow">→</span>
+      <div class="product-card" onclick="showToast('⚠️ AM사 하드코딩 제품은 직접 추가가 불가합니다. Firebase 고객사를 이용하세요.','info')" style="border:2px dashed #d1d5db;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:120px;cursor:pointer">
+        <div style="font-size:28px;color:#9ca3af;margin-bottom:8px">+</div>
+        <div style="font-size:13px;font-weight:700;color:#6b7280">제품 추가</div>
+        <div style="font-size:11px;color:#aaa;margin-top:4px">Firebase 고객사 이용</div>
       </div>
     </div>
   </div>
@@ -1354,6 +1360,136 @@ function closeModal(){
   document.querySelectorAll('#modalOverlay input, #modalOverlay select').forEach(function(el){
     el.style.borderColor = ''; el.style.background = '';
   });
+}
+
+// ===== 모델 추가 =====
+function openAddModel(customerId, customerName){
+  openModal('모델 추가 — ' + esc(customerName), `
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델명</div>
+      <input id="newModelName" type="text" placeholder="예: MX5A EREV" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델 설명</div>
+      <input id="newModelDesc" type="text" placeholder="예: 전기차 브레이크 브라켓" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <button onclick="saveNewModel('${esc(customerId)}','${esc(customerName)}')" style="width:100%;padding:12px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">+ 모델 추가</button>
+  `);
+}
+
+function saveNewModel(customerId, customerName){
+  var name = document.getElementById('newModelName').value.trim();
+  var desc = document.getElementById('newModelDesc').value.trim();
+  if(!name){ showFieldError('newModelName', '모델명을 입력하세요'); return; }
+  // Firebase customers/{id}/models에 추가
+  var modelKey = 'model_' + Date.now();
+  db.ref('customers/' + customerId + '/models/' + modelKey).set({name:name, desc:desc}).then(function(){
+    closeModal();
+    showToast('✅ ' + name + ' 모델이 추가되었습니다!', 'success');
+    // 현재 화면 새로고침
+    db.ref('customers/' + customerId).once('value').then(function(snap){
+      var cust = snap.val();
+      if(!cust) return;
+      db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snapP){
+        var prods = snapP.val() ? Object.values(snapP.val()) : [];
+        goCustomerDynamic(cust, prods);
+      });
+    });
+  }).catch(function(err){ alert('❌ 저장 실패: ' + err.message); });
+}
+
+// ===== 제품 추가 =====
+function openAddProduct(customerId, customerName, modelName){
+  openModal('제품 추가 — ' + esc(modelName || customerName), `
+    <div style="background:#f0f7ff;border-radius:8px;padding:10px 14px;font-size:11px;color:#1e40af;margin-bottom:16px">
+      📋 모델: <strong>${esc(modelName||'-')}</strong> · 고객사: <strong>${esc(customerName)}</strong>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품 코드</div>
+      <input id="newProductCode" type="text" placeholder="예: BR0035" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">제품명</div>
+      <input id="newProductName" type="text" placeholder="예: FRT BRKT LH#1" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델 설명</div>
+      <input id="newProductModelDesc" type="text" placeholder="예: 전기차 브레이크 브라켓" style="width:100%;padding:10px;border:1px solid #e4e4e4;border-radius:8px;font-size:13px">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">LH/RH 구분</div>
+      <div style="display:flex;gap:8px">
+        <button id="addSideYes" onclick="setAddSide(true)"  style="flex:1;padding:8px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">구분 있음</button>
+        <button id="addSideNo"  onclick="setAddSide(false)" style="flex:1;padding:8px;background:#f0f0f0;color:#888;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">구분 없음</button>
+      </div>
+      <input type="hidden" id="newProductSide" value="true">
+    </div>
+    <button onclick="saveNewProduct('${esc(customerId)}','${esc(customerName)}','${esc(modelName||'')}')" style="width:100%;padding:12px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">+ 제품 추가</button>
+  `);
+}
+
+function setAddSide(hasSide){
+  document.getElementById('newProductSide').value = hasSide;
+  document.getElementById('addSideYes').style.background = hasSide ? '#1a1a2e' : '#f0f0f0';
+  document.getElementById('addSideYes').style.color = hasSide ? '#fff' : '#888';
+  document.getElementById('addSideNo').style.background = hasSide ? '#f0f0f0' : '#1a1a2e';
+  document.getElementById('addSideNo').style.color = hasSide ? '#888' : '#fff';
+}
+
+function saveNewProduct(customerId, customerName, modelName){
+  var code    = document.getElementById('newProductCode').value.trim();
+  var name    = document.getElementById('newProductName').value.trim();
+  var desc    = document.getElementById('newProductModelDesc').value.trim();
+  var hasSide = document.getElementById('newProductSide').value === 'true';
+  if(!code){ showFieldError('newProductCode', '제품 코드를 입력하세요'); return; }
+  if(!name){ showFieldError('newProductName', '제품명을 입력하세요'); return; }
+
+  var pid = 'p_' + Date.now();
+  var product = {
+    productId: pid,
+    productCode: code,
+    productName: name,
+    modelName: modelName,
+    modelDesc: desc,
+    customerId: customerId,
+    hasSide: hasSide,
+    approvalStatus: 'pending',
+    createdAt: new Date().toISOString()
+  };
+
+  db.ref('products/' + pid).set(product).then(function(){
+    // 로컬 PRODUCTS에 등록
+    PRODUCTS[pid] = {
+      _fromFirebase: true,
+      _productId: pid,
+      code: code,
+      name: code + ' ' + name,
+      modelName: modelName,
+      modelDesc: desc,
+      customerId: customerId,
+      hasSide: hasSide,
+      approvalStatus: 'pending',
+      specMap: {},
+      tolMap: {},
+      vinaAll: {},
+      vinaLH: {},
+      vinaRH: {}
+    };
+    closeModal();
+    showToast('✅ ' + code + ' ' + name + ' 제품이 추가되었습니다!', 'success');
+    // 홈 고객사 카드 갱신
+    var oldCard = document.getElementById('customer_' + customerId);
+    if(oldCard) oldCard.remove();
+    db.ref('customers/' + customerId).once('value').then(function(snapC){
+      var cust = snapC.val();
+      if(!cust) return;
+      db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snapP){
+        var prods = snapP.val() ? Object.values(snapP.val()) : [];
+        addCustomerCard(cust, prods);
+        refreshHomeKPI();
+      });
+    });
+  }).catch(function(err){ alert('❌ 저장 실패: ' + err.message); });
 }
 
 // 고객사 추가
@@ -2116,7 +2252,7 @@ function goCustomerDynamic(customer, products){
         '<div style="font-size:11px;color:#3b82f6;margin-top:8px;font-weight:600">제품 '+mData.products.length+'종 관리 중</div>'+
       '</div>';
   });
-  modelCardsHtml += '<div class="model-card" style="opacity:0.4;cursor:default"><div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:3px">+ 모델 추가</div><div style="font-size:11px;color:#888">준비 중</div></div>';
+  modelCardsHtml += '<div class="model-card" onclick="event.stopPropagation();openAddModel(\''+customer.id+'\',\''+customer.name+'\');" style="border:2px dashed #d1d5db;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:22px;color:#9ca3af;margin-bottom:6px">+</div><div style="font-size:13px;font-weight:700;color:#6b7280">모델 추가</div></div>';
 
   var trendId = 'cust-trend-' + customer.id;
   screen.innerHTML =
@@ -2196,7 +2332,7 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
         '<span class="p-arrow" style="color:'+(isApproved?'#27ae60':'#ddd')+'">→</span>'+
       '</div>';
     }).join('');
-    productCardsHtml += '<div class="product-card disabled"><div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">+ 제품 추가</div><div style="font-size:14px;font-weight:700;color:#aaa;margin-bottom:8px">준비 중</div><span class="p-arrow">→</span></div>';
+    productCardsHtml += '<div class="product-card" onclick="openAddProduct(\''+customerId+'\',\''+decodeURIComponent(customerNameEnc)+'\',\''+modelName+'\');" style="border:2px dashed #d1d5db;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:120px"><div style="font-size:28px;color:#9ca3af;margin-bottom:8px">+</div><div style="font-size:13px;font-weight:700;color:#6b7280">제품 추가</div><div style="font-size:11px;color:#aaa;margin-top:4px">클릭하여 추가</div></div>';
 
     screen.innerHTML =
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'+
@@ -3349,6 +3485,88 @@ document.addEventListener('DOMContentLoaded', function(){
   loadFirebaseData(); // 내부에서 refreshHomeKPI() 호출함
   loadMandoApproval();
 });
+
+function goAdmin(){
+  showScreen('admin');
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'⚙️ 관리'}]);
+  loadAdminData();
+}
+
+function loadAdminData(){
+  // 통계 카드
+  var mandoApproved = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+
+  Promise.all([
+    db.ref('customers').once('value'),
+    db.ref('products').once('value'),
+    db.ref('measData').once('value')
+  ]).then(function(results){
+    var customers = results[0].val() || {};
+    var products  = results[1].val() || {};
+    var measData  = results[2].val() || {};
+
+    var fbApproved = Object.values(products).filter(function(p){ return p.approvalStatus === 'approved'; }).length;
+    var amApproved = 3;
+    var totalApproved = mandoApproved + amApproved + fbApproved;
+    var totalProds = 7 + Object.keys(products).length;
+    var custCount  = Object.keys(customers).length + 2; // 만도 + AM사 포함
+
+    var measCount = 0;
+    Object.values(measData).forEach(function(dates){ measCount += Object.keys(dates).length; });
+    // 만도 측정 고정 수 추가
+    measCount += 4;
+
+    var elC = document.getElementById('admin-stat-cust');
+    var elP = document.getElementById('admin-stat-prod');
+    var elA = document.getElementById('admin-stat-approved');
+    var elM = document.getElementById('admin-stat-meas');
+    if(elC) elC.textContent = custCount;
+    if(elP) elP.textContent = totalProds;
+    if(elA) elA.textContent = totalApproved + ' / ' + totalProds;
+    if(elM) elM.textContent = measCount;
+
+    // 만도 승인 현황
+    var mandoList = document.getElementById('admin-mando-list');
+    if(mandoList){
+      var allMandoPids = ['br0037','br0035','br0036','br0038'];
+      var mandoNames = {br0037:'BR0037 RR BRKT LH#2', br0035:'BR0035 FRT BRKT LH#1', br0036:'BR0036 RR BRKT LH#1', br0038:'BR0038 RR BRKT LH#3'};
+      mandoList.innerHTML = allMandoPids.map(function(pid){
+        var isApp = pid === 'br0037' ? true : !!(MANDO_PRODUCTS[pid] && MANDO_PRODUCTS[pid].approved);
+        var color = isApp ? '#d1fae5' : '#fff3cd';
+        var textColor = isApp ? '#065f46' : '#856404';
+        var status = isApp ? '✅ 승인완료' : '⏳ 승인대기';
+        return '<div style="background:'+color+';border-radius:10px;padding:12px 16px">'+
+          '<div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:4px">'+mandoNames[pid]+'</div>'+
+          '<div style="font-size:11px;font-weight:700;color:'+textColor+'">'+status+'</div>'+
+          (pid!=='br0037'?'<button onclick="showApprovalHistory(\''+pid+'\')" style="margin-top:8px;padding:3px 10px;background:#fff;border:1px solid #e0e0e0;border-radius:5px;font-size:10px;cursor:pointer;font-weight:700;color:#555">📋 이력 보기</button>':'')+
+        '</div>';
+      }).join('');
+    }
+
+    // Firebase 제품 테이블
+    var tbl = document.getElementById('admin-product-table');
+    if(tbl){
+      var prods = Object.values(products);
+      if(!prods.length){ tbl.innerHTML='<div style="text-align:center;color:#888;padding:20px;font-size:13px">등록된 Firebase 제품이 없습니다</div>'; return; }
+      var html = '<table><thead><tr><th>제품 코드</th><th style="text-align:left">제품명</th><th>모델</th><th>고객사ID</th><th>승인상태</th><th>작업</th></tr></thead><tbody>';
+      prods.forEach(function(p){
+        var isApp = p.approvalStatus === 'approved';
+        html += '<tr>'+
+          '<td style="font-weight:700">'+esc(p.productCode||'-')+'</td>'+
+          '<td style="text-align:left">'+esc(p.productName||'-')+'</td>'+
+          '<td>'+esc(p.modelName||'-')+'</td>'+
+          '<td style="font-size:10px;color:#888">'+esc(p.customerId||'-')+'</td>'+
+          '<td><span style="background:'+(isApp?'#d1fae5':'#fff3cd')+';color:'+(isApp?'#065f46':'#856404')+';padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700">'+(isApp?'✅ 승인완료':'⏳ 대기')+'</span></td>'+
+          '<td><button onclick="openEditProduct(\''+p.productId+'\')" style="padding:2px 8px;background:#dbeafe;border:none;border-radius:4px;color:#1e40af;font-size:10px;cursor:pointer;font-weight:700">✏️</button> <button onclick="confirmDeleteProduct(\''+p.productId+'\')" style="padding:2px 8px;background:#fee2e2;border:none;border-radius:4px;color:#c0392b;font-size:10px;cursor:pointer;font-weight:700">🗑️</button></td>'+
+        '</tr>';
+      });
+      html += '</tbody></table>';
+      tbl.innerHTML = html;
+    }
+  }).catch(function(err){
+    showToast('❌ 데이터 로드 실패: ' + err.message, 'error');
+  });
+}
 
 function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';buildOverviewPanel();checkCpkWarning();}
 
@@ -4543,6 +4761,62 @@ showScreen = function(id){
 };
 </script>
 
+<!-- 관리 화면 -->
+<div id="screen-admin" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div class="sec-title" style="margin-bottom:2px">⚙️ 시스템 관리</div>
+      <div style="font-size:11px;color:#888">성우전자 글로벌 제품관리 시스템 · 관리자 전용</div>
+    </div>
+  </div>
+
+  <!-- 시스템 통계 -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+    <div style="background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:14px;padding:18px;text-align:center">
+      <div style="font-size:28px;font-weight:800;color:#60a5fa" id="admin-stat-cust">-</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">등록 고객사</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#0f3460,#1e4080);border-radius:14px;padding:18px;text-align:center">
+      <div style="font-size:28px;font-weight:800;color:#a78bfa" id="admin-stat-prod">-</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">관리 제품</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#065f46,#0d7a5a);border-radius:14px;padding:18px;text-align:center">
+      <div style="font-size:28px;font-weight:800;color:#4ade80" id="admin-stat-approved">-</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">승인 완료</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#7c2d12,#9a3412);border-radius:14px;padding:18px;text-align:center">
+      <div style="font-size:28px;font-weight:800;color:#fb923c" id="admin-stat-meas">-</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">측정 기록</div>
+    </div>
+  </div>
+
+  <!-- 만도 승인 현황 -->
+  <div class="card" style="margin-bottom:16px;padding:18px 22px">
+    <div class="sec-title" style="margin-bottom:14px">만도 승인 현황</div>
+    <div id="admin-mando-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px"></div>
+  </div>
+
+  <!-- Firebase 제품 목록 -->
+  <div class="card" style="margin-bottom:16px;padding:18px 22px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="sec-title" style="margin-bottom:0">Firebase 제품 목록</div>
+      <button onclick="loadAdminData()" style="padding:6px 14px;background:#f0f4ff;border:1px solid #bfdbfe;border-radius:6px;font-size:11px;font-weight:700;color:#1e40af;cursor:pointer">🔄 새로고침</button>
+    </div>
+    <div id="admin-product-table"><div style="text-align:center;color:#888;padding:20px;font-size:13px">불러오는 중...</div></div>
+  </div>
+
+  <!-- 데이터베이스 관리 -->
+  <div class="card" style="margin-bottom:80px;padding:18px 22px">
+    <div class="sec-title" style="margin-bottom:14px">데이터베이스 관리</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button onclick="loadAdminData()" style="padding:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:13px;font-weight:700;color:#1e40af;cursor:pointer">🔄 전체 데이터 새로고침</button>
+      <button onclick="showApprovalHistory('br0035')" style="padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:13px;font-weight:700;color:#065f46;cursor:pointer">📋 만도 BR0035 이력</button>
+      <button onclick="showApprovalHistory('br0036')" style="padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:13px;font-weight:700;color:#065f46;cursor:pointer">📋 만도 BR0036 이력</button>
+      <button onclick="showApprovalHistory('br0038')" style="padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:13px;font-weight:700;color:#065f46;cursor:pointer">📋 만도 BR0038 이력</button>
+    </div>
+  </div>
+</div>
+
 <!-- 승인 히스토리 모달 -->
 <div id="approvalHistoryModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:16px;width:90%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
@@ -4571,7 +4845,7 @@ showScreen = function(id){
     <button class="bn-item" id="bn-cmp" onclick="goCompare()">
       <span class="bn-icon">🔀</span>비교
     </button>
-    <button class="bn-item" id="bn-admin" onclick="showScreen('admin')">
+    <button class="bn-item" id="bn-admin" onclick="goAdmin()">
       <span class="bn-icon">⚙️</span>관리
     </button>
   </div>
