@@ -192,6 +192,9 @@ body.dark #trendItemBtns button{background:#1c1f2e;border-color:#3a3d4e;color:#b
 /* 다크모드: 수동입력 그리드 */
 body.dark #manualInputGrid > div{background:#252838;border-color:#2a2d3e;}
 body.dark #manualInputGrid > div > div{color:#bbb;}
+body.dark #heroBanner{background:linear-gradient(135deg,#0a0a14 0%,#0d1a2e 50%,#0a2040 100%);}
+body.dark #screen-home .sec-title{color:#e0e0e0;}
+body.dark #screen-home button[onclick*="goDashboard"]{background:#1c1f2e;border-color:#2a2d3e;color:#e0e0e0;}
 </style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -226,6 +229,43 @@ body.dark #manualInputGrid > div > div{color:#bbb;}
 
   <!-- 홈 -->
   <div id="screen-home" class="screen active">
+
+    <!-- 히어로 배너 -->
+    <div id="heroBanner" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.45);font-weight:600;letter-spacing:0.08em;margin-bottom:4px">SUNGWOO ELECTRONICS · GLOBAL PRODUCT MANAGEMENT</div>
+        <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:2px">성우전자 글로벌 제품관리 시스템</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.55)" id="heroClock">로딩 중...</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 16px;text-align:center;border:1px solid rgba(255,255,255,0.12)">
+          <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:2px">시스템 상태</div>
+          <div style="font-size:13px;font-weight:700;color:#4ade80">🟢 정상 운영</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 16px;text-align:center;border:1px solid rgba(255,255,255,0.12)">
+          <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:2px">만도 승인 진행률</div>
+          <div style="font-size:13px;font-weight:700;color:#60a5fa" id="hero-mando-pct">- / 4</div>
+          <div style="width:80px;height:5px;background:rgba(255,255,255,0.15);border-radius:3px;margin-top:4px;overflow:hidden">
+            <div id="hero-mando-bar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:3px;width:0%;transition:width 0.6s"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 빠른 액세스 -->
+    <div style="margin-bottom:20px">
+      <div class="sec-title" style="margin-bottom:10px">⚡ 빠른 액세스</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="goDashboard('br0035')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#3b82f6';this.style.color='#3b82f6'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">BR0035 FRT BRKT LH#1</button>
+        <button onclick="goDashboard('br0036')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#3b82f6';this.style.color='#3b82f6'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">BR0036 RR BRKT LH#1</button>
+        <button onclick="goDashboard('br0037')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">BR0037 RR BRKT LH#2 ✅</button>
+        <button onclick="goDashboard('br0038')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#3b82f6';this.style.color='#3b82f6'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">BR0038 RR BRKT LH#3</button>
+        <button onclick="goDashboard('at5851')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">AT5851 BT SHIELD CAN ✅</button>
+        <button onclick="goDashboard('ap5010')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">AP5010 SHIELD CAN A/B ✅</button>
+        <button onclick="goDashboard('ap5030')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">AP5030 LCD GND SPRING ✅</button>
+      </div>
+    </div>
+
     <div class="stats-row" style="margin-bottom:24px">
       <div class="stat-box">
         <div class="stat-val blue" id="kpi-cust">⋯</div>
@@ -2798,6 +2838,11 @@ function refreshMandoHomeKPI(){
   if(progressText) progressText.textContent = '승인완료 ' + mandoApproved + ' / ' + total;
   if(pctEl) pctEl.textContent = pct + '% (' + mandoApproved + '/' + total + ')';
   if(pctBar) pctBar.style.width = pct + '%';
+  // 히어로 배너 연동
+  var heroMandoPct = document.getElementById('hero-mando-pct');
+  var heroMandoBar = document.getElementById('hero-mando-bar');
+  if(heroMandoPct) heroMandoPct.textContent = mandoApproved + ' / ' + total;
+  if(heroMandoBar) heroMandoBar.style.width = pct + '%';
 
   // 홈 상단 kpi-approved 숫자도 실시간 갱신 (만도 + Firebase AM사 승인)
   db.ref('products').once('value').then(function(snap){
@@ -2830,6 +2875,21 @@ function toggleMandoApproval(pid){
     alert('❌ 저장 실패: ' + err.message);
   });
 }
+
+// ===== 히어로 배너 시계 =====
+(function(){
+  var days = ['일','월','화','수','목','금','토'];
+  function tick(){
+    var el = document.getElementById('heroClock');
+    if(!el) return;
+    var now = new Date();
+    var y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0');
+    var hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0'), ss=String(now.getSeconds()).padStart(2,'0');
+    el.textContent = y+'-'+m+'-'+d+' ('+days[now.getDay()]+') · '+hh+':'+mm+':'+ss;
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 
 // ===== 다크모드 =====
 function toggleDarkMode(){
