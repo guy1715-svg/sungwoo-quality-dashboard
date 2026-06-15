@@ -195,6 +195,7 @@ body.dark #manualInputGrid > div > div{color:#bbb;}
 body.dark #heroBanner{background:linear-gradient(135deg,#0a0a14 0%,#0d1a2e 50%,#0a2040 100%);}
 body.dark #screen-home .sec-title{color:#e0e0e0;}
 body.dark #screen-home button[onclick*="goDashboard"]{background:#1c1f2e;border-color:#2a2d3e;color:#e0e0e0;}
+body.dark #overviewGrid > div{filter:brightness(0.85);}
 </style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -264,6 +265,21 @@ body.dark #screen-home button[onclick*="goDashboard"]{background:#1c1f2e;border-
         <button onclick="goDashboard('ap5010')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">AP5010 SHIELD CAN A/B ✅</button>
         <button onclick="goDashboard('ap5030')" style="padding:8px 14px;background:#fff;border:1px solid #e0e4ef;border-radius:8px;font-size:12px;font-weight:600;color:#1a1a2e;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.06)" onmouseover="this.style.borderColor='#27ae60';this.style.color='#27ae60'" onmouseout="this.style.borderColor='#e0e4ef';this.style.color='#1a1a2e'">AP5030 LCD GND SPRING ✅</button>
       </div>
+    </div>
+
+    </div>
+
+    <!-- 전체 현황판 -->
+    <div class="card" style="margin-bottom:20px;padding:18px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="sec-title" style="margin-bottom:0">📋 전체 제품 현황판</div>
+        <div style="display:flex;gap:6px;font-size:11px">
+          <span style="background:#fef2f2;color:#e74c3c;padding:3px 8px;border-radius:4px;font-weight:700" id="overview-red-badge">즉시수리 -</span>
+          <span style="background:#fffbeb;color:#f39c12;padding:3px 8px;border-radius:4px;font-weight:700" id="overview-yellow-badge">주의관찰 -</span>
+          <span style="background:#f0fdf4;color:#27ae60;padding:3px 8px;border-radius:4px;font-weight:700" id="overview-green-badge">정상 -</span>
+        </div>
+      </div>
+      <div id="overviewGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px"></div>
     </div>
 
     <div class="stats-row" style="margin-bottom:24px">
@@ -2876,6 +2892,102 @@ function toggleMandoApproval(pid){
   });
 }
 
+// ===== 전체 현황판 =====
+function buildOverviewPanel(){
+  var grid = document.getElementById('overviewGrid');
+  if(!grid) return;
+
+  var totalRed = 0, totalYellow = 0, totalGreen = 0;
+  var cards = [];
+
+  Object.keys(PRODUCTS).forEach(function(pid){
+    var p = PRODUCTS[pid];
+    if(!p.specMap || Object.keys(p.specMap).length === 0) return;
+    var src = p.vinaAll || {};
+    var dates = Object.keys(src);
+    if(dates.length === 0){
+      cards.push({pid:pid, name:p.code||p.name, hasData:false, isApproved: p.approvalStatus==='approved'});
+      return;
+    }
+    var red=0, yellow=0, green=0;
+    Object.keys(p.specMap).forEach(function(noStr){
+      var no = parseInt(noStr);
+      if(p.angleNos && p.angleNos.indexOf(no)>=0) return;
+      var spec=p.specMap[no], tol=p.tolMap[no];
+      var vals=dates.map(function(d){return src[d]?src[d][no]:null;}).filter(function(v){return v!=null;});
+      if(!vals.length) return;
+      var mean=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+      var st=getStatus(mean,spec,tol,false);
+      if(st.sortKey===0) red++; else if(st.sortKey===1) yellow++; else green++;
+    });
+    var isApproved = p.approvalStatus==='approved';
+    // 만도 승인 상태 반영
+    var mandoPids = ['br0035','br0036','br0038'];
+    if(mandoPids.indexOf(pid)>=0 && MANDO_PRODUCTS[pid]) isApproved = !!MANDO_PRODUCTS[pid].approved;
+    if(pid==='br0037') isApproved = true;
+    if(isApproved){ red=0; yellow=0; }
+    totalRed+=red; totalYellow+=yellow; totalGreen+=green;
+    cards.push({pid:pid, name:p.code||p.name, red:red, yellow:yellow, green:green, total:red+yellow+green, hasData:true, isApproved:isApproved, lastDate:dates[dates.length-1]});
+  });
+
+  // 정렬: 즉시수리 많은 순 → 주의 순 → 정상 → 승인완료 → 데이터없음
+  cards.sort(function(a,b){
+    if(!a.hasData && b.hasData) return 1;
+    if(a.hasData && !b.hasData) return -1;
+    if(a.isApproved && !b.isApproved) return 1;
+    if(!a.isApproved && b.isApproved) return -1;
+    return (b.red - a.red) || (b.yellow - a.yellow);
+  });
+
+  var redBadge = document.getElementById('overview-red-badge');
+  var yelBadge = document.getElementById('overview-yellow-badge');
+  var grnBadge = document.getElementById('overview-green-badge');
+  if(redBadge) redBadge.textContent = '즉시수리 ' + totalRed;
+  if(yelBadge) yelBadge.textContent = '주의관찰 ' + totalYellow;
+  if(grnBadge) grnBadge.textContent = '정상 ' + totalGreen;
+
+  grid.innerHTML = cards.map(function(c){
+    if(!c.hasData){
+      return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:#f8f9fb;border:1.5px dashed #ddd;border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor=\'#3b82f6\'" onmouseout="this.style.borderColor=\'#ddd\'">'+
+        '<div style="font-size:11px;font-weight:700;color:#888;margin-bottom:4px">'+esc(c.name)+'</div>'+
+        '<div style="font-size:11px;color:#bbb">데이터 없음</div>'+
+      '</div>';
+    }
+    if(c.isApproved){
+      return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(39,174,96,0.15)\'" onmouseout="this.style.boxShadow=\'none\'">'+
+        '<div style="font-size:11px;font-weight:700;color:#166534;margin-bottom:2px">'+esc(c.name)+'</div>'+
+        '<div style="font-size:10px;color:#4ade80;font-weight:700;margin-bottom:6px">✅ 승인완료</div>'+
+        '<div style="height:5px;background:#bbf7d0;border-radius:3px;overflow:hidden"><div style="height:100%;width:100%;background:#22c55e;border-radius:3px"></div></div>'+
+        (c.lastDate?'<div style="font-size:9px;color:#86efac;margin-top:4px">최근: '+c.lastDate+'</div>':'') +
+      '</div>';
+    }
+    var total = c.total || 1;
+    var redPct = Math.round(c.red/total*100);
+    var yelPct = Math.round(c.yellow/total*100);
+    var grnPct = 100-redPct-yelPct;
+    var borderColor = c.red>0 ? '#fca5a5' : c.yellow>0 ? '#fcd34d' : '#86efac';
+    var bgColor = c.red>0 ? '#fff5f5' : c.yellow>0 ? '#fffbeb' : '#f0fdf4';
+    var statusIcon = c.red>0 ? '🔴' : c.yellow>0 ? '🟡' : '🟢';
+    return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:'+bgColor+';border:1.5px solid '+borderColor+';border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.1)\'" onmouseout="this.style.boxShadow=\'none\'">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">'+
+        '<div style="font-size:11px;font-weight:700;color:#1a1a2e">'+esc(c.name)+'</div>'+
+        '<span style="font-size:14px">'+statusIcon+'</span>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;font-size:10px;margin-bottom:7px;font-weight:600">'+
+        (c.red>0?'<span style="color:#e74c3c">🔴'+c.red+'</span>':'')+
+        (c.yellow>0?'<span style="color:#f39c12">🟡'+c.yellow+'</span>':'')+
+        '<span style="color:#27ae60">🟢'+c.green+'</span>'+
+      '</div>'+
+      '<div style="display:flex;height:5px;border-radius:3px;overflow:hidden;background:#e5e7eb">'+
+        (redPct>0?'<div style="width:'+redPct+'%;background:#e74c3c"></div>':'')+
+        (yelPct>0?'<div style="width:'+yelPct+'%;background:#f39c12"></div>':'')+
+        (grnPct>0?'<div style="width:'+grnPct+'%;background:#27ae60"></div>':'')+
+      '</div>'+
+      (c.lastDate?'<div style="font-size:9px;color:#aaa;margin-top:4px">최근: '+c.lastDate+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+
 // ===== 히어로 배너 시계 =====
 (function(){
   var days = ['일','월','화','수','목','금','토'];
@@ -2915,8 +3027,9 @@ function loadMandoApproval(){
       var isApproved = !!(data[pid] && data[pid].approved);
       updateMandoUI(pid, isApproved);
     });
-    // 만도 승인 상태 로드 완료 후 홈 KPI 숫자 갱신
+    // 만도 승인 상태 로드 완료 후 홈 KPI 및 현황판 갱신
     refreshMandoHomeKPI();
+    buildOverviewPanel();
   }).catch(function(err){
     console.error('만도 승인 상태 로드 실패:', err);
   });
@@ -2927,7 +3040,7 @@ document.addEventListener('DOMContentLoaded', function(){
   loadMandoApproval();
 });
 
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';buildOverviewPanel();}
 function goModel(){showScreen('model');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도'}]);}
 function goProduct(){showScreen('product');updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'만도',fn:'goModel()'},{label:'MX5A EREV'}]);}
 
