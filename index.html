@@ -2324,7 +2324,10 @@ function goCustomerDynamic(customer, products){
 
   setTimeout(function(){ buildCustomerTrendChart(products, trendId); }, 100);
   showScreen('dyn-' + customer.id);
-  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:customer.name}]);
+  var _c = customer;
+  updateBC([{label:'🏠 홈',fn:'goHome()'},{label:customer.name,fn:'goCustomerDynamic(window._lastCustomer,window._lastProducts)'}]);
+  window._lastCustomer = customer;
+  window._lastProducts = products;
   document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>고객사: '+esc(customer.eng);
 }
 
@@ -2401,7 +2404,7 @@ function goProductDynamic(customerId, modelName, customerNameEnc){
     showScreen(dynScreenId);
     updateBC([
       {label:'🏠 홈',fn:'goHome()'},
-      {label:esc(customerName),fn:'goCustomerDynamic('+JSON.stringify({id:customerId,name:customerName,eng:customerName,color:"#1a1a2e"})+',Object.values(PRODUCTS).filter(function(p){return p.customerId==="'+esc(customerId)+'";}))'},
+      {label:esc(customerName),fn:'goCustomerDynamic(window._lastCustomer,window._lastProducts)'},
       {label:modelName}
     ]);
   });
