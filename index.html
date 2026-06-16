@@ -406,7 +406,7 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
       <div class="stat-box">
         <div class="stat-label" style="margin-bottom:8px">관리 제품</div>
         <div class="stat-val" style="color:#0891b2" id="kpi-prod">⋯</div>
-        <div class="stat-delta" style="color:#64748b">측정 대상</div>
+        <div class="stat-delta" style="color:#64748b">측정 대상 · <span onclick="showFirebaseProductManager()" style="color:#1d4ed8;cursor:pointer;text-decoration:underline">DB 확인</span></div>
       </div>
       <div class="stat-box">
         <div class="stat-label" style="margin-bottom:8px">승인 완료</div>
@@ -3743,6 +3743,25 @@ document.addEventListener('DOMContentLoaded', function(){
   loadFirebaseData(); // 내부에서 refreshHomeKPI() 호출함
   loadMandoApproval();
 });
+
+function showFirebaseProductManager(){
+  db.ref('products').once('value').then(function(snap){
+    var prods = snap.val() ? Object.values(snap.val()) : [];
+    if(!prods.length){ openModal('Firebase 제품 목록', '<div style="text-align:center;padding:20px;color:#888">등록된 Firebase 제품이 없습니다</div>'); return; }
+    var html = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc"><th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0">코드</th><th style="padding:8px;text-align:left;border-bottom:1px solid #e2e8f0">제품명</th><th style="padding:8px;border-bottom:1px solid #e2e8f0">고객사</th><th style="padding:8px;border-bottom:1px solid #e2e8f0">승인</th><th style="padding:8px;border-bottom:1px solid #e2e8f0">삭제</th></tr></thead><tbody>';
+    prods.forEach(function(p){
+      var isApp = p.approvalStatus === 'approved';
+      html += '<tr><td style="padding:8px;font-weight:700;border-bottom:1px solid #f1f5f9">'+esc(p.productCode||'-')+'</td>'+
+        '<td style="padding:8px;border-bottom:1px solid #f1f5f9">'+esc(p.productName||'-')+'</td>'+
+        '<td style="padding:8px;text-align:center;border-bottom:1px solid #f1f5f9;font-size:10px;color:#888">'+esc(p.customerId||'-')+'</td>'+
+        '<td style="padding:8px;text-align:center;border-bottom:1px solid #f1f5f9"><span style="background:'+(isApp?'#d1fae5':'#fff3cd')+';color:'+(isApp?'#065f46':'#856404')+';padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700">'+(isApp?'✅':'⏳')+'</span></td>'+
+        '<td style="padding:8px;text-align:center;border-bottom:1px solid #f1f5f9"><button onclick="confirmDeleteProduct(\''+p.productId+'\')" style="background:#fee2e2;border:none;border-radius:3px;color:#c0392b;font-size:11px;padding:2px 8px;cursor:pointer;font-weight:700">🗑️ 삭제</button></td>'+
+      '</tr>';
+    });
+    html += '</tbody></table>';
+    openModal('Firebase 제품 목록 (총 '+prods.length+'개)', html);
+  });
+}
 
 function goAdmin(){
   showScreen('admin');
