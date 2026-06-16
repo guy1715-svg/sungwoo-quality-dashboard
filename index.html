@@ -693,9 +693,18 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
       <div class="product-card" onclick="goDashboard('br0037')">
         <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600">BR0037 L-A / R-A</div>
         <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:8px">RR BRKT LH#2</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px"><span class="p-tag tag-hq">본사 ✓</span><span class="p-tag tag-vina">VINA ✓</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <span class="p-tag tag-hq">본사 ✓</span>
+          <span class="p-tag tag-vina">VINA ✓</span>
+          <span id="mando-status-br0037" class="p-tag" style="background:#d1fae5;color:#065f46">✅ 승인완료</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button id="mando-btn-br0037" onclick="event.stopPropagation();toggleMandoApproval('br0037')" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#fff3cd;color:#856404">⏳ 승인 취소</button>
+          <button onclick="event.stopPropagation();showApprovalHistory('br0037')" style="padding:5px 8px;border:1px solid #e0e0e0;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:#f8f8f8;color:#888">📋 이력</button>
+        </div>
         <div class="p-bar"><div class="p-bar-fill" style="width:100%;background:#27ae60"></div></div>
         <div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>대시보드 완성</span><span>2026-05-26</span></div>
+        <div id="mando-approved-date-br0037" style="font-size:10px;color:#27ae60;margin-top:3px;font-weight:600"></div>
         <span class="p-arrow" style="color:#27ae60">→</span>
       </div>
       <div class="product-card" onclick="goDashboard('br0038')">
@@ -2686,7 +2695,7 @@ function refreshHomeKPI(){
     var fbApproved    = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
     var totalProds    = 7 + prods.length;
     // 만도 승인: br0037 고정 + MANDO_PRODUCTS 버튼 상태
-    var mandoApproved = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+    var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
     // AM사 3종은 하드코딩 승인완료 (at5851, ap5010, ap5030)
     var amApproved = 3;
     var totalApproved = mandoApproved + amApproved + fbApproved;
@@ -3386,6 +3395,7 @@ function hideSearchResults(){
 var MANDO_PRODUCTS = {
   br0035: { fixed: true, name: 'BR0035 FRT BRKT LH#1' },
   br0036: { fixed: true, name: 'BR0036 RR BRKT LH#1' },
+  br0037: { fixed: true, name: 'BR0037 RR BRKT LH#2', approved: true },
   br0038: { fixed: true, name: 'BR0038 RR BRKT LH#3' }
 };
 
@@ -3411,8 +3421,7 @@ function updateMandoUI(pid, isApproved){
 }
 
 function refreshMandoHomeKPI(){
-  // br0037은 항상 승인완료 (하드코딩)
-  var mandoApproved = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+  var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
   var total = 4;
   var pct = Math.round(mandoApproved / total * 100);
   var progressText = document.getElementById('mando-home-progress-text');
@@ -3540,9 +3549,8 @@ function buildOverviewPanel(){
     });
     var isApproved = p.approvalStatus==='approved';
     // 만도 승인 상태 반영
-    var mandoPids = ['br0035','br0036','br0038'];
+    var mandoPids = ['br0035','br0036','br0037','br0038'];
     if(mandoPids.indexOf(pid)>=0 && MANDO_PRODUCTS[pid]) isApproved = !!MANDO_PRODUCTS[pid].approved;
-    if(pid==='br0037') isApproved = true;
     if(isApproved){ red=0; yellow=0; }
     totalRed+=red; totalYellow+=yellow; totalGreen+=green;
     cards.push({pid:pid, name:p.code||p.name, red:red, yellow:yellow, green:green, total:red+yellow+green, hasData:true, isApproved:isApproved, lastDate:dates[dates.length-1]});
@@ -3744,7 +3752,7 @@ function goAdmin(){
 
 function loadAdminData(){
   // 통계 카드
-  var mandoApproved = 1 + Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+  var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
 
   Promise.all([
     db.ref('customers').once('value'),
@@ -3781,7 +3789,7 @@ function loadAdminData(){
       var allMandoPids = ['br0037','br0035','br0036','br0038'];
       var mandoNames = {br0037:'BR0037 RR BRKT LH#2', br0035:'BR0035 FRT BRKT LH#1', br0036:'BR0036 RR BRKT LH#1', br0038:'BR0038 RR BRKT LH#3'};
       mandoList.innerHTML = allMandoPids.map(function(pid){
-        var isApp = pid === 'br0037' ? true : !!(MANDO_PRODUCTS[pid] && MANDO_PRODUCTS[pid].approved);
+        var isApp = !!(MANDO_PRODUCTS[pid] && MANDO_PRODUCTS[pid].approved);
         var color = isApp ? '#d1fae5' : '#fff3cd';
         var textColor = isApp ? '#065f46' : '#856404';
         var status = isApp ? '✅ 승인완료' : '⏳ 승인대기';
