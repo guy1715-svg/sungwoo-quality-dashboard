@@ -5398,7 +5398,7 @@ function startDemoSimulation(){
 
   _demoInterval = setInterval(function(){
     _demoTick++;
-    var pid = Object.keys(PRODUCTS).find(function(k){ return PRODUCTS[k] === curProduct; }) || 'br0035';
+    var pid = (function(){ var keys=Object.keys(PRODUCTS); for(var i=0;i<keys.length;i++){if(PRODUCTS[keys[i]]===curProduct)return keys[i];} return 'br0035'; })();
     var specMap = curProduct.specMap || {};
     var nos = Object.keys(specMap).map(Number);
     if(!nos.length){ stopDemoSimulation(); return; }
@@ -5449,7 +5449,7 @@ function buildSvgMap(){
   if(!container || !curProduct || !curProduct.specMap) return;
 
   var specMap = curProduct.specMap || {};
-  var nos = Object.keys(specMap).map(Number).filter(function(n){ return !(curProduct.angleNos||[]).includes(n); });
+  var nos = Object.keys(specMap).map(Number).filter(function(n){ return (curProduct.angleNos||[]).indexOf(n) < 0; });
   var src = getDataSource ? getDataSource() : {};
   var dates = Object.keys(src);
   var lastData = dates.length ? src[dates[dates.length-1]] : {};
@@ -5531,7 +5531,7 @@ function buildMoldGuide(){
   var guides = [];
 
   Object.keys(specMap).map(Number).forEach(function(no){
-    if((curProduct.angleNos||[]).includes(no)) return;
+    if((curProduct.angleNos||[]).indexOf(no) >= 0) return;
     var spec = specMap[no], tol = (curProduct.tolMap||{})[no]||0.1;
     var min = spec - tol, max = spec + tol;
     var allVals = dates.map(function(d){ return src[d]?src[d][no]:null; }).filter(function(v){return v!=null;});
