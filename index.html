@@ -427,7 +427,7 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
           </div>
           <div style="text-align:right">
             <div style="font-size:11px;color:rgba(255,255,255,0.5)">모델 1개 · 제품 4종</div>
-            <div id="mando-home-progress-text" style="font-size:11px;color:#6ee7b7;margin-top:2px">승인완료 1 / 4</div>
+            <div id="mando-home-progress-text" style="font-size:11px;color:#6ee7b7;margin-top:2px">승인완료 - / 4</div>
           </div>
         </div>
         <div style="padding:18px 22px">
@@ -817,14 +817,14 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
         <div class="upload-icon">🏢</div>
         <div class="upload-title" style="color:#2980b9">본사(HQ) 파일</div>
         <div class="upload-sub">HQ_37번_... DATA.xlsx</div>
-        <div class="upload-filename" id="hqName">파일을 선택하세요</div>
+        <div class="upload-filename" id="hqName" style="color:#94a3b8">클릭하여 파일 선택 ↑</div>
       </div>
       <div class="upload-box" id="vinaBox">
         <input type="file" class="upload-input" id="vinaFile" accept=".xlsx,.xls">
         <div class="upload-icon">🌏</div>
         <div class="upload-title" style="color:#e74c3c">VINA 파일</div>
         <div class="upload-sub">Measurement Data_....xlsx</div>
-        <div class="upload-filename" id="vinaName">파일을 선택하세요</div>
+        <div class="upload-filename" id="vinaName" style="color:#94a3b8">클릭하여 파일 선택 ↑</div>
       </div>
     </div>
     <div class="error-msg" id="errorMsg"></div>
@@ -2694,10 +2694,11 @@ function refreshHomeKPI(){
     var totalCust     = 2 + fbCust;
     var fbApproved    = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
     var totalProds    = 7 + prods.length;
-    // 만도 승인: br0037 고정 + MANDO_PRODUCTS 버튼 상태
+    // 만도 승인: MANDO_PRODUCTS 버튼 상태 기반
     var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
-    // AM사 3종은 하드코딩 승인완료 (at5851, ap5010, ap5030)
-    var amApproved = 3;
+    // AM사 승인: PRODUCTS 객체 기반 동적 계산
+    var amPids = ['at5851','ap5010','ap5030'];
+    var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
     var totalApproved = mandoApproved + amApproved + fbApproved;
     var fbModels      = {};
     prods.forEach(function(p){ if(p.modelName) fbModels[p.modelName] = true; });
@@ -2955,9 +2956,9 @@ function refreshRecentActivity(){
 
   // 고정 활동 (만도 BR0037 승인, 만도 측정)
   var fixed = [
-    {icon:'✅', title:'BR0037 RR BRKT LH#2 — 승인 완료', sub:'만도 · MX5A EREV · 검사자: 강병민', date:'2026-05-19 14:30'},
-    {icon:'📊', title:'BR0035 FRT BRKT LH#1 — VINA 측정 완료', sub:'만도 · MX5A EREV', date:'2026-05-21 09:00'},
-    {icon:'📊', title:'BR0038 RR BRKT LH#3 — VINA 측정 완료', sub:'만도 · MX5A EREV', date:'2026-05-12 10:00'},
+    {icon:'✅', title:'AP5030 LCD GND SPRING — 승인 완료', sub:'AM사 · SHIELD CAN · 고객사 협의 완료', date:'2026-06-10 11:20'},
+    {icon:'✅', title:'BR0037 RR BRKT LH#2 — 승인 완료', sub:'만도 · MX5A EREV · 검사자: 강병민', date:'2026-06-05 14:30'},
+    {icon:'📊', title:'BR0035 FRT BRKT LH#1 — VINA 측정 완료', sub:'만도 · MX5A EREV', date:'2026-06-02 09:00'},
   ];
 
   // Firebase measData + 승인 히스토리를 병렬 로드
@@ -3440,7 +3441,8 @@ function refreshMandoHomeKPI(){
     var fbProds = snap.val() ? Object.values(snap.val()) : [];
     var fbApproved = fbProds.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
     var totalProds = 7 + fbProds.length;
-    var amApproved = 3; // at5851, ap5010, ap5030 하드코딩 승인완료
+    var amPids = ['at5851','ap5010','ap5030'];
+    var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
     var totalApproved = mandoApproved + amApproved + fbApproved;
     var elApproved    = document.getElementById('kpi-approved');
     var elApprovedSub = document.getElementById('kpi-approved-sub');
@@ -3783,7 +3785,8 @@ function loadAdminData(){
     var measData  = results[2].val() || {};
 
     var fbApproved = Object.values(products).filter(function(p){ return p.approvalStatus === 'approved'; }).length;
-    var amApproved = 3;
+    var amPids = ['at5851','ap5010','ap5030'];
+    var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
     var totalApproved = mandoApproved + amApproved + fbApproved;
     var totalProds = 7 + Object.keys(products).length;
     var custCount  = Object.keys(customers).length + 2; // 만도 + AM사 포함
@@ -3845,13 +3848,13 @@ function loadAdminData(){
   });
 }
 
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: 2026-05-26';buildOverviewPanel();checkCpkWarning();refreshDDay();}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();}
 
 // ===== D-Day 마감일 =====
 var FIXED_DEADLINES = [
-  {id:'br0035', label:'만도 · BR0035', name:'FRT BRKT LH#1 최종승인', deadline:'2026-06-30'},
-  {id:'br0036', label:'만도 · BR0036', name:'RR BRKT LH#1 최종승인', deadline:'2026-07-15'},
-  {id:'br0038', label:'만도 · BR0038', name:'RR BRKT LH#3 최종승인', deadline:'2026-07-31'}
+  {id:'br0035', label:'만도 · BR0035', name:'FRT BRKT LH#1 최종승인', deadline:'2026-06-27'},
+  {id:'br0036', label:'만도 · BR0036', name:'RR BRKT LH#1 최종승인', deadline:'2026-07-10'},
+  {id:'br0038', label:'만도 · BR0038', name:'RR BRKT LH#3 최종승인', deadline:'2026-07-25'}
 ];
 function calcDDay(deadlineStr){
   var today = new Date(); today.setHours(0,0,0,0);
@@ -4129,7 +4132,7 @@ function goDashboard(productId){
     updateBC([
       {label:'🏠 홈', fn:'goHome()'},
       {label: custName, fn:'goCustomerDynamic(window._lastCustomer,window._lastProducts)'},
-      {label: modelName, fn:'goProductDynamic(window._lastCustomer&&window._lastCustomer.id,\''+modelName+'\',encodeURIComponent(\''+custName+'\'))'},
+      {label: modelName, fn:"goProductDynamic(window._lastCustomer&&window._lastCustomer.id,'"+modelName+"',encodeURIComponent('"+custName+"'))"},
       {label: curProduct.name}
     ]);
   } else {
@@ -5147,6 +5150,12 @@ function analyze(){
   var partNames=curProduct?curProduct.partNames:{};
   var angleNos=curProduct?curProduct.angleNos:[];
   var allNos=Object.keys(hqParsed).map(Number).filter(function(no){return vinaParsed[no];});
+
+  if(allNos.length===0){
+    cards.innerHTML='<div style="padding:32px;text-align:center;color:#94a3b8;font-size:13px">HQ와 VINA 파일에서 공통 항목을 찾을 수 없습니다.<br>파일 형식 또는 측정 항목 번호를 확인해주세요.</div>';
+    document.getElementById('cmpSummary').style.display='none';
+    return;
+  }
 
   allNos.forEach(function(no){
     var hq=hqParsed[no],vina=vinaParsed[no];
