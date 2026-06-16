@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>성우전자 글로벌 제품관리 시스템</title>
+<title>성우전자 FAI 관리시스템</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -274,10 +274,10 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
 
 <div class="topbar">
   <div class="topbar-logo">
-    <div class="topbar-logo-badge">SW</div>
+    <div class="topbar-logo-badge" style="font-size:9px;width:36px;letter-spacing:0.5px">FAI</div>
     <div>
-      <div class="topbar-title">성우전자 &nbsp;·&nbsp; 글로벌 제품관리 시스템</div>
-      <div class="topbar-sub">SUNGWOO ELECTRONICS · Global Quality Management System</div>
+      <div class="topbar-title">성우전자 &nbsp;·&nbsp; FAI 관리시스템</div>
+      <div class="topbar-sub">SUNGWOO ELECTRONICS · First Article Inspection Management System</div>
     </div>
   </div>
   <nav class="topbar-nav" id="topbarNav">
@@ -314,8 +314,8 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
     <!-- 헤더 KPI 바 (기업형) -->
     <div id="heroBanner" style="background:#0d1b33;border-radius:4px;padding:18px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
       <div>
-        <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.12em;margin-bottom:5px;text-transform:uppercase">Sungwoo Electronics · Global Quality Management · 2026 FY</div>
-        <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.3px">성우전자 글로벌 제품관리 현황</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.12em;margin-bottom:5px;text-transform:uppercase">Sungwoo Electronics · First Article Inspection Management · 2026 FY</div>
+        <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.3px">성우전자 FAI 관리 현황</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;display:flex;align-items:center;gap:6px">
           <span style="display:inline-block;width:6px;height:6px;background:#22c55e;border-radius:50%"></span>
           <span id="heroClock">시스템 정상 운영 중</span>
@@ -1076,7 +1076,7 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
     </div>
   </div>
 
-  <div class="footer">성우전자 글로벌 제품관리 시스템 &nbsp;·&nbsp; SUNGWOO ELECTRONICS &nbsp;·&nbsp; 2026</div>
+  <div class="footer">성우전자 FAI 관리시스템 &nbsp;·&nbsp; SUNGWOO ELECTRONICS &nbsp;·&nbsp; 2026</div>
 </div>
 
 <script>
@@ -2250,7 +2250,7 @@ function exportPDFReport(){
   '<table><thead><tr><th>No.</th><th>측정 부위</th><th>Spec</th><th>TOL</th><th>측정값</th><th>편차(%)</th><th>Cpk</th><th>판정</th></tr></thead>' +
   '<tbody>' + tableRows + '</tbody></table>' +
   '<div class="footer">' +
-    '<span>성우전자 글로벌 제품관리 시스템 · SUNGWOO ELECTRONICS</span>' +
+    '<span>성우전자 FAI 관리시스템 · SUNGWOO ELECTRONICS</span>' +
     '<span>* 편차(%) = (측정값 - Spec) ÷ TOL × 100 &nbsp;|&nbsp; 불합격: |편차| > 100%</span>' +
   '</div>' +
   '</div>' +
@@ -5226,7 +5226,7 @@ showScreen = function(id){
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
     <div>
       <div class="sec-title" style="margin-bottom:2px">⚙️ 시스템 관리</div>
-      <div style="font-size:11px;color:#888">성우전자 글로벌 제품관리 시스템 · 관리자 전용</div>
+      <div style="font-size:11px;color:#888">성우전자 FAI 관리시스템 · 관리자 전용</div>
     </div>
   </div>
 
