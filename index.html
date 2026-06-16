@@ -1487,7 +1487,7 @@ function closeModal(){
 }
 
 // ===== 모델 추가 =====
-function openAddModel(customerId, customerName){
+function openAddModelOnly(customerId, customerName){
   openModal('모델 추가 — ' + esc(customerName), `
     <div style="margin-bottom:14px">
       <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:700">모델명</div>
@@ -2449,7 +2449,7 @@ function goCustomerDynamic(customer, products){
         '<div style="font-size:11px;color:#3b82f6;margin-top:8px;font-weight:600">제품 '+mData.products.length+'종 관리 중</div>'+
       '</div>';
   });
-  modelCardsHtml += '<div class="model-card" onclick="event.stopPropagation();openAddModel(\''+customer.id+'\',\''+customer.name+'\');" style="border:2px dashed #d1d5db;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:22px;color:#9ca3af;margin-bottom:6px">+</div><div style="font-size:13px;font-weight:700;color:#6b7280">모델 추가</div></div>';
+  modelCardsHtml += '<div class="model-card" onclick="event.stopPropagation();openAddModel(window._lastCustomer);" style="border:2px dashed #d1d5db;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:22px;color:#9ca3af;margin-bottom:6px">+</div><div style="font-size:13px;font-weight:700;color:#6b7280">모델 추가</div></div>';
 
   var trendId = 'cust-trend-' + customer.id;
   screen.innerHTML =
@@ -3958,7 +3958,7 @@ function goMandoCustomerScreen(){
   screen.innerHTML =
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
       '<div class="sec-title" style="margin-bottom:0">모델 선택 — 만도</div>'+
-      '<button onclick="openAddModel(\'mando\',\'만도\')" style="font-size:11px;color:#1d4ed8;background:none;border:1px solid #bfdbfe;border-radius:3px;padding:3px 10px;cursor:pointer;font-weight:600">+ 모델 추가</button>'+
+      '<button onclick="openAddModelOnly(\'mando\',\'만도\')" style="font-size:11px;color:#1d4ed8;background:none;border:1px solid #bfdbfe;border-radius:3px;padding:3px 10px;cursor:pointer;font-weight:600">+ 모델 추가</button>'+
     '</div>'+
     '<div class="model-grid">'+
       '<div class="model-card" onclick="goProduct()">'+
@@ -3993,7 +3993,7 @@ function goMandoCustomerScreen(){
         '<div style="font-size:11px;color:#1d4ed8;margin-top:8px;font-weight:600">Firebase 모델</div>'+
       '</div>';
     });
-    extra.outerHTML = html + '<div class="model-card" onclick="openAddModel(\'mando\',\'만도\')" style="border:1px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:20px;color:#94a3b8;margin-bottom:4px">+</div><div style="font-size:12px;font-weight:700;color:#64748b">모델 추가</div></div>';
+    extra.outerHTML = html + '<div class="model-card" onclick="openAddModelOnly(\'mando\',\'만도\')" style="border:1px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:20px;color:#94a3b8;margin-bottom:4px">+</div><div style="font-size:12px;font-weight:700;color:#64748b">모델 추가</div></div>';
   });
 }
 
@@ -4015,7 +4015,7 @@ function goAMCustomerScreen(){
   screen.innerHTML =
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
       '<div class="sec-title" style="margin-bottom:0">모델 선택 — AM사</div>'+
-      '<button onclick="openAddModel(\'am\',\'AM사\')" style="font-size:11px;color:#1d4ed8;background:none;border:1px solid #bfdbfe;border-radius:3px;padding:3px 10px;cursor:pointer;font-weight:600">+ 모델 추가</button>'+
+      '<button onclick="openAddModelOnly(\'am\',\'AM사\')" style="font-size:11px;color:#1d4ed8;background:none;border:1px solid #bfdbfe;border-radius:3px;padding:3px 10px;cursor:pointer;font-weight:600">+ 모델 추가</button>'+
     '</div>'+
     '<div class="model-grid">'+
       '<div class="model-card" onclick="goProductAM()">'+
@@ -4050,7 +4050,7 @@ function goAMCustomerScreen(){
         '<div style="font-size:11px;color:#1d4ed8;margin-top:8px;font-weight:600">Firebase 모델</div>'+
       '</div>';
     });
-    extra.outerHTML = html + '<div class="model-card" onclick="openAddModel(\'am\',\'AM사\')" style="border:1px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:20px;color:#94a3b8;margin-bottom:4px">+</div><div style="font-size:12px;font-weight:700;color:#64748b">모델 추가</div></div>';
+    extra.outerHTML = html + '<div class="model-card" onclick="openAddModelOnly(\'am\',\'AM사\')" style="border:1px dashed #cbd5e1;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:80px"><div style="font-size:20px;color:#94a3b8;margin-bottom:4px">+</div><div style="font-size:12px;font-weight:700;color:#64748b">모델 추가</div></div>';
   });
 }
 
@@ -4101,8 +4101,8 @@ function goDashboard(productId){
     var modelName = curProduct.modelName || '';
     updateBC([
       {label:'🏠 홈', fn:'goHome()'},
-      {label: custName},
-      {label: modelName},
+      {label: custName, fn:'goCustomerDynamic(window._lastCustomer,window._lastProducts)'},
+      {label: modelName, fn:'goProductDynamic(window._lastCustomer&&window._lastCustomer.id,\''+modelName+'\',encodeURIComponent(\''+custName+'\'))'},
       {label: curProduct.name}
     ]);
   } else {
