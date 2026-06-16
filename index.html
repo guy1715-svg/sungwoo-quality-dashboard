@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>성우전자 FAI 관리시스템</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230d1b33'/><text x='16' y='22' font-family='Arial,sans-serif' font-size='13' font-weight='900' text-anchor='middle' fill='%233b82f6'>FAI</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -34,6 +35,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans
 .screen{display:none;}
 .screen.active{display:block;animation:fadeIn 0.18s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:translateY(0);}}
+@keyframes svgBlink{0%,100%{fill:#ef4444;opacity:1;}50%{fill:#ff6b6b;opacity:0.4;}}
+@keyframes demoPulse{0%,100%{box-shadow:0 0 12px rgba(222,255,154,0.2);}50%{box-shadow:0 0 24px rgba(222,255,154,0.6);}}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ===== KPI 통계 박스 ===== */
@@ -341,6 +344,10 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
             <div id="hero-total-bar" style="height:100%;background:linear-gradient(90deg,#7c3aed,#22c55e);width:0%;transition:width 1s ease;border-radius:1px"></div>
           </div>
         </div>
+        <div style="padding:12px 16px;text-align:center;border-left:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:6px;justify-content:center">
+          <button onclick="copyShareLink()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap" title="대시보드 링크 복사">🔗 링크 복사</button>
+          <button onclick="showGuide()" style="background:rgba(59,130,246,0.25);border:1px solid rgba(59,130,246,0.4);color:#93c5fd;border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap">📖 사용 가이드</button>
+        </div>
       </div>
     </div>
     <!-- hidden: 하위 호환성 -->
@@ -381,6 +388,7 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div class="sec-title" style="margin-bottom:0">전체 제품 현황</div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+          <button onclick="window.open('report.html','_blank')" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer">📋 보고서</button>
           <button onclick="setOverviewFilter('all')" id="ovf-all" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;border:1px solid #0d1b33;background:#0d1b33;color:#fff;cursor:pointer">전체</button>
           <button onclick="setOverviewFilter('red')" id="ovf-red" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;cursor:pointer" id="overview-red-badge">즉시수리 -</button>
           <button onclick="setOverviewFilter('yellow')" id="ovf-yellow" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:3px;border:1px solid #fde68a;background:#fefce8;color:#ca8a04;cursor:pointer" id="overview-yellow-badge">주의 -</button>
@@ -853,9 +861,11 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
 
   <!-- 대시보드 -->
   <div id="screen-dashboard" class="screen">
+    <div id="dash-workflow-banner"></div>
     <button class="pdf-btn" onclick="exportPDFReport()">🖨️ PDF 리포트</button>
     <button class="pdf-btn" onclick="exportCSV()" style="background:#27ae60;margin-left:6px">📥 CSV</button>
     <button class="pdf-btn" onclick="exportExcel()" style="background:#1d6f42;color:#fff;margin-left:4px">📊 Excel</button>
+    <button id="demoModeBtn" onclick="toggleDemoMode()" style="float:right;background:linear-gradient(135deg,#0d1b33,#1e3a5f);color:#deff9a;border:1.5px solid #deff9a;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.05em;box-shadow:0 0 12px rgba(222,255,154,0.2)">▶ 데모 가동</button>
     <div style="clear:both;margin-bottom:8px"></div>
     <div class="tabs" id="dashTabs" style="display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex">
@@ -1021,6 +1031,18 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
         <canvas id="paretoChart"></canvas>
       </div>
       <div id="paretoNote" style="margin-top:8px;font-size:11px;color:#888;text-align:center"></div>
+    </div>
+
+    <!-- 치수 편차 도면 시각화 -->
+    <div class="card" id="svgMapSection" style="margin-bottom:12px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">📐 치수 편차 도면 매핑 — 불량 위치 시각화</div>
+        <span style="font-size:11px;color:#64748b">항목 번호 위에 마우스를 올리면 테이블 행이 강조됩니다</span>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+        <div id="svgMapContainer" style="flex:1;min-width:300px"></div>
+        <div id="moldGuideSection" style="flex:1;min-width:280px"></div>
+      </div>
     </div>
 
     <!-- 하부스캔 섹션 -->
@@ -2289,14 +2311,93 @@ function showToast(msg, type){
   if(existing) existing.remove();
   var toast = document.createElement('div');
   toast.id = 'toastMsg';
-  var bg = type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#2980b9';
-  toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);'+
-    'background:'+bg+';color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;'+
-    'font-weight:700;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.2);'+
-    'animation:fadeIn 0.2s ease;pointer-events:none;';
-  toast.textContent = msg;
+  var bg = type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#1d4ed8';
+  var icon = type === 'success' ? '✅ ' : type === 'error' ? '❌ ' : 'ℹ️ ';
+  toast.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);'+
+    'background:'+bg+';color:#fff;padding:13px 28px;border-radius:6px;font-size:13px;'+
+    'font-weight:700;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.25);'+
+    'animation:fadeIn 0.2s ease;pointer-events:none;white-space:nowrap;'+
+    'border-bottom:3px solid rgba(0,0,0,0.15);';
+  toast.textContent = icon + msg;
   document.body.appendChild(toast);
-  setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 2500);
+  setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 2800);
+}
+
+function showGuide(){
+  var html =
+    '<div style="display:flex;flex-direction:column;gap:0">' +
+
+    '<div style="display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid #f1f5f9">' +
+      '<div style="min-width:36px;height:36px;background:#0d1b33;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900">1</div>' +
+      '<div>' +
+        '<div style="font-size:13px;font-weight:700;color:#0d1b33;margin-bottom:4px">고객사 선택</div>' +
+        '<div style="font-size:12px;color:#64748b;line-height:1.6">홈 화면 상단 메뉴 또는 고객사 카드를 클릭하여<br>관리할 고객사를 선택합니다.<br><span style="color:#1d4ed8;font-weight:600">만도 / AM사 / 오성 / 켐트로닉스</span></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div style="display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid #f1f5f9">' +
+      '<div style="min-width:36px;height:36px;background:#1d4ed8;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900">2</div>' +
+      '<div>' +
+        '<div style="font-size:13px;font-weight:700;color:#0d1b33;margin-bottom:4px">제품 선택 → 측정 데이터 업로드</div>' +
+        '<div style="font-size:12px;color:#64748b;line-height:1.6">제품 카드를 클릭 후 대시보드에서<br><span style="color:#1d4ed8;font-weight:600">📁 VINA 측정 파일 (Excel)</span>을 업로드합니다.<br>Cpk 공정능력지수가 자동으로 계산됩니다.</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div style="display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid #f1f5f9">' +
+      '<div style="min-width:36px;height:36px;background:#16a34a;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900">3</div>' +
+      '<div>' +
+        '<div style="font-size:13px;font-weight:700;color:#0d1b33;margin-bottom:4px">승인 처리</div>' +
+        '<div style="font-size:12px;color:#64748b;line-height:1.6">측정 결과 확인 후 <span style="color:#16a34a;font-weight:600">✅ 승인 버튼</span>을 클릭합니다.<br>승인 이력이 자동 저장되고<br>홈 화면 현황판에 즉시 반영됩니다.</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div style="display:flex;align-items:flex-start;gap:14px;padding:16px 0">' +
+      '<div style="min-width:36px;height:36px;background:#7c3aed;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px">📊</div>' +
+      '<div>' +
+        '<div style="font-size:13px;font-weight:700;color:#0d1b33;margin-bottom:4px">비교분석 / 보고서</div>' +
+        '<div style="font-size:12px;color:#64748b;line-height:1.6">상단 <span style="color:#7c3aed;font-weight:600">비교분석</span> 탭에서 HQ↔VINA 측정값 차이를 분석하거나,<br><span style="color:#7c3aed;font-weight:600">📋 보고서</span> 버튼으로 완료보고서를 출력합니다.</div>' +
+      '</div>' +
+    '</div>' +
+
+    '</div>' +
+    '<div style="margin-top:16px;padding:12px 14px;background:#f0fdf4;border-radius:6px;border:1px solid #bbf7d0">' +
+      '<div style="font-size:11px;color:#15803d;font-weight:600">💡 팁 — 모든 데이터는 Firebase에 실시간 저장됩니다. 링크를 공유하면 팀원이 같은 현황을 볼 수 있습니다.</div>' +
+    '</div>';
+  openModal('📖 성우전자 FAI 시스템 사용 가이드', html);
+}
+
+function copyShareLink(){
+  var url = window.location.href.split('?')[0];
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){
+      showToast('링크가 클립보드에 복사되었습니다', 'success');
+    }).catch(function(){
+      prompt('링크를 복사하세요:', url);
+    });
+  } else {
+    prompt('링크를 복사하세요:', url);
+  }
+}
+
+function updatePendingBadge(){
+  var mandoPending = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return !MANDO_PRODUCTS[pid].approved; }).length;
+  var amPids = ['at5851','ap5010','ap5030'];
+  var amPending = amPids.filter(function(pid){ return !PRODUCTS[pid] || PRODUCTS[pid].approvalStatus !== 'approved'; }).length;
+  var total = mandoPending + amPending;
+  var existing = document.getElementById('pending-badge');
+  if(total > 0){
+    if(!existing){
+      existing = document.createElement('span');
+      existing.id = 'pending-badge';
+      existing.style.cssText = 'background:#dc2626;color:#fff;font-size:9px;font-weight:700;'+
+        'border-radius:9px;padding:1px 5px;margin-left:4px;vertical-align:middle;';
+      var adminNav = document.getElementById('tnav-admin');
+      if(adminNav) adminNav.appendChild(existing);
+    }
+    existing.textContent = total;
+  } else {
+    if(existing) existing.remove();
+  }
 }
 
 // ===== 승인 상태 토글 =====
@@ -2731,8 +2832,34 @@ function refreshHomeKPI(){
   refreshRecentActivity();
 }
 
+function buildWorkflowBanner(step){
+  // step: 1=고객사선택완료, 2=제품/측정, 3=승인
+  var steps = [
+    {n:1, label:'고객사 선택', icon:'🏢'},
+    {n:2, label:'측정 데이터 업로드', icon:'📁'},
+    {n:3, label:'Cpk 분석', icon:'📊'},
+    {n:4, label:'승인 완료', icon:'✅'}
+  ];
+  var html = '<div style="display:flex;align-items:center;gap:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:10px 16px;margin-bottom:14px;overflow-x:auto">';
+  steps.forEach(function(s,i){
+    var active = s.n === step;
+    var done = s.n < step;
+    var color = done ? '#16a34a' : active ? '#1d4ed8' : '#94a3b8';
+    var bg = done ? '#f0fdf4' : active ? '#eff6ff' : 'transparent';
+    var border = done ? '1px solid #bbf7d0' : active ? '1px solid #bfdbfe' : '1px solid transparent';
+    html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:4px;background:'+bg+';border:'+border+';white-space:nowrap">';
+    html += '<span style="font-size:13px">'+(done?'✅':s.icon)+'</span>';
+    html += '<span style="font-size:11px;font-weight:'+(active?'700':'600')+';color:'+color+'">'+s.label+'</span>';
+    html += '</div>';
+    if(i < steps.length-1){
+      html += '<span style="color:#cbd5e1;font-size:12px;padding:0 2px">›</span>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
 function buildCustomerQualityBar(fbProducts){
-  // fbProducts: Firebase에서 온 제품 배열 [{productId, productCode, productName, approvalStatus, ...}]
   var rows = [];
   fbProducts.forEach(function(p){
     var pid = p.productId;
@@ -3487,9 +3614,10 @@ function toggleMandoApproval(pid){
       at: nowStr
     });
     updateMandoUI(pid, newStatus);
-    showToast(newStatus ? '✅ 승인완료 처리되었습니다!' : '⏳ 승인대기로 변경되었습니다.', 'success');
+    showToast(newStatus ? '승인완료 처리되었습니다!' : '승인대기로 변경되었습니다.', 'success');
+    updatePendingBadge();
   }).catch(function(err){
-    alert('❌ 저장 실패: ' + err.message);
+    showToast('저장 실패: ' + err.message, 'error');
   });
 }
 
@@ -3587,9 +3715,10 @@ function buildOverviewPanel(){
 function buildOverviewCards(grid, cards){
   grid.innerHTML = cards.map(function(c){
     if(!c.hasData){
-      return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:#f8f9fb;border:2px dashed #e0e4ef;border-radius:12px;padding:16px 14px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor=\'#93c5fd\'" onmouseout="this.style.borderColor=\'#e0e4ef\'">'+
-        '<div style="font-size:11px;font-weight:700;color:#aaa;margin-bottom:6px">'+esc(c.name)+'</div>'+
-        '<div style="font-size:10px;color:#ccc">📂 데이터 없음</div>'+
+      return '<div onclick="goDashboard(\''+c.pid+'\')" style="background:#f8f9fb;border:2px dashed #cbd5e1;border-radius:12px;padding:14px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor=\'#3b82f6\';this.style.background=\'#eff6ff\'" onmouseout="this.style.borderColor=\'#cbd5e1\';this.style.background=\'#f8f9fb\'">'+
+        '<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:6px">'+esc(c.name)+'</div>'+
+        '<div style="font-size:10px;color:#3b82f6;font-weight:600">📁 클릭하여 측정 파일 업로드</div>'+
+        '<div style="font-size:9px;color:#94a3b8;margin-top:3px">데이터 미입력 상태</div>'+
       '</div>';
     }
     if(c.isApproved){
@@ -3736,6 +3865,7 @@ function loadMandoApproval(){
     // 만도 승인 상태 로드 완료 후 홈 KPI 및 현황판 갱신
     refreshMandoHomeKPI();
     buildOverviewPanel();
+    updatePendingBadge();
   }).catch(function(err){
     console.error('만도 승인 상태 로드 실패:', err);
   });
@@ -3848,7 +3978,7 @@ function loadAdminData(){
   });
 }
 
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();updatePendingBadge();}
 
 // ===== D-Day 마감일 =====
 var FIXED_DEADLINES = [
@@ -3986,6 +4116,7 @@ function goMandoCustomerScreen(){
   var mandoProds = ['br0035','br0036','br0037','br0038'].map(function(pid){ return PRODUCTS[pid]; }).filter(Boolean);
   var trendId = 'mando-cust-trend';
   screen.innerHTML =
+    buildWorkflowBanner(2)+
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
       '<div class="sec-title" style="margin-bottom:0">모델 선택 — 만도</div>'+
       '<button onclick="openAddModelOnly(\'mando\',\'만도\')" style="font-size:11px;color:#1d4ed8;background:none;border:1px solid #bfdbfe;border-radius:3px;padding:3px 10px;cursor:pointer;font-weight:600">+ 모델 추가</button>'+
@@ -4043,6 +4174,7 @@ function goAMCustomerScreen(){
   var amProds = ['at5851','ap5010','ap5030'].map(function(pid){ return PRODUCTS[pid]; }).filter(Boolean);
   var trendId = 'am-cust-trend';
   screen.innerHTML =
+    buildWorkflowBanner(2)+
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
       '<div class="sec-title" style="margin-bottom:0">모델 선택 — AM사</div>'+
       '<button onclick="openAddModelOnly(\'am\',\'AM사\')" style="font-size:11px;color:#1d4ed8;background:none;border:1px solid #bfdbfe;border-radius:3px;padding:3px 10px;cursor:pointer;font-weight:600">+ 모델 추가</button>'+
@@ -4140,6 +4272,13 @@ function goDashboard(productId){
   }
   document.getElementById('topbarRight').innerHTML='VINA 최근: '+esc(curProduct.lastDate)+'<br>Part: '+esc(curProduct.code);
 
+  // 워크플로우 배너 업데이트
+  var isApprovedProd = curProduct.approvalStatus === 'approved';
+  if(!isApprovedProd && MANDO_PRODUCTS[productId]) isApprovedProd = !!MANDO_PRODUCTS[productId].approved;
+  var wfStep = isApprovedProd ? 4 : 3;
+  var wfEl = document.getElementById('dash-workflow-banner');
+  if(wfEl) wfEl.innerHTML = buildWorkflowBanner(wfStep);
+
   // HQ vs VINA 탭 별도 화면으로 이동됨
 
   // LH/RH 필터 숨김 (AM사 제품)
@@ -4231,6 +4370,10 @@ function goDashboard(productId){
 
   // 파레토 차트
   buildParetoChart();
+
+  // SVG 도면 매핑 + 금형 수정 가이드
+  buildSvgMap();
+  buildMoldGuide();
 
   // AP5010 하부스캔 섹션
   var scanSection = document.getElementById('scanSection');
@@ -4844,6 +4987,13 @@ document.addEventListener('DOMContentLoaded', function(){
               document.getElementById('measFileName').textContent = '⚠️ 데이터를 읽지 못했습니다';
               return;
             }
+            // 기능④ 밸리데이션: 현재 제품과 파일 항목 일치 여부 확인
+            var parsedNos = Object.keys(result.data).map(Number);
+            if(!validateUploadedFile(result.specMap, parsedNos)){
+              document.getElementById('measFileName').textContent = '⛔ 파일 불일치 — 업로드 차단됨';
+              measFile.value = '';
+              return;
+            }
             // 파일명에서 날짜 추출 우선 (26MMDD 형식)
             var fnMatch = file.name.match(/26(\d{2})(\d{2})/);
             var label = fnMatch ? fnMatch[1]+'/'+fnMatch[2] : (result.date || '신규');
@@ -4904,6 +5054,13 @@ document.addEventListener('DOMContentLoaded', function(){
             var result = parseHQFile(wb);
             if(Object.keys(result.data).length === 0){
               document.getElementById('measFileName').textContent = '⚠️ 데이터를 읽지 못했습니다';
+              return;
+            }
+            // 기능④ 밸리데이션
+            var parsedNosHQ = Object.keys(result.data).map(Number);
+            if(!validateUploadedFile(result.specMap, parsedNosHQ)){
+              document.getElementById('measFileName').textContent = '⛔ 파일 불일치 — 업로드 차단됨';
+              measFile.value = '';
               return;
             }
             // 파일명에서 날짜 추출 우선 (26MMDD 형식)
@@ -5222,6 +5379,274 @@ function updateBottomNav(){
     if(el) el.classList.add('active');
   }
 }
+// ===== 기능① 데모 시뮬레이션 =====
+var _demoInterval = null;
+var _demoRunning = false;
+var _demoTick = 0;
+
+function toggleDemoMode(){
+  if(_demoRunning){ stopDemoSimulation(); } else { startDemoSimulation(); }
+}
+
+function startDemoSimulation(){
+  if(!curProduct || !curProduct.specMap){ showToast('대시보드에서 제품을 먼저 선택하세요', 'error'); return; }
+  _demoRunning = true;
+  _demoTick = 0;
+  var btn = document.getElementById('demoModeBtn');
+  if(btn){ btn.textContent = '⏹ 데모 중지'; btn.style.animation = 'demoPulse 1.2s ease-in-out infinite'; btn.style.background = 'linear-gradient(135deg,#7c0a02,#c0392b)'; btn.style.color = '#fff'; btn.style.borderColor = '#ef4444'; }
+  showToast('데모 모드 시작 — 실시간 측정 데이터 시뮬레이션 중', 'success');
+
+  _demoInterval = setInterval(function(){
+    _demoTick++;
+    var pid = Object.keys(PRODUCTS).find(function(k){ return PRODUCTS[k] === curProduct; }) || 'br0035';
+    var specMap = curProduct.specMap || {};
+    var nos = Object.keys(specMap).map(Number);
+    if(!nos.length){ stopDemoSimulation(); return; }
+
+    // 마모 경향성: tick이 늘수록 편차 증가
+    var wearFactor = 1 + _demoTick * 0.003;
+    var fakeDate = '데모_' + String(_demoTick).padStart(2,'0');
+    var fakeData = {};
+    nos.forEach(function(no){
+      var spec = specMap[no];
+      var tol = (curProduct.tolMap && curProduct.tolMap[no]) || 0.1;
+      var base = spec + (Math.random() - 0.48) * tol * wearFactor;
+      fakeData[no] = parseFloat(base.toFixed(4));
+    });
+
+    if(!curProduct.vinaAll) curProduct.vinaAll = {};
+    curProduct.vinaAll[fakeDate] = fakeData;
+
+    // UI 갱신
+    renderData();
+    buildTrendChart();
+    buildParetoChart();
+    buildSvgMap();
+    buildMoldGuide();
+
+    // 홈 KPI도 주기적 갱신
+    if(_demoTick % 5 === 0){ refreshHomeKPI(); buildOverviewPanel(); }
+
+    // Cpk 경고 배너 트리거
+    checkCpkWarning();
+
+    // 10회 후 자동 종료
+    if(_demoTick >= 10) stopDemoSimulation();
+  }, 1200);
+}
+
+function stopDemoSimulation(){
+  _demoRunning = false;
+  if(_demoInterval){ clearInterval(_demoInterval); _demoInterval = null; }
+  var btn = document.getElementById('demoModeBtn');
+  if(btn){ btn.textContent = '▶ 데모 가동'; btn.style.animation = ''; btn.style.background = 'linear-gradient(135deg,#0d1b33,#1e3a5f)'; btn.style.color = '#deff9a'; btn.style.borderColor = '#deff9a'; }
+  showToast('데모 모드 종료', 'success');
+}
+
+// ===== 기능② SVG 도면 시각화 매핑 =====
+function buildSvgMap(){
+  var container = document.getElementById('svgMapContainer');
+  if(!container || !curProduct || !curProduct.specMap) return;
+
+  var specMap = curProduct.specMap || {};
+  var nos = Object.keys(specMap).map(Number).filter(function(n){ return !(curProduct.angleNos||[]).includes(n); });
+  var src = getDataSource ? getDataSource() : {};
+  var dates = Object.keys(src);
+  var lastData = dates.length ? src[dates[dates.length-1]] : {};
+
+  // 최대 12개 포인트만 SVG에 배치
+  var pts = nos.slice(0,12);
+  var cols = 4, rows = Math.ceil(pts.length/cols);
+  var W = 380, H = 60 + rows * 70;
+  var svgPts = pts.map(function(no, i){
+    var col = i % cols, row = Math.floor(i/cols);
+    var cx = 50 + col * 82, cy = 50 + row * 70;
+    var spec = specMap[no], tol = (curProduct.tolMap||{})[no]||0.1;
+    var val = lastData[no];
+    var status = 'ok';
+    if(val != null){
+      var gap = Math.abs(val - spec);
+      if(gap > tol) status = 'red';
+      else if(gap > tol * 0.7) status = 'yellow';
+    } else { status = 'gray'; }
+    return {no:no, cx:cx, cy:cy, status:status, val:val, spec:spec, tol:tol};
+  });
+
+  var svgContent = '<svg id="partSvg" width="'+W+'" height="'+H+'" style="font-family:sans-serif;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">';
+  // 부품 외형 (브래킷 형태)
+  svgContent += '<rect x="20" y="20" width="'+(W-40)+'" height="'+(H-30)+'" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>';
+  svgContent += '<text x="'+(W/2)+'" y="16" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="600">부품 치수 측정 포인트 맵</text>';
+
+  svgPts.forEach(function(p){
+    var color = p.status==='red'?'#ef4444':p.status==='yellow'?'#f59e0b':p.status==='gray'?'#cbd5e1':'#16a34a';
+    var anim = p.status==='red' ? ' style="animation:svgBlink 1s ease-in-out infinite"' : '';
+    svgContent += '<g id="svgpt-'+p.no+'" class="svg-pt" data-no="'+p.no+'" style="cursor:pointer" onclick="highlightTableRow('+p.no+')" onmouseenter="highlightTableRow('+p.no+')" onmouseleave="clearTableHighlight()">';
+    svgContent += '<circle cx="'+p.cx+'" cy="'+p.cy+'" r="18" fill="'+color+'" fill-opacity="0.15" stroke="'+color+'" stroke-width="2"'+anim+'/>';
+    svgContent += '<text cx="'+p.cx+'" cy="'+p.cy+'" x="'+p.cx+'" y="'+(p.cy+1)+'" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="'+color+'">'+p.no+'</text>';
+    if(p.val!=null) svgContent += '<text x="'+p.cx+'" y="'+(p.cy+28)+'" text-anchor="middle" font-size="8.5" fill="#64748b">'+p.val.toFixed(3)+'</text>';
+    svgContent += '</g>';
+  });
+  svgContent += '</svg>';
+  svgContent += '<div style="display:flex;gap:12px;margin-top:8px;font-size:10px;color:#64748b">';
+  svgContent += '<span><span style="display:inline-block;width:10px;height:10px;background:#ef4444;border-radius:50%;margin-right:3px"></span>불합격</span>';
+  svgContent += '<span><span style="display:inline-block;width:10px;height:10px;background:#f59e0b;border-radius:50%;margin-right:3px"></span>주의</span>';
+  svgContent += '<span><span style="display:inline-block;width:10px;height:10px;background:#16a34a;border-radius:50%;margin-right:3px"></span>정상</span>';
+  svgContent += '<span><span style="display:inline-block;width:10px;height:10px;background:#cbd5e1;border-radius:50%;margin-right:3px"></span>미측정</span>';
+  svgContent += '</div>';
+
+  container.innerHTML = svgContent;
+  document.getElementById('svgMapSection').style.display = 'block';
+}
+
+function highlightTableRow(no){
+  document.querySelectorAll('#tableBody tr').forEach(function(tr){
+    var first = tr.querySelector('td strong');
+    if(first && parseInt(first.textContent) === no){
+      tr.style.background = '#fffbeb';
+      tr.style.outline = '2px solid #f59e0b';
+    } else {
+      tr.style.background = '';
+      tr.style.outline = '';
+    }
+  });
+  var svgPt = document.getElementById('svgpt-'+no);
+  if(svgPt){ svgPt.style.filter = 'drop-shadow(0 0 6px #3b82f6)'; }
+}
+
+function clearTableHighlight(){
+  document.querySelectorAll('#tableBody tr').forEach(function(tr){
+    tr.style.background = ''; tr.style.outline = '';
+  });
+  document.querySelectorAll('.svg-pt').forEach(function(g){ g.style.filter = ''; });
+}
+
+// ===== 기능③ 금형 수정 가이드 =====
+function buildMoldGuide(){
+  var container = document.getElementById('moldGuideSection');
+  if(!container || !curProduct || !curProduct.specMap) return;
+
+  var specMap = curProduct.specMap || {};
+  var src = getDataSource ? getDataSource() : {};
+  var dates = Object.keys(src);
+  var guides = [];
+
+  Object.keys(specMap).map(Number).forEach(function(no){
+    if((curProduct.angleNos||[]).includes(no)) return;
+    var spec = specMap[no], tol = (curProduct.tolMap||{})[no]||0.1;
+    var min = spec - tol, max = spec + tol;
+    var allVals = dates.map(function(d){ return src[d]?src[d][no]:null; }).filter(function(v){return v!=null;});
+    if(allVals.length < 2) return;
+    var mean = allVals.reduce(function(a,b){return a+b;},0)/allVals.length;
+    var sigma = Math.sqrt(allVals.reduce(function(s,v){return s+(v-mean)*(v-mean);},0)/(allVals.length-1));
+    if(sigma <= 0) return;
+    var cpk = Math.min((max-mean)/(3*sigma),(mean-min)/(3*sigma));
+    if(cpk >= 1.0) return;
+
+    var diff = parseFloat((spec - mean).toFixed(4));
+    var absDiff = Math.abs(diff);
+    var partName = (curProduct.partNames||{})[no] || 'No.'+no;
+    var direction, guide, urgency;
+
+    if(diff > 0){
+      // 측정값이 기준보다 작음 → 살 부족
+      direction = '▲ 살 부족 (치수 작음)';
+      guide = '금형 방전/사상 ('+'+'+absDiff.toFixed(3)+'mm) 육성 필요 — 코어 절삭량 확인';
+    } else {
+      // 측정값이 기준보다 큼 → 살 과다
+      direction = '▼ 살 과다 (치수 큼)';
+      guide = '금형 절삭 ('+'-'+absDiff.toFixed(3)+'mm) 삭제 필요 — 캐비티 확장 검토';
+    }
+
+    if(cpk < 0.67) urgency = {label:'긴급', color:'#dc2626', bg:'#fef2f2'};
+    else if(cpk < 1.0) urgency = {label:'주의', color:'#d97706', bg:'#fffbeb'};
+
+    guides.push({no:no, partName:partName, spec:spec, mean:mean.toFixed(4), diff:diff, absDiff:absDiff, cpk:cpk.toFixed(2), direction:direction, guide:guide, urgency:urgency});
+  });
+
+  if(!guides.length){
+    container.innerHTML = '<div style="padding:16px;text-align:center;color:#16a34a;font-size:12px;font-weight:600">✅ 모든 항목 Cpk 1.0 이상 — 금형 수정 불필요</div>';
+    document.getElementById('svgMapSection').style.display = 'block';
+    return;
+  }
+
+  var html = '<div style="font-size:12px;font-weight:700;color:#0d1b33;margin-bottom:10px">🔧 금형 수정 가이드 (Cpk &lt; 1.0 항목)</div>';
+  guides.forEach(function(g){
+    html += '<div style="background:'+g.urgency.bg+';border:1px solid;border-color:'+g.urgency.color+'30;border-left:3px solid '+g.urgency.color+';border-radius:4px;padding:10px 12px;margin-bottom:8px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
+    html += '<span style="font-size:11px;font-weight:700;color:'+g.urgency.color+'">No.'+g.no+' '+esc(g.partName)+'</span>';
+    html += '<span style="font-size:10px;background:'+g.urgency.color+';color:#fff;padding:1px 6px;border-radius:3px">Cpk '+g.cpk+' · '+g.urgency.label+'</span>';
+    html += '</div>';
+    html += '<div style="font-size:10px;color:#64748b;margin-bottom:4px">기준 <strong>'+g.spec+'</strong> · 측정평균 <strong>'+g.mean+'</strong> · 편차 <strong style="color:'+g.urgency.color+'">'+g.diff+'mm</strong></div>';
+    html += '<div style="font-size:10px;color:#1e293b;font-weight:600;margin-bottom:2px">'+g.direction+'</div>';
+    html += '<div style="font-size:10px;color:#475569">'+esc(g.guide)+'</div>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+  document.getElementById('svgMapSection').style.display = 'block';
+}
+
+// ===== 기능④ Excel 업로드 밸리데이션 =====
+function validateUploadedFile(parsedSpecMap, parsedNos){
+  if(!curProduct || !curProduct.specMap) return true;
+  var masterNos = Object.keys(curProduct.specMap).map(Number);
+  if(!masterNos.length) return true;
+
+  // 항목 개수 비교 (50% 이상 차이나면 차단)
+  var overlap = parsedNos.filter(function(n){ return masterNos.indexOf(n) >= 0; }).length;
+  var matchRate = overlap / Math.max(masterNos.length, parsedNos.length);
+
+  if(matchRate < 0.5){
+    showValidationError(
+      '파일 불일치 감지',
+      '업로드한 파일의 측정 항목이 현재 제품(<strong>' + esc(curProduct.code) + '</strong>)과 일치하지 않습니다.<br><br>' +
+      '현재 제품 항목 수: <strong>' + masterNos.length + '개</strong><br>' +
+      '업로드 파일 항목 수: <strong>' + parsedNos.length + '개</strong><br>' +
+      '일치율: <strong style="color:#dc2626">' + Math.round(matchRate*100) + '%</strong><br><br>' +
+      '올바른 파일을 선택해주세요.'
+    );
+    return false;
+  }
+
+  // 스펙 값 비교 (공통 항목 중 20% 이상 스펙이 다르면 경고)
+  if(parsedSpecMap){
+    var diffCount = 0;
+    var commonNos = parsedNos.filter(function(n){ return masterNos.indexOf(n) >= 0; });
+    commonNos.forEach(function(n){
+      var masterSpec = curProduct.specMap[n];
+      var fileSpec = parsedSpecMap[n];
+      if(fileSpec != null && Math.abs(masterSpec - fileSpec) > 0.5) diffCount++;
+    });
+    if(commonNos.length > 0 && diffCount / commonNos.length > 0.2){
+      showValidationError(
+        '규격(Spec) 불일치 경고',
+        '업로드 파일의 기준 치수가 현재 제품(<strong>' + esc(curProduct.code) + '</strong>) 마스터와 다릅니다.<br><br>' +
+        '불일치 항목: <strong style="color:#dc2626">' + diffCount + '개</strong><br><br>' +
+        '다른 모델의 파일을 업로드하셨나요?<br>계속 진행하시려면 관리자에게 문의하세요.'
+      );
+      return false;
+    }
+  }
+  return true;
+}
+
+function showValidationError(title, msg){
+  var overlay = document.createElement('div');
+  overlay.id = 'validationOverlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:12px;padding:32px 28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center">' +
+    '<div style="font-size:36px;margin-bottom:12px">⚠️</div>' +
+    '<div style="font-size:16px;font-weight:700;color:#dc2626;margin-bottom:12px">'+esc(title)+'</div>' +
+    '<div style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:20px;text-align:left">'+msg+'</div>' +
+    '<button onclick="document.getElementById(\'validationOverlay\').remove()" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:10px 28px;font-size:13px;font-weight:700;cursor:pointer">확인</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+}
+
+// ===== 기능② ③ 데이터 렌더 후 자동 실행 트리거 =====
+var _origRenderData = typeof renderData === 'function' ? renderData : null;
+
 // showScreen 후 항상 네비 업데이트
 var _origShowScreen = showScreen;
 showScreen = function(id){
