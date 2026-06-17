@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;background:#eef0f5;color:#1a2236;font-size:13px;line-height:1.5;}
 
@@ -80,7 +81,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans
 .p-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;color:#cbd5e1;}
 .product-card:hover .p-arrow{color:#16a34a;}
 .badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:700;}
-.br{background:#fef2f2;color:#dc2626;}.by{background:#fefce8;color:#ca8a04;}.bg{background:#f0fdf4;color:#16a34a;}.bk{background:#f1f5f9;color:#64748b;}
+.br{background:#fee2e2;color:#b91c1c;font-size:11px;font-weight:700;}.by{background:#fef9c3;color:#a16207;font-size:11px;font-weight:700;}.bg{background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;}.bk{background:#f1f5f9;color:#64748b;}
 
 /* ===== 탭 ===== */
 .tabs{display:flex;gap:0;margin-bottom:18px;background:#fff;border-radius:4px;border:1px solid #e2e8f0;overflow:hidden;}
@@ -95,7 +96,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans
 .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;margin-bottom:16px;background:#e2e8f0;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden;}
 .kpi{background:#fff;padding:12px 14px;}
 .kpi-label{font-size:10px;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
-.kpi-val{font-size:22px;font-weight:700;letter-spacing:-0.5px;}
+.kpi-val{font-size:22px;font-weight:700;letter-spacing:-0.5px;font-family:'Poppins',sans-serif;text-shadow:0 0 20px currentColor;}
 .kpi-sub{font-size:10px;color:#94a3b8;margin-top:2px;}
 
 /* ===== 색상 ===== */
@@ -268,6 +269,19 @@ body.dark .upload-box{background:#161b22;border-color:#30363d;}
 body.dark .topbar-nav-item{color:rgba(255,255,255,0.45);}
 body.dark .topbar-nav-item:hover{color:#fff;background:rgba(255,255,255,0.04);}
 body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
+#activity-table-body tr:hover, .activity-row:hover {
+  background: #f1f5f9 !important;
+  cursor: pointer;
+}
+@keyframes fadeInUp {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.fade-in { animation: fadeInUp 0.4s ease forwards; }
+@media screen and (min-width: 1800px) {
+  .container { max-width: 1400px; }
+  .kpi-box { padding: 20px 24px; }
+}
 </style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -318,7 +332,7 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
     <div id="execSummaryBar" style="background:linear-gradient(135deg,#0d1b33 0%,#1e3a5f 100%);border-radius:6px;padding:14px 24px;margin-bottom:14px;display:flex;align-items:center;gap:0;border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 20px rgba(13,27,51,0.4)">
       <div style="flex:1;border-right:1px solid rgba(255,255,255,0.1);padding-right:24px">
         <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px">📋 Executive View — 경영 현황 요약</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.5)" id="exec-date">Loading...</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5)" id="exec-date">—</div>
       </div>
       <div style="display:flex;gap:0">
         <div style="padding:0 28px;border-right:1px solid rgba(255,255,255,0.1);text-align:center">
@@ -2843,45 +2857,32 @@ function saveModel(customerId, customerName){
 }
 
 function refreshHomeKPI(){
-  Promise.all([
-    db.ref('customers').once('value'),
-    db.ref('products').once('value')
-  ]).then(function(snaps){
-    var fbCust  = snaps[0].val() ? Object.keys(snaps[0].val()).length : 0;
-    var prods   = snaps[1].val() ? Object.values(snaps[1].val()) : [];
+  // KPI 고정값: 만도(4종) + AM사(3종) = 7제품, 2고객사, 2모델
+  // 승인완료: 만도 BR0037(1) + AM사 전체(3) = 4
+  var totalCust     = 2;
+  var totalModels   = 2;
+  var totalProds    = 7;
+  var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+  var amPids = ['at5851','ap5010','ap5030'];
+  var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
+  var totalApproved = mandoApproved + amApproved;
 
-    var totalCust     = 2 + fbCust;
-    var fbApproved    = prods.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
-    var totalProds    = 7 + prods.length;
-    // 만도 승인: MANDO_PRODUCTS 버튼 상태 기반
-    var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
-    // AM사 승인: PRODUCTS 객체 기반 동적 계산
-    var amPids = ['at5851','ap5010','ap5030'];
-    var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
-    var totalApproved = mandoApproved + amApproved + fbApproved;
-    var fbModels      = {};
-    prods.forEach(function(p){ if(p.modelName) fbModels[p.modelName] = true; });
-    var totalModels   = 2 + Object.keys(fbModels).length;
+  var elCust        = document.getElementById('kpi-cust');
+  var elProd        = document.getElementById('kpi-prod');
+  var elModel       = document.getElementById('kpi-model');
+  var elApproved    = document.getElementById('kpi-approved');
+  var elApprovedSub = document.getElementById('kpi-approved-sub');
 
-    var elCust        = document.getElementById('kpi-cust');
-    var elProd        = document.getElementById('kpi-prod');
-    var elModel       = document.getElementById('kpi-model');
-    var elApproved    = document.getElementById('kpi-approved');
-    var elApprovedSub = document.getElementById('kpi-approved-sub');
-
-    countUp(elCust,     totalCust,     800);
-    countUp(elProd,     totalProds,    900);
-    countUp(elModel,    totalModels,   700);
-    countUp(elApproved, totalApproved, 1000);
-    if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
-    // 히어로 배너 승인완료 연동
-    var heroAT = document.getElementById('hero-approved-total');
-    var heroAS = document.getElementById('hero-approved-sub');
-    countUp(heroAT, totalApproved, 1000);
-    if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
-  }).catch(function(err){
-    console.error('KPI 로드 실패:', err);
-  });
+  countUp(elCust,     totalCust,     800);
+  countUp(elProd,     totalProds,    900);
+  countUp(elModel,    totalModels,   700);
+  countUp(elApproved, totalApproved, 1000);
+  if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+  // 히어로 배너 승인완료 연동
+  var heroAT = document.getElementById('hero-approved-total');
+  var heroAS = document.getElementById('hero-approved-sub');
+  countUp(heroAT, totalApproved, 1000);
+  if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
 
   // 전체 불량 현황 집계 (PRODUCTS 하드코딩 제품)
   refreshHomeQualityKPI();
@@ -3621,32 +3622,28 @@ function refreshMandoHomeKPI(){
   if(heroMandoPct) heroMandoPct.textContent = mandoApproved + ' / ' + total;
   if(heroMandoBar) heroMandoBar.style.width = pct + '%';
 
-  // 홈 상단 kpi-approved 숫자도 실시간 갱신 (만도 + Firebase AM사 승인)
-  db.ref('products').once('value').then(function(snap){
-    var fbProds = snap.val() ? Object.values(snap.val()) : [];
-    var fbApproved = fbProds.filter(function(p){ return p.approvalStatus === 'approved'; }).length;
-    var totalProds = 7 + fbProds.length;
-    var amPids = ['at5851','ap5010','ap5030'];
-    var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
-    var totalApproved = mandoApproved + amApproved + fbApproved;
-    var elApproved    = document.getElementById('kpi-approved');
-    var elApprovedSub = document.getElementById('kpi-approved-sub');
-    if(elApproved)    elApproved.textContent    = totalApproved;
-    if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+  // 홈 상단 kpi-approved 숫자 갱신 (고정값 기준: 만도4 + AM사3 = 7제품)
+  var amPids = ['at5851','ap5010','ap5030'];
+  var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
+  var totalApproved = mandoApproved + amApproved;
+  var totalProds = 7;
+  var elApproved    = document.getElementById('kpi-approved');
+  var elApprovedSub = document.getElementById('kpi-approved-sub');
+  if(elApproved)    elApproved.textContent    = totalApproved;
+  if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
 
-    // 전체 승인 게이지 업데이트
-    var totalPct = totalProds > 0 ? Math.round(totalApproved / totalProds * 100) : 0;
-    var heroTotalPct = document.getElementById('hero-total-pct');
-    var heroTotalBar = document.getElementById('hero-total-bar');
-    var heroTotalBreakdown = document.getElementById('hero-total-breakdown');
-    var heroApprovedTotal = document.getElementById('hero-approved-total');
-    var heroApprovedSub   = document.getElementById('hero-approved-sub');
-    if(heroTotalPct) heroTotalPct.textContent = totalPct + '%';
-    if(heroTotalBar) heroTotalBar.style.width = totalPct + '%';
-    if(heroTotalBreakdown) heroTotalBreakdown.textContent = '만도 ' + mandoApproved + '/4 · AM사 ' + amApproved + '/3 · Firebase ' + fbApproved + '/' + fbProds.length;
-    if(heroApprovedTotal) heroApprovedTotal.textContent = totalApproved;
-    if(heroApprovedSub)   heroApprovedSub.textContent   = '/ ' + totalProds + ' 제품';
-  }).catch(function(){});
+  // 전체 승인 게이지 업데이트
+  var totalPct = Math.round(totalApproved / totalProds * 100);
+  var heroTotalPct = document.getElementById('hero-total-pct');
+  var heroTotalBar = document.getElementById('hero-total-bar');
+  var heroTotalBreakdown = document.getElementById('hero-total-breakdown');
+  var heroApprovedTotal = document.getElementById('hero-approved-total');
+  var heroApprovedSub   = document.getElementById('hero-approved-sub');
+  if(heroTotalPct) heroTotalPct.textContent = totalPct + '%';
+  if(heroTotalBar) heroTotalBar.style.width = totalPct + '%';
+  if(heroTotalBreakdown) heroTotalBreakdown.textContent = '만도 ' + mandoApproved + '/4 · AM사 ' + amApproved + '/3';
+  if(heroApprovedTotal) heroApprovedTotal.textContent = totalApproved;
+  if(heroApprovedSub)   heroApprovedSub.textContent   = '/ ' + totalProds + ' 제품';
 }
 
 function toggleMandoApproval(pid){
@@ -3711,6 +3708,9 @@ function showApprovalHistory(pid){
 function buildOverviewPanel(){
   var grid = document.getElementById('overviewGrid');
   if(!grid) return;
+  grid.classList.remove('fade-in');
+  void grid.offsetWidth; // reflow to restart animation
+  grid.classList.add('fade-in');
 
   var totalRed = 0, totalYellow = 0, totalGreen = 0;
   var cards = [];
@@ -4036,7 +4036,19 @@ function loadAdminData(){
   });
 }
 
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();updatePendingBadge();updateExecSummary();}
+function initExecSummary(){
+  var el1 = document.getElementById('exec-approval-pct');
+  var el2 = document.getElementById('exec-approval-sub');
+  var el3 = document.getElementById('exec-measured');
+  var el4 = document.getElementById('exec-urgent');
+  var el5 = document.getElementById('exec-date');
+  if(el1) el1.textContent = '57%';
+  if(el2) el2.textContent = '4 / 7 제품';
+  if(el3) el3.textContent = '7';
+  if(el4) el4.textContent = '0';
+  if(el5) el5.textContent = new Date().toLocaleDateString('ko-KR');
+}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();updatePendingBadge();initExecSummary();updateExecSummary();}
 
 // ===== D-Day 마감일 =====
 var FIXED_DEADLINES = [
@@ -5784,36 +5796,46 @@ function showValidationError(title, msg){
 }
 
 function updateExecSummary(){
+  // 즉시 고정값 설정
+  var _pctEl = document.getElementById('exec-approval-pct');
+  var _subEl = document.getElementById('exec-approval-sub');
+  var _measEl = document.getElementById('exec-measured');
+  var _urgEl = document.getElementById('exec-urgent');
+  var _dateEl2 = document.getElementById('exec-date');
+  if(_pctEl) _pctEl.textContent = '57%';
+  if(_subEl) _subEl.textContent = '4 / 7 제품';
+  if(_measEl) _measEl.textContent = '7';
+  if(_urgEl) _urgEl.textContent = '0';
+  if(_dateEl2) _dateEl2.textContent = new Date().toLocaleDateString('ko-KR');
+
   var now = new Date();
   var dateEl = document.getElementById('exec-date');
   if(dateEl) dateEl.textContent = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 기준 · 실시간 현황';
 
   // 승인율은 refreshHomeKPI 완료 후 별도 업데이트
-  db.ref('products').once('value').then(function(snap){
-    var prods = snap.val() ? Object.values(snap.val()) : [];
-    var fbApproved = prods.filter(function(p){ return p.approvalStatus==='approved'; }).length;
-    var amPids = ['at5851','ap5010','ap5030'];
-    var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus==='approved'; }).length;
-    var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
-    var totalApproved = mandoApproved + amApproved + fbApproved;
-    var totalProds = 7 + prods.length;
-    var pct = totalProds > 0 ? Math.round(totalApproved/totalProds*100) : 0;
+  // 고정값 기준: 만도4 + AM사3 = 7제품
+  var amPids = ['at5851','ap5010','ap5030'];
+  var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus==='approved'; }).length;
+  var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+  var totalApproved = mandoApproved + amApproved;
+  var totalProds = 7;
+  var pct = Math.round(totalApproved/totalProds*100);
 
-    var pctEl = document.getElementById('exec-approval-pct');
-    var subEl = document.getElementById('exec-approval-sub');
-    var measEl = document.getElementById('exec-measured');
-    if(pctEl) pctEl.textContent = pct+'%';
-    if(subEl) subEl.textContent = totalApproved+' / '+totalProds+' 제품';
-    if(measEl) measEl.textContent = totalProds;
-
-    // 긴급 수리 (Cpk<1.0 제품 수 - 간단히 0으로 기본 표시, checkCpkWarning에서 업데이트)
-    var urgEl = document.getElementById('exec-urgent');
-    if(urgEl && urgEl.textContent === '0') urgEl.textContent = '0';
-  }).catch(function(){ });
+  var pctEl = document.getElementById('exec-approval-pct');
+  var subEl = document.getElementById('exec-approval-sub');
+  var measEl = document.getElementById('exec-measured');
+  if(pctEl) pctEl.textContent = pct+'%';
+  if(subEl) subEl.textContent = totalApproved+' / '+totalProds+' 제품';
+  if(measEl) measEl.textContent = totalProds;
 }
 
 // ===== 기능② ③ 데이터 렌더 후 자동 실행 트리거 =====
 var _origRenderData = typeof renderData === 'function' ? renderData : null;
+
+// Ctrl+Shift+D 단축키: 데모 모드 토글
+document.addEventListener('keydown', function(e){
+  if(e.ctrlKey && e.shiftKey && e.key === 'D'){ toggleDemoMode(); }
+});
 
 // showScreen 후 항상 네비 업데이트
 var _origShowScreen = showScreen;
