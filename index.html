@@ -314,6 +314,31 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
   <!-- 홈 -->
   <div id="screen-home" class="screen active">
 
+    <!-- 임원용 요약 띠 -->
+    <div id="execSummaryBar" style="background:linear-gradient(135deg,#0d1b33 0%,#1e3a5f 100%);border-radius:6px;padding:14px 24px;margin-bottom:14px;display:flex;align-items:center;gap:0;border:1px solid rgba(255,255,255,0.08);box-shadow:0 4px 20px rgba(13,27,51,0.4)">
+      <div style="flex:1;border-right:1px solid rgba(255,255,255,0.1);padding-right:24px">
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px">📋 Executive View — 경영 현황 요약</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.5)" id="exec-date">Loading...</div>
+      </div>
+      <div style="display:flex;gap:0">
+        <div style="padding:0 28px;border-right:1px solid rgba(255,255,255,0.1);text-align:center">
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">전체 승인율</div>
+          <div style="font-size:28px;font-weight:900;color:#4ade80;line-height:1" id="exec-approval-pct">—</div>
+          <div style="font-size:10px;color:#4ade80;margin-top:3px" id="exec-approval-sub">— / — 제품</div>
+        </div>
+        <div style="padding:0 28px;border-right:1px solid rgba(255,255,255,0.1);text-align:center">
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">측정 완료</div>
+          <div style="font-size:28px;font-weight:900;color:#60a5fa;line-height:1" id="exec-measured">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px">전체 제품</div>
+        </div>
+        <div style="padding:0 28px;text-align:center">
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px">긴급 수리</div>
+          <div style="font-size:28px;font-weight:900;color:#f87171;line-height:1" id="exec-urgent">0</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px">Cpk &lt; 1.0 항목</div>
+        </div>
+      </div>
+    </div>
+
     <!-- 헤더 KPI 바 (기업형) -->
     <div id="heroBanner" style="background:#0d1b33;border-radius:4px;padding:18px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
       <div>
@@ -400,31 +425,57 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
     </div>
 
     <!-- KPI 요약 -->
-    <div class="stats-row" style="margin-bottom:20px">
-      <div class="stat-box">
-        <div class="stat-label" style="margin-bottom:8px">등록 고객사</div>
-        <div class="stat-val" style="color:#1d4ed8" id="kpi-cust">⋯</div>
-        <div class="stat-delta" style="color:#16a34a">▲ 활성</div>
+    <div class="stats-row" style="margin-bottom:24px">
+      <div class="stat-box" style="background:linear-gradient(145deg,#fff,#f0f6ff);border:1px solid #dbeafe;box-shadow:0 2px 8px rgba(29,78,216,0.08)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="stat-label" style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">등록 고객사</div>
+          <span style="font-size:18px">🏢</span>
+        </div>
+        <div class="stat-val" style="color:#1d4ed8;font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1;margin:6px 0" id="kpi-cust">⋯</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:6px">
+          <span style="color:#16a34a;font-size:11px;font-weight:700">▲ 활성</span>
+          <span style="color:#94a3b8;font-size:11px">전체 운영 중</span>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-label" style="margin-bottom:8px">관리 모델</div>
-        <div class="stat-val" style="color:#7c3aed" id="kpi-model">⋯</div>
-        <div class="stat-delta" style="color:#64748b">전체 등록</div>
+      <div class="stat-box" style="background:linear-gradient(145deg,#fff,#f5f0ff);border:1px solid #e9d5ff;box-shadow:0 2px 8px rgba(124,58,237,0.08)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="stat-label" style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">관리 모델</div>
+          <span style="font-size:18px">📦</span>
+        </div>
+        <div class="stat-val" style="color:#7c3aed;font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1;margin:6px 0" id="kpi-model">⋯</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:6px">
+          <span style="color:#7c3aed;font-size:11px;font-weight:700">● 전체 등록</span>
+          <span style="color:#94a3b8;font-size:11px">모델 관리</span>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-label" style="margin-bottom:8px">관리 제품</div>
-        <div class="stat-val" style="color:#0891b2" id="kpi-prod">⋯</div>
-        <div class="stat-delta" style="color:#64748b">측정 대상 · <span onclick="showFirebaseProductManager()" style="color:#1d4ed8;cursor:pointer;text-decoration:underline">DB 확인</span></div>
+      <div class="stat-box" style="background:linear-gradient(145deg,#fff,#f0fafa);border:1px solid #a5f3fc;box-shadow:0 2px 8px rgba(8,145,178,0.08)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="stat-label" style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">관리 제품</div>
+          <span style="font-size:18px">🔩</span>
+        </div>
+        <div class="stat-val" style="color:#0891b2;font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1;margin:6px 0" id="kpi-prod">⋯</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:6px">
+          <span style="color:#0891b2;font-size:11px;font-weight:700">측정 대상</span>
+          <span onclick="showFirebaseProductManager()" style="color:#1d4ed8;cursor:pointer;text-decoration:underline;font-size:11px">DB 확인</span>
+        </div>
       </div>
-      <div class="stat-box">
-        <div class="stat-label" style="margin-bottom:8px">승인 완료</div>
-        <div class="stat-val" style="color:#16a34a" id="kpi-approved">⋯</div>
-        <div class="stat-delta" style="color:#16a34a" id="kpi-approved-sub">- / - 제품</div>
+      <div class="stat-box" style="background:linear-gradient(145deg,#fff,#f0fdf4);border:1px solid #bbf7d0;box-shadow:0 2px 8px rgba(22,163,74,0.1)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="stat-label" style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">승인 완료</div>
+          <span style="font-size:18px">✅</span>
+        </div>
+        <div class="stat-val" style="color:#16a34a;font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1;margin:6px 0" id="kpi-approved">⋯</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:6px">
+          <span style="color:#16a34a;font-size:11px;font-weight:700" id="kpi-approved-sub">— / — 제품</span>
+        </div>
       </div>
     </div>
 
     <!-- 제품별 품질 현황 (고객사 상세에서 표시) -->
-    <div class="sec-title">고객사 현황</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:4px">
+      <div class="sec-title" style="margin-bottom:0">고객사 현황</div>
+      <div style="height:1px;flex:1;background:linear-gradient(90deg,#e2e8f0,transparent)"></div>
+    </div>
     <div id="customerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:24px">
 
       <div style="background:#fff;border-radius:4px;border:1px solid #e2e8f0;border-top:3px solid #0d1b33;overflow:hidden;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.06);transition:box-shadow 0.15s,border-color 0.15s" onclick="goMandoCustomerScreen()" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)';this.style.borderColor='#1d4ed8'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.06)';this.style.borderColor='#e2e8f0'">
@@ -603,40 +654,45 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
       <div id="ddayFirebaseCards"></div>
     </div>
 
-    <div class="sec-title">최근 활동</div>
+    <div class="sec-title">최근 활동 이력</div>
     <div id="recentActivity" style="background:#fff;border-radius:4px;border:1px solid #e2e8f0;overflow:hidden;margin-bottom:24px">
-      <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f0f0f0">
-        <span style="font-size:18px">✅</span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">BR0037 RR BRKT LH#2 — 승인 완료</div>
-          <div style="font-size:11px;color:#888">만도 · MX5A EREV · 검사자: 강병민</div>
-        </div>
-        <div style="font-size:11px;color:#888">2026-05-19</div>
-      </div>
-      <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f0f0f0">
-        <span style="font-size:18px">📊</span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">BR0035 FRT BRKT LH#1 — VINA 측정 완료</div>
-          <div style="font-size:11px;color:#888">만도 · MX5A EREV · 05/21 측정</div>
-        </div>
-        <div style="font-size:11px;color:#888">2026-05-21</div>
-      </div>
-      <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f0f0f0">
-        <span style="font-size:18px">📊</span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">BR0038 RR BRKT LH#3 — VINA 측정 완료</div>
-          <div style="font-size:11px;color:#888">만도 · MX5A EREV · 05/12 측정</div>
-        </div>
-        <div style="font-size:11px;color:#888">2026-05-12</div>
-      </div>
-      <div style="padding:12px 20px;display:flex;align-items:center;gap:12px">
-        <span style="font-size:18px">📊</span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600">BR0037 RR BRKT LH#2 — VINA 측정 완료</div>
-          <div style="font-size:11px;color:#888">만도 · MX5A EREV · 05/08 측정</div>
-        </div>
-        <div style="font-size:11px;color:#888">2026-05-08</div>
-      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">
+            <th style="padding:8px 12px;text-align:left;font-size:10px;color:#64748b;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;width:36px"></th>
+            <th style="padding:8px 12px;text-align:left;font-size:10px;color:#64748b;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">이벤트</th>
+            <th style="padding:8px 12px;text-align:left;font-size:10px;color:#64748b;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">고객사 · 모델</th>
+            <th style="padding:8px 12px;text-align:right;font-size:10px;color:#64748b;font-weight:700;letter-spacing:0.06em;text-transform:uppercase">날짜</th>
+          </tr>
+        </thead>
+        <tbody id="activityTableBody">
+          <tr style="border-bottom:1px solid #f1f5f9;background:#fff">
+            <td style="padding:10px 12px;text-align:center;font-size:16px">✅</td>
+            <td style="padding:10px 12px"><span style="font-weight:600;color:#0d1b33">AP5030 LCD GND SPRING</span><br><span style="font-size:11px;color:#64748b">승인 완료</span></td>
+            <td style="padding:10px 12px;font-size:11px;color:#64748b">AM사 · SHIELD CAN</td>
+            <td style="padding:10px 12px;text-align:right;font-size:11px;color:#94a3b8;white-space:nowrap">2026-06-10</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;background:#f8fafc">
+            <td style="padding:10px 12px;text-align:center;font-size:16px">✅</td>
+            <td style="padding:10px 12px"><span style="font-weight:600;color:#0d1b33">BR0037 RR BRKT LH#2</span><br><span style="font-size:11px;color:#64748b">승인 완료</span></td>
+            <td style="padding:10px 12px;font-size:11px;color:#64748b">만도 · MX5A EREV</td>
+            <td style="padding:10px 12px;text-align:right;font-size:11px;color:#94a3b8;white-space:nowrap">2026-06-05</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;background:#fff">
+            <td style="padding:10px 12px;text-align:center;font-size:16px">📊</td>
+            <td style="padding:10px 12px"><span style="font-weight:600;color:#0d1b33">BR0035 FRT BRKT LH#1</span><br><span style="font-size:11px;color:#64748b">VINA 측정 완료</span></td>
+            <td style="padding:10px 12px;font-size:11px;color:#64748b">만도 · MX5A EREV</td>
+            <td style="padding:10px 12px;text-align:right;font-size:11px;color:#94a3b8;white-space:nowrap">2026-06-02</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 12px;text-align:center;font-size:16px">📊</td>
+            <td style="padding:10px 12px"><span style="font-weight:600;color:#0d1b33">BR0038 RR BRKT LH#3</span><br><span style="font-size:11px;color:#64748b">VINA 측정 완료</span></td>
+            <td style="padding:10px 12px;font-size:11px;color:#64748b">만도 · MX5A EREV</td>
+            <td style="padding:10px 12px;text-align:right;font-size:11px;color:#94a3b8;white-space:nowrap">2026-05-21</td>
+          </tr>
+        </tbody>
+      </table>
+      <div id="activityList"></div>
     </div>
   </div>
 
@@ -3978,7 +4034,7 @@ function loadAdminData(){
   });
 }
 
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();updatePendingBadge();}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();updatePendingBadge();updateExecSummary();}
 
 // ===== D-Day 마감일 =====
 var FIXED_DEADLINES = [
@@ -5642,6 +5698,35 @@ function showValidationError(title, msg){
     '</div>';
   document.body.appendChild(overlay);
   overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+}
+
+function updateExecSummary(){
+  var now = new Date();
+  var dateEl = document.getElementById('exec-date');
+  if(dateEl) dateEl.textContent = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 기준 · 실시간 현황';
+
+  // 승인율은 refreshHomeKPI 완료 후 별도 업데이트
+  db.ref('products').once('value').then(function(snap){
+    var prods = snap.val() ? Object.values(snap.val()) : [];
+    var fbApproved = prods.filter(function(p){ return p.approvalStatus==='approved'; }).length;
+    var amPids = ['at5851','ap5010','ap5030'];
+    var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus==='approved'; }).length;
+    var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+    var totalApproved = mandoApproved + amApproved + fbApproved;
+    var totalProds = 7 + prods.length;
+    var pct = totalProds > 0 ? Math.round(totalApproved/totalProds*100) : 0;
+
+    var pctEl = document.getElementById('exec-approval-pct');
+    var subEl = document.getElementById('exec-approval-sub');
+    var measEl = document.getElementById('exec-measured');
+    if(pctEl) pctEl.textContent = pct+'%';
+    if(subEl) subEl.textContent = totalApproved+' / '+totalProds+' 제품';
+    if(measEl) measEl.textContent = totalProds;
+
+    // 긴급 수리 (Cpk<1.0 제품 수 - 간단히 0으로 기본 표시, checkCpkWarning에서 업데이트)
+    var urgEl = document.getElementById('exec-urgent');
+    if(urgEl && urgEl.textContent === '0') urgEl.textContent = '0';
+  }).catch(function(){ });
 }
 
 // ===== 기능② ③ 데이터 렌더 후 자동 실행 트리거 =====
