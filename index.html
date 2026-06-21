@@ -37,6 +37,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans
 .screen.active{display:block;animation:fadeIn 0.18s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:translateY(0);}}
 @keyframes svgBlink{0%,100%{fill:#ef4444;opacity:1;}50%{fill:#ff6b6b;opacity:0.4;}}
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 @keyframes demoPulse{0%,100%{box-shadow:0 0 12px rgba(222,255,154,0.2);}50%{box-shadow:0 0 24px rgba(222,255,154,0.6);}}
 @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -2475,49 +2476,7 @@ function updatePendingBadge(){
 // ===== 승인 상태 토글 =====
 function toggleApproval(productId, currentStatus, e){
   if(e) e.stopPropagation();
-  var isApproved = currentStatus === 'approved';
-  var newStatus = isApproved ? 'pending' : 'approved';
-  var msg = isApproved
-    ? '승인을 취소하고 승인대기 상태로 변경할까요?'
-    : '✅ 승인완료 처리할까요?';
-  if(!confirm(msg)) return;
-
-  var now = new Date().toISOString().split('T')[0];
-  db.ref('products/' + productId).update({
-    approvalStatus: newStatus,
-    approvedAt: newStatus === 'approved' ? now : null
-  }).then(function(){
-    // 로컬 PRODUCTS 업데이트
-    if(PRODUCTS[productId]){
-      PRODUCTS[productId].approvalStatus = newStatus;
-      PRODUCTS[productId].lastDate = newStatus === 'approved' ? now : PRODUCTS[productId].lastDate;
-    }
-    // 홈 카드 재생성
-    var customerId = PRODUCTS[productId] ? PRODUCTS[productId].customerId : null;
-    if(customerId){
-      var oldCard = document.getElementById('customer_' + customerId);
-      if(oldCard) oldCard.remove();
-      db.ref('customers/' + customerId).once('value').then(function(snapC){
-        var cust = snapC.val();
-        if(!cust) return;
-        db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snapP){
-          var prods = snapP.val() ? Object.values(snapP.val()) : [];
-          addCustomerCard(cust, prods);
-        });
-      });
-    }
-    refreshHomeKPI();
-    // 현재 제품 화면 즉시 새로고침 (alert 없이)
-    var custId = PRODUCTS[productId] ? PRODUCTS[productId].customerId : null;
-    var modelName2 = PRODUCTS[productId] ? PRODUCTS[productId].modelName : null;
-    if(custId && modelName2){
-      var custName = window._customerCache && window._customerCache[custId] ? window._customerCache[custId].name : '';
-      goProductDynamic(custId, modelName2, encodeURIComponent(custName));
-    }
-    showToast(newStatus === 'approved' ? '✅ 승인완료 처리되었습니다!' : '⏳ 승인대기로 변경되었습니다.', 'success');
-  }).catch(function(err){
-    showToast('❌ 변경 실패: ' + err.message, 'error');
-  });
+  showApprovalModal(productId, currentStatus);
 }
 
 function confirmDeleteCustomer(customerId){
@@ -3527,7 +3486,8 @@ function buildSearchIndex(){
   // Firebase 고객사
   if(window._customerCache){
     Object.values(window._customerCache).forEach(function(c){
-      if(!items.find(function(i){ return i.name === c.name; })){
+      var alreadyIn = false; for(var _fi=0;_fi<items.length;_fi++){if(items[_fi].name===c.name){alreadyIn=true;break;}}
+      if(!alreadyIn){
         items.push({type:'고객사', name:c.name, sub:c.eng, action:function(){ goHome(); }});
       }
     });
@@ -4840,6 +4800,8 @@ function renderData(){
   document.getElementById('kpi-red').textContent=redCnt;
   document.getElementById('kpi-yellow').textContent=yelCnt;
   document.getElementById('kpi-green').textContent=grnCnt;
+  // Live Feedback 알림
+  showLiveFeedback(rows);
   var dateLabel=curDate==='all'?'전체':curDate;
   var sideLabel=curSide==='lh'?'LH':curSide==='rh'?'RH':'ALL';
   document.getElementById('kpi-sel').textContent=dateLabel+'·'+sideLabel;
@@ -5594,6 +5556,167 @@ function stopDemoSimulation(){
   showToast('데모 모드 종료', 'success');
 }
 
+// ===== Live Feedback 알림 배너 =====
+function showLiveFeedback(rows){
+  var fails = rows.filter(function(r){ return !r.isAngle && r.st && r.st.sortKey === 0; });
+  var warns = rows.filter(function(r){ return !r.isAngle && r.st && r.st.sortKey === 1; });
+  var existing = document.getElementById('live-feedback-banner');
+  if(existing) existing.remove();
+  var msg, color, bg, border;
+  if(fails.length === 0 && warns.length === 0){
+    var passCnt = rows.filter(function(r){ return !r.isAngle; }).length;
+    if(!passCnt) return;
+    msg='✅ 전체 '+passCnt+'개 항목 정상 — Cpk ≥ 1.33 전 항목 합격';
+    color='#15803d'; bg='#f0fdf4'; border='#86efac';
+  } else if(fails.length > 0){
+    var names=fails.slice(0,2).map(function(r){return 'No.'+r.no+' '+(curProduct&&curProduct.partNames&&curProduct.partNames[r.no]||'');}).join(', ');
+    if(fails.length>2) names+=' 외 '+(fails.length-2)+'건';
+    msg='🔴 즉시수리 필요 — '+names+' 항목이 한계치에 도달했습니다. 금형 보수를 권장합니다.';
+    color='#b91c1c'; bg='#fef2f2'; border='#fca5a5';
+  } else {
+    var names=warns.slice(0,2).map(function(r){return 'No.'+r.no;}).join(', ');
+    if(warns.length>2) names+=' 외 '+(warns.length-2)+'건';
+    msg='⚠️ 주의 관찰 필요 — '+names+' 항목 Cpk 1.0~1.33 구간 진입. 추이 모니터링 권장.';
+    color='#92400e'; bg='#fffbeb'; border='#fcd34d';
+  }
+  var div=document.createElement('div');
+  div.id='live-feedback-banner';
+  div.style.cssText='position:fixed;top:68px;left:50%;transform:translateX(-50%);z-index:9999;'+
+    'background:'+bg+';border:2px solid '+border+';border-radius:8px;'+
+    'padding:13px 22px;max-width:660px;width:92%;box-shadow:0 8px 24px rgba(0,0,0,0.15);'+
+    'font-size:13px;font-weight:700;color:'+color+';text-align:center;'+
+    'animation:slideDown 0.4s ease;cursor:pointer;line-height:1.5;';
+  div.innerHTML=msg+'<span style="margin-left:10px;font-size:11px;opacity:0.55">(클릭하여 닫기)</span>';
+  div.onclick=function(){div.remove();};
+  document.body.appendChild(div);
+  setTimeout(function(){if(div.parentNode)div.remove();},9000);
+}
+
+// ===== 승인 모달 고도화 =====
+function showApprovalModal(productId, currentStatus){
+  var isApproved = currentStatus==='approved'||currentStatus==='conditional';
+  var old=document.getElementById('approval-modal-overlay');
+  if(old) old.remove();
+  var inner;
+  if(isApproved){
+    inner='<p style="color:#64748b;margin:0 0 18px;font-size:13px">현재 <b style="color:#1a1a2e">'+(currentStatus==='conditional'?'조건부승인':'승인완료')+'</b> 상태입니다.</p>'+
+      '<div style="display:flex;gap:8px;justify-content:center">'+
+      '<button onclick="doApproval(\''+productId+'\',\'pending\',\'\')" style="background:#fef3c7;border:none;border-radius:6px;padding:10px 22px;font-weight:700;color:#92400e;cursor:pointer;font-size:13px">⏳ 승인 취소</button>'+
+      '<button onclick="document.getElementById(\'approval-modal-overlay\').remove()" style="background:#f1f5f9;border:none;border-radius:6px;padding:10px 18px;font-weight:700;color:#64748b;cursor:pointer;font-size:13px">닫기</button>'+
+      '</div>';
+  } else {
+    inner='<p style="color:#64748b;margin:0 0 14px;font-size:13px">승인 유형을 선택하고 의견을 입력해주세요.</p>'+
+      '<div style="display:flex;gap:8px;margin-bottom:14px">'+
+      '<button onclick="selectApprovalType(this,\'approved\')" id="atype-approved" class="atype-btn" style="flex:1;padding:9px 4px;border:2px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#64748b;transition:all 0.15s">✅ 승인</button>'+
+      '<button onclick="selectApprovalType(this,\'conditional\')" id="atype-conditional" class="atype-btn" style="flex:1;padding:9px 4px;border:2px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#64748b;transition:all 0.15s">🔶 조건부승인</button>'+
+      '<button onclick="selectApprovalType(this,\'rejected\')" id="atype-rejected" class="atype-btn" style="flex:1;padding:9px 4px;border:2px solid #e2e8f0;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#64748b;transition:all 0.15s">❌ 반려</button>'+
+      '</div>'+
+      '<textarea id="approval-comment" placeholder="승인 의견 또는 반려 사유 입력 (반려 시 필수)" style="width:100%;height:76px;border:1.5px solid #e2e8f0;border-radius:6px;padding:10px;font-size:13px;resize:none;box-sizing:border-box;margin-bottom:14px;font-family:inherit"></textarea>'+
+      '<div style="display:flex;gap:8px;justify-content:center">'+
+      '<button onclick="submitApproval(\''+productId+'\')" style="background:#1d4ed8;border:none;border-radius:6px;padding:10px 30px;font-weight:700;color:#fff;cursor:pointer;font-size:13px">확인</button>'+
+      '<button onclick="document.getElementById(\'approval-modal-overlay\').remove()" style="background:#f1f5f9;border:none;border-radius:6px;padding:10px 20px;font-weight:700;color:#64748b;cursor:pointer;font-size:13px">취소</button>'+
+      '</div>';
+  }
+  var overlay=document.createElement('div');
+  overlay.id='approval-modal-overlay';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML='<div style="background:#fff;border-radius:12px;padding:28px;width:420px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.3)">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">'+
+    '<h3 style="margin:0;font-size:16px;color:#1a1a2e;font-weight:800">승인 처리</h3>'+
+    '<span style="font-size:12px;background:#f1f5f9;padding:3px 10px;border-radius:10px;color:#64748b;font-weight:600">'+productId.toUpperCase()+'</span>'+
+    '</div>'+inner+'</div>';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  document.body.appendChild(overlay);
+  window._approvalType=null;
+}
+
+function selectApprovalType(btn, type){
+  document.querySelectorAll('.atype-btn').forEach(function(b){
+    b.style.border='2px solid #e2e8f0'; b.style.background='#fff'; b.style.color='#64748b';
+  });
+  btn.style.border='2px solid #1d4ed8'; btn.style.background='#eff6ff'; btn.style.color='#1d4ed8';
+  window._approvalType=type;
+}
+
+function submitApproval(productId){
+  var type=window._approvalType;
+  if(!type){showToast('승인 유형을 선택해주세요.','error');return;}
+  var comment=(document.getElementById('approval-comment')||{}).value||'';
+  if(type==='rejected'&&!comment.trim()){showToast('반려 사유를 입력해주세요.','error');return;}
+  doApproval(productId, type, comment);
+}
+
+function doApproval(productId, type, comment){
+  var now=new Date().toISOString().split('T')[0];
+  var nowFull=new Date().toISOString();
+  var newStatus=type==='approved'?'approved':type==='conditional'?'conditional':'pending';
+  db.ref('products/'+productId).update({
+    approvalStatus:newStatus,
+    approvedAt:newStatus!=='pending'?now:null
+  }).then(function(){
+    db.ref('approvalHistory/'+productId).push({
+      type:type, comment:comment, date:nowFull, operator:'성우전자 개발팀'
+    });
+    if(PRODUCTS[productId]) PRODUCTS[productId].approvalStatus=newStatus;
+    var overlay=document.getElementById('approval-modal-overlay');
+    if(overlay) overlay.remove();
+    var msgMap={approved:'✅ 승인완료',conditional:'🔶 조건부승인',pending:'⏳ 승인 취소'};
+    showToast((msgMap[newStatus]||'처리')+'되었습니다.', newStatus==='pending'?'info':'success');
+    refreshHomeKPI();
+    var custId=PRODUCTS[productId]?PRODUCTS[productId].customerId:null;
+    var modelName2=PRODUCTS[productId]?PRODUCTS[productId].modelName:null;
+    if(custId&&modelName2){
+      var custName=window._customerCache&&window._customerCache[custId]?window._customerCache[custId].name:'';
+      goProductDynamic(custId,modelName2,encodeURIComponent(custName));
+    }
+  }).catch(function(err){showToast('처리 실패: '+err.message,'error');});
+}
+
+// ===== SVG 호버 팝업 =====
+function showSvgTooltip(e, no){
+  hideSvgTooltip();
+  var p=curProduct; if(!p) return;
+  var spec=p.specMap&&p.specMap[no], tol=p.tolMap&&p.tolMap[no];
+  var pname=p.partNames&&p.partNames[no]?p.partNames[no]:'No.'+no;
+  var src=getDataSource?getDataSource():(p.vinaAll||p.vinaLH||{});
+  var dates=Object.keys(src).sort();
+  var vals=dates.map(function(d){return src[d]&&src[d][no]!=null?src[d][no]:null;}).filter(function(v){return v!=null;});
+  var cpkTxt='—', color='#64748b';
+  if(vals.length>=2&&spec!=null&&tol!=null){
+    var mean=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+    var sigma=Math.sqrt(vals.reduce(function(s,v){return s+(v-mean)*(v-mean);},0)/vals.length)||0.0001;
+    var cpk=Math.min((spec+tol-mean)/(3*sigma),(mean-(spec-tol))/(3*sigma));
+    cpkTxt=cpk.toFixed(3);
+    color=cpk>=1.33?'#16a34a':cpk>=1.0?'#d97706':'#dc2626';
+  }
+  var trendRows=dates.slice(-5).map(function(d){
+    var v=src[d]&&src[d][no]!=null?src[d][no]:null;
+    if(v==null)return '';
+    var ok=spec!=null&&tol!=null?Math.abs(v-spec)<=tol:true;
+    return '<tr><td style="color:#94a3b8;font-size:10px;padding:1px 8px;white-space:nowrap">'+d+'</td>'+
+           '<td style="font-weight:700;font-size:11px;color:'+(ok?'#4ade80':'#f87171')+';padding:1px 8px">'+v+'</td></tr>';
+  }).join('');
+  var div=document.createElement('div');
+  div.id='svg-tooltip';
+  div.style.cssText='position:fixed;z-index:99999;background:#1a1a2e;border:1px solid #334155;border-radius:8px;'+
+    'padding:12px 14px;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.5);pointer-events:none;';
+  div.innerHTML='<div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:5px">No.'+no+' '+pname+'</div>'+
+    (spec!=null?'<div style="font-size:10px;color:#94a3b8;margin-bottom:4px">규격: '+spec+' ± '+tol+'</div>':'')+
+    '<div style="font-size:14px;font-weight:900;color:'+color+';margin-bottom:8px">Cpk '+cpkTxt+'</div>'+
+    (trendRows?'<table style="border-collapse:collapse;width:100%"><tbody>'+trendRows+'</tbody></table>':
+    '<div style="font-size:10px;color:#64748b">측정 데이터 없음</div>');
+  document.body.appendChild(div);
+  var x=e.clientX+16, y=e.clientY-20;
+  if(x+200>window.innerWidth) x=e.clientX-210;
+  if(y+160>window.innerHeight) y=e.clientY-160;
+  div.style.left=x+'px'; div.style.top=y+'px';
+}
+
+function hideSvgTooltip(){
+  var t=document.getElementById('svg-tooltip');
+  if(t) t.remove();
+}
+
 // ===== 기능② SVG 도면 시각화 매핑 =====
 function buildSvgMap(){
   var container = document.getElementById('svgMapContainer');
@@ -5632,7 +5755,7 @@ function buildSvgMap(){
     var color = p.status==='red'?'#ef4444':p.status==='yellow'?'#f59e0b':p.status==='gray'?'#cbd5e1':'#16a34a';
     var anim = p.status==='red' ? ' style="animation:svgBlink 1s ease-in-out infinite"' : '';
     svgContent += '<g id="svgpt-'+p.no+'" class="svg-pt" data-no="'+p.no+'" style="cursor:pointer" onclick="highlightTableRow('+p.no+')" onmouseenter="highlightTableRow('+p.no+')" onmouseleave="clearTableHighlight()">';
-    svgContent += '<circle cx="'+p.cx+'" cy="'+p.cy+'" r="18" fill="'+color+'" fill-opacity="0.15" stroke="'+color+'" stroke-width="2"'+anim+'/>';
+    svgContent += '<circle cx="'+p.cx+'" cy="'+p.cy+'" r="18" fill="'+color+'" fill-opacity="0.15" stroke="'+color+'" stroke-width="2"'+anim+' onmouseover="showSvgTooltip(event,'+p.no+')" onmouseout="hideSvgTooltip()"/>';
     svgContent += '<text cx="'+p.cx+'" cy="'+p.cy+'" x="'+p.cx+'" y="'+(p.cy+1)+'" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700" fill="'+color+'">'+p.no+'</text>';
     if(p.val!=null) svgContent += '<text x="'+p.cx+'" y="'+(p.cy+28)+'" text-anchor="middle" font-size="8.5" fill="#64748b">'+p.val.toFixed(3)+'</text>';
     svgContent += '</g>';
