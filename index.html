@@ -5649,10 +5649,13 @@ function submitApproval(productId){
 function doApproval(productId, type, comment){
   var now=new Date().toISOString().split('T')[0];
   var nowFull=new Date().toISOString();
-  var newStatus=type==='approved'?'approved':type==='conditional'?'conditional':'pending';
+  // rejected는 Firebase에 'rejected'로 저장 (pending과 구분)
+  var newStatus=type==='approved'?'approved':type==='conditional'?'conditional':type==='rejected'?'rejected':'pending';
   db.ref('products/'+productId).update({
     approvalStatus:newStatus,
-    approvedAt:newStatus!=='pending'?now:null
+    approvedAt:(newStatus==='approved'||newStatus==='conditional')?now:null,
+    rejectedAt:newStatus==='rejected'?now:null,
+    rejectComment:newStatus==='rejected'?comment:null
   }).then(function(){
     db.ref('approvalHistory/'+productId).push({
       type:type, comment:comment, date:nowFull, operator:'성우전자 개발팀'
@@ -5660,8 +5663,9 @@ function doApproval(productId, type, comment){
     if(PRODUCTS[productId]) PRODUCTS[productId].approvalStatus=newStatus;
     var overlay=document.getElementById('approval-modal-overlay');
     if(overlay) overlay.remove();
-    var msgMap={approved:'✅ 승인완료',conditional:'🔶 조건부승인',pending:'⏳ 승인 취소'};
-    showToast((msgMap[newStatus]||'처리')+'되었습니다.', newStatus==='pending'?'info':'success');
+    var msgMap={approved:'✅ 승인완료',conditional:'🔶 조건부승인',rejected:'❌ 반려',pending:'⏳ 승인 취소'};
+    var toastType=newStatus==='rejected'?'error':newStatus==='pending'?'info':'success';
+    showToast((msgMap[newStatus]||'처리')+'되었습니다.'+(newStatus==='rejected'&&comment?' (사유: '+comment+')':''), toastType);
     refreshHomeKPI();
     var custId=PRODUCTS[productId]?PRODUCTS[productId].customerId:null;
     var modelName2=PRODUCTS[productId]?PRODUCTS[productId].modelName:null;
