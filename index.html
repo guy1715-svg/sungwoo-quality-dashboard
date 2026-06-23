@@ -2821,70 +2821,44 @@ function saveModel(customerId, customerName){
 }
 
 function refreshHomeKPI(){
-  // 만도 하드코딩 집계 (Firebase 없음)
-  var mandoTotal    = Object.keys(MANDO_PRODUCTS).length; // 4
-  var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+  Promise.all([
+    db.ref('customers').once('value'),
+    db.ref('products').once('value')
+  ]).then(function(snaps){
+    var custs = snaps[0].val() || {};
+    var prods = snaps[1].val() || {};
+    var prodList = Object.values(prods);
 
-  // AM사 하드코딩 PID 목록
-  var amPids = ['at5851','ap5010','ap5030'];
-  var amTotal = amPids.length; // 3
+    var totalCust = Object.keys(custs).length;
+    var totalProds = prodList.length;
 
-  // Firebase 실제 데이터 기준 집계
-  db.ref('customers').once('value').then(function(snapC){
-    var custData = snapC.val() || {};
-    var fbCustCount = Object.keys(custData).length;
-    var totalCust = fbCustCount + 2; // +만도(1) +AM사(1)
+    var modelSet = {};
+    var totalApproved = 0;
+    for(var i=0; i<prodList.length; i++){
+      var p = prodList[i];
+      if(p.customerId && p.modelName) modelSet[p.customerId+'__'+p.modelName] = 1;
+      if(p.approvalStatus==='approved'||p.approvalStatus==='conditional') totalApproved++;
+    }
+    var totalModels = Object.keys(modelSet).length;
 
-    db.ref('products').once('value').then(function(snapP){
-      var prodData = snapP.val() || {};
+    var elCust        = document.getElementById('kpi-cust');
+    var elProd        = document.getElementById('kpi-prod');
+    var elModel       = document.getElementById('kpi-model');
+    var elApproved    = document.getElementById('kpi-approved');
+    var elApprovedSub = document.getElementById('kpi-approved-sub');
 
-      // 모델 수: Firebase 모델 + 만도(1) + AM사(1)
-      var modelSet = {};
-      var fbProds = Object.values(prodData);
-      for(var i=0; i<fbProds.length; i++){
-        var p = fbProds[i];
-        if(p.customerId && p.modelName) modelSet[p.customerId+'__'+p.modelName] = 1;
-      }
-      var totalModels = Object.keys(modelSet).length + 2;
+    countUp(elCust,     totalCust,     800);
+    countUp(elProd,     totalProds,    900);
+    countUp(elModel,    totalModels,   700);
+    countUp(elApproved, totalApproved, 1000);
+    if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+    var heroAT = document.getElementById('hero-approved-total');
+    var heroAS = document.getElementById('hero-approved-sub');
+    countUp(heroAT, totalApproved, 1000);
+    if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
 
-      // Firebase 제품 승인완료 (AM사 PID 제외 — 별도 집계)
-      var fbApproved = 0;
-      var fbProdCount = 0;
-      for(var j=0; j<fbProds.length; j++){
-        var pid2 = fbProds[j].productId || '';
-        var isAmPid = false;
-        for(var k=0; k<amPids.length; k++){ if(amPids[k]===pid2){ isAmPid=true; break; } }
-        if(isAmPid) continue; // AM사 중복 방지
-        fbProdCount++;
-        var st = fbProds[j].approvalStatus;
-        if(st === 'approved' || st === 'conditional') fbApproved++;
-      }
-
-      // AM사 승인: 하드코딩 고정 (Firebase pending 값과 무관)
-      var amApproved = amPids.length; // AT5851, AP5010, AP5030 항상 승인완료
-
-      var totalProds    = fbProdCount + mandoTotal + amTotal;
-      var totalApproved = mandoApproved + amApproved + fbApproved;
-
-      var elCust        = document.getElementById('kpi-cust');
-      var elProd        = document.getElementById('kpi-prod');
-      var elModel       = document.getElementById('kpi-model');
-      var elApproved    = document.getElementById('kpi-approved');
-      var elApprovedSub = document.getElementById('kpi-approved-sub');
-
-      countUp(elCust,     totalCust,     800);
-      countUp(elProd,     totalProds,    900);
-      countUp(elModel,    totalModels,   700);
-      countUp(elApproved, totalApproved, 1000);
-      if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
-      var heroAT = document.getElementById('hero-approved-total');
-      var heroAS = document.getElementById('hero-approved-sub');
-      countUp(heroAT, totalApproved, 1000);
-      if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
-
-      refreshHomeQualityKPI();
-      refreshRecentActivity();
-    });
+    refreshHomeQualityKPI();
+    refreshRecentActivity();
   }).catch(function(){
     refreshHomeQualityKPI();
     refreshRecentActivity();
@@ -3213,6 +3187,70 @@ function refreshRecentActivity(){
   });
 }
 
+// ===== 레거시 제품(만도/AM사) Firebase 초기화 =====
+function initializeLegacyProducts(){
+  // 만도 고객사 Firebase 등록 (없으면)
+  db.ref('customers/mando').once('value').then(function(snap){
+    if(!snap.val()){
+      db.ref('customers/mando').set({id:'mando',name:'만도',nameEn:'Mando Corporation',color:'#0d1b33',createdAt:new Date().toISOString()});
+    }
+  });
+  // AM사 고객사 Firebase 등록 (없으면)
+  db.ref('customers/am').once('value').then(function(snap){
+    if(!snap.val()){
+      db.ref('customers/am').set({id:'am',name:'AM사',nameEn:'AM Corporation',color:'#16a34a',createdAt:new Date().toISOString()});
+    }
+  });
+
+  // 만도 제품 4종 Firebase 등록/동기화
+  var mandoDefs = [
+    {pid:'br0035', code:'BR0035', name:'FRT BRKT LH#1', model:'MX5A EREV'},
+    {pid:'br0036', code:'BR0036', name:'RR BRKT LH#1',  model:'MX5A EREV'},
+    {pid:'br0037', code:'BR0037', name:'RR BRKT LH#2',  model:'MX5A EREV'},
+    {pid:'br0038', code:'BR0038', name:'RR BRKT LH#3',  model:'MX5A EREV'}
+  ];
+  mandoDefs.forEach(function(d){
+    db.ref('products/'+d.pid).once('value').then(function(snap){
+      var existing = snap.val();
+      var isApproved = !!(MANDO_PRODUCTS[d.pid] && MANDO_PRODUCTS[d.pid].approved);
+      if(!existing){
+        db.ref('products/'+d.pid).set({
+          productId:d.pid, productCode:d.code, productName:d.name,
+          customerId:'mando', modelName:d.model,
+          approvalStatus: isApproved?'approved':'pending',
+          createdAt:new Date().toISOString()
+        });
+      } else {
+        // 승인 상태만 동기화 (MANDO_PRODUCTS 기준)
+        db.ref('products/'+d.pid+'/approvalStatus').set(isApproved?'approved':'pending');
+      }
+    });
+  });
+
+  // AM사 제품 3종 Firebase 등록/승인완료 동기화
+  var amDefs = [
+    {pid:'at5851', code:'AT5851', name:'BT SHIELD CAN',   model:'SHIELD CAN'},
+    {pid:'ap5010', code:'AP5010', name:'SHIELD CAN A/B',  model:'SHIELD CAN'},
+    {pid:'ap5030', code:'AP5030', name:'LCD GND SPRING',  model:'SHIELD CAN'}
+  ];
+  amDefs.forEach(function(d){
+    db.ref('products/'+d.pid).once('value').then(function(snap){
+      var existing = snap.val();
+      if(!existing){
+        db.ref('products/'+d.pid).set({
+          productId:d.pid, productCode:d.code, productName:d.name,
+          customerId:'am', modelName:d.model,
+          approvalStatus:'approved',
+          createdAt:new Date().toISOString()
+        });
+      } else if(existing.approvalStatus !== 'approved' && existing.approvalStatus !== 'conditional'){
+        // Firebase에 pending으로 잘못 저장된 경우 approved로 수정
+        db.ref('products/'+d.pid+'/approvalStatus').set('approved');
+      }
+    });
+  });
+}
+
 // ===== Firebase 동적 데이터 로드 =====
 // Firebase에 저장된 고객사/모델/제품을 불러와 대시보드에 반영
 function loadFirebaseData(){
@@ -3257,7 +3295,10 @@ function loadFirebaseData(){
     // 고객사 카드 생성
     Object.values(customers).forEach(function(customer){
       var prods = custProducts[customer.id] || [];
-      addCustomerCard(customer, prods);
+      // 만도/AM사는 하드코딩 카드 사용, 중복 방지
+      if(customer.id !== 'mando' && customer.id !== 'am'){
+        addCustomerCard(customer, prods);
+      }
     });
 
     // KPI 업데이트
@@ -3665,6 +3706,7 @@ function toggleMandoApproval(pid){
     approved: newStatus,
     updatedAt: nowStr
   }).then(function(){
+    db.ref('products/'+pid+'/approvalStatus').set(newStatus ? 'approved' : 'pending');
     // 히스토리 push
     db.ref('mandoApprovalHistory/' + pid).push({
       action: newStatus ? 'approved' : 'cancelled',
@@ -3933,8 +3975,11 @@ function loadMandoApproval(){
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-  loadFirebaseData(); // 내부에서 refreshHomeKPI() 호출함
-  loadMandoApproval();
+  initializeLegacyProducts();
+  setTimeout(function(){
+    loadFirebaseData();
+    loadMandoApproval();
+  }, 800);
 });
 
 function showFirebaseProductManager(){
@@ -5962,31 +6007,15 @@ function updateExecSummary(){
   var dateEl = document.getElementById('exec-date');
   if(dateEl) dateEl.textContent = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 기준 · 실시간 현황';
 
-  var mandoTotal    = Object.keys(MANDO_PRODUCTS).length;
-  var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
-  var amPids2 = ['at5851','ap5010','ap5030'];
-  var amTotal2 = amPids2.length;
-
-  db.ref('products').once('value').then(function(snapP){
-    var prodData = snapP.val() || {};
-
-    // AM사 승인: 하드코딩 초기값 기준 (Firebase 값과 무관하게 고정)
-    var amApproved2 = amPids2.length; // AT5851, AP5010, AP5030 항상 승인완료
-
-    // Firebase 제품 (AM사 PID 제외)
-    var fbProdCount=0, fbApproved=0;
-    var fbProds = Object.values(prodData);
-    for(var j=0; j<fbProds.length; j++){
-      var pid2 = fbProds[j].productId||'';
-      var isAm=false; for(var k=0;k<amPids2.length;k++){if(amPids2[k]===pid2){isAm=true;break;}}
-      if(isAm) continue;
-      fbProdCount++;
-      var st = fbProds[j].approvalStatus;
-      if(st==='approved'||st==='conditional') fbApproved++;
+  db.ref('products').once('value').then(function(snap){
+    var prods = snap.val() || {};
+    var prodList = Object.values(prods);
+    var totalProds = prodList.length;
+    var totalApproved = 0;
+    for(var i=0; i<prodList.length; i++){
+      var st = prodList[i].approvalStatus;
+      if(st==='approved'||st==='conditional') totalApproved++;
     }
-
-    var totalProds    = fbProdCount + mandoTotal + amTotal2;
-    var totalApproved = mandoApproved + amApproved2 + fbApproved;
     var pct = totalProds > 0 ? Math.round(totalApproved/totalProds*100) : 0;
 
     var pctEl  = document.getElementById('exec-approval-pct');
