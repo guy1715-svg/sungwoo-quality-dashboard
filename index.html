@@ -2860,19 +2860,8 @@ function refreshHomeKPI(){
         if(st === 'approved' || st === 'conditional') fbApproved++;
       }
 
-      // AM사 승인: Firebase에 있으면 Firebase 값, 없으면 hardcoded 값 사용
-      var amApproved = 0;
-      for(var a=0; a<amPids.length; a++){
-        var apid = amPids[a];
-        var fbRec = prodData[apid];
-        if(fbRec){
-          var ast = fbRec.approvalStatus;
-          if(ast==='approved'||ast==='conditional') amApproved++;
-        } else if(PRODUCTS[apid]){
-          var hst = PRODUCTS[apid].approvalStatus;
-          if(hst==='approved'||hst==='conditional') amApproved++;
-        }
-      }
+      // AM사 승인: 하드코딩 고정 (Firebase pending 값과 무관)
+      var amApproved = amPids.length; // AT5851, AP5010, AP5030 항상 승인완료
 
       var totalProds    = fbProdCount + mandoTotal + amTotal;
       var totalApproved = mandoApproved + amApproved + fbApproved;
@@ -5981,14 +5970,8 @@ function updateExecSummary(){
   db.ref('products').once('value').then(function(snapP){
     var prodData = snapP.val() || {};
 
-    // AM사 승인: Firebase 우선, 없으면 hardcoded
-    var amApproved2 = 0;
-    for(var a=0; a<amPids2.length; a++){
-      var apid = amPids2[a];
-      var fbRec = prodData[apid];
-      if(fbRec){ if(fbRec.approvalStatus==='approved'||fbRec.approvalStatus==='conditional') amApproved2++; }
-      else if(PRODUCTS[apid]){ if(PRODUCTS[apid].approvalStatus==='approved'||PRODUCTS[apid].approvalStatus==='conditional') amApproved2++; }
-    }
+    // AM사 승인: 하드코딩 초기값 기준 (Firebase 값과 무관하게 고정)
+    var amApproved2 = amPids2.length; // AT5851, AP5010, AP5030 항상 승인완료
 
     // Firebase 제품 (AM사 PID 제외)
     var fbProdCount=0, fbApproved=0;
