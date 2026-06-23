@@ -2828,36 +2828,43 @@ function saveModel(customerId, customerName){
 }
 
 function refreshHomeKPI(){
-  // 만도 고정 제품 집계
-  var mandoTotal    = Object.keys(MANDO_PRODUCTS).length;
+  // 만도 하드코딩 집계
+  var mandoTotal    = Object.keys(MANDO_PRODUCTS).length; // 4
   var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
 
-  // Firebase 실제 데이터 기준으로 동적 집계
+  // AM사 하드코딩 집계 (Firebase에 없음)
+  var amPids = ['at5851','ap5010','ap5030'];
+  var amTotal    = amPids.length; // 3
+  var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && (PRODUCTS[pid].approvalStatus==='approved'||PRODUCTS[pid].approvalStatus==='conditional'); }).length;
+
+  // Firebase 실제 데이터 기준으로 동적 집계 (오성디앤이, 켐트로닉스 등 추가 고객사)
   db.ref('customers').once('value').then(function(snapC){
     var custData = snapC.val() || {};
-    var totalCust = Object.keys(custData).length;
+    var fbCustCount = Object.keys(custData).length;
+    // 만도(1) + AM사(1) + Firebase 고객사
+    var totalCust = fbCustCount + 2;
 
     db.ref('products').once('value').then(function(snapP){
       var prodData = snapP.val() || {};
       var prodList = Object.values(prodData);
 
-      // 모델 수 (고객사+모델명 조합 유니크)
+      // 모델 수: Firebase 모델 + 만도(1) + AM사(1)
       var modelSet = {};
       for(var i=0; i<prodList.length; i++){
         var p = prodList[i];
         if(p.customerId && p.modelName) modelSet[p.customerId+'__'+p.modelName] = 1;
       }
-      var totalModels = Object.keys(modelSet).length;
+      var totalModels = Object.keys(modelSet).length + 2; // +만도1 +AM사1
 
-      // Firebase 제품 승인완료 (approved + conditional)
+      // Firebase 제품 승인완료
       var fbApproved = 0;
       for(var j=0; j<prodList.length; j++){
         var st = prodList[j].approvalStatus;
         if(st === 'approved' || st === 'conditional') fbApproved++;
       }
 
-      var totalProds    = prodList.length + mandoTotal;
-      var totalApproved = mandoApproved + fbApproved;
+      var totalProds    = prodList.length + mandoTotal + amTotal;
+      var totalApproved = mandoApproved + amApproved + fbApproved;
 
       var elCust        = document.getElementById('kpi-cust');
       var elProd        = document.getElementById('kpi-prod');
@@ -5967,6 +5974,9 @@ function updateExecSummary(){
 
   var mandoTotal    = Object.keys(MANDO_PRODUCTS).length;
   var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
+  var amPids2 = ['at5851','ap5010','ap5030'];
+  var amTotal2    = amPids2.length;
+  var amApproved2 = amPids2.filter(function(pid){ return PRODUCTS[pid] && (PRODUCTS[pid].approvalStatus==='approved'||PRODUCTS[pid].approvalStatus==='conditional'); }).length;
 
   db.ref('products').once('value').then(function(snapP){
     var prodData = snapP.val() || {};
@@ -5976,8 +5986,8 @@ function updateExecSummary(){
       var st = prodList[j].approvalStatus;
       if(st === 'approved' || st === 'conditional') fbApproved++;
     }
-    var totalProds    = prodList.length + mandoTotal;
-    var totalApproved = mandoApproved + fbApproved;
+    var totalProds    = prodList.length + mandoTotal + amTotal2;
+    var totalApproved = mandoApproved + amApproved2 + fbApproved;
     var pct = totalProds > 0 ? Math.round(totalApproved/totalProds*100) : 0;
 
     var pctEl  = document.getElementById('exec-approval-pct');
