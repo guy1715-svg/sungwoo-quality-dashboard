@@ -2828,38 +2828,60 @@ function saveModel(customerId, customerName){
 }
 
 function refreshHomeKPI(){
-  // KPI 고정값: 만도(4종) + AM사(3종) = 7제품, 2고객사, 2모델
-  // 승인완료: 만도 BR0037(1) + AM사 전체(3) = 4
-  var totalCust     = 2;
-  var totalModels   = 2;
-  var totalProds    = 7;
+  // 만도 고정 제품 집계
+  var mandoTotal    = Object.keys(MANDO_PRODUCTS).length;
   var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
-  var amPids = ['at5851','ap5010','ap5030'];
-  var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
-  var totalApproved = mandoApproved + amApproved;
 
-  var elCust        = document.getElementById('kpi-cust');
-  var elProd        = document.getElementById('kpi-prod');
-  var elModel       = document.getElementById('kpi-model');
-  var elApproved    = document.getElementById('kpi-approved');
-  var elApprovedSub = document.getElementById('kpi-approved-sub');
+  // Firebase 실제 데이터 기준으로 동적 집계
+  db.ref('customers').once('value').then(function(snapC){
+    var custData = snapC.val() || {};
+    var totalCust = Object.keys(custData).length;
 
-  countUp(elCust,     totalCust,     800);
-  countUp(elProd,     totalProds,    900);
-  countUp(elModel,    totalModels,   700);
-  countUp(elApproved, totalApproved, 1000);
-  if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
-  // 히어로 배너 승인완료 연동
-  var heroAT = document.getElementById('hero-approved-total');
-  var heroAS = document.getElementById('hero-approved-sub');
-  countUp(heroAT, totalApproved, 1000);
-  if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
+    db.ref('products').once('value').then(function(snapP){
+      var prodData = snapP.val() || {};
+      var prodList = Object.values(prodData);
 
-  // 전체 불량 현황 집계 (PRODUCTS 하드코딩 제품)
-  refreshHomeQualityKPI();
+      // 모델 수 (고객사+모델명 조합 유니크)
+      var modelSet = {};
+      for(var i=0; i<prodList.length; i++){
+        var p = prodList[i];
+        if(p.customerId && p.modelName) modelSet[p.customerId+'__'+p.modelName] = 1;
+      }
+      var totalModels = Object.keys(modelSet).length;
 
-  // 최근 활동 업데이트
-  refreshRecentActivity();
+      // Firebase 제품 승인완료 (approved + conditional)
+      var fbApproved = 0;
+      for(var j=0; j<prodList.length; j++){
+        var st = prodList[j].approvalStatus;
+        if(st === 'approved' || st === 'conditional') fbApproved++;
+      }
+
+      var totalProds    = prodList.length + mandoTotal;
+      var totalApproved = mandoApproved + fbApproved;
+
+      var elCust        = document.getElementById('kpi-cust');
+      var elProd        = document.getElementById('kpi-prod');
+      var elModel       = document.getElementById('kpi-model');
+      var elApproved    = document.getElementById('kpi-approved');
+      var elApprovedSub = document.getElementById('kpi-approved-sub');
+
+      countUp(elCust,     totalCust,     800);
+      countUp(elProd,     totalProds,    900);
+      countUp(elModel,    totalModels,   700);
+      countUp(elApproved, totalApproved, 1000);
+      if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+      var heroAT = document.getElementById('hero-approved-total');
+      var heroAS = document.getElementById('hero-approved-sub');
+      countUp(heroAT, totalApproved, 1000);
+      if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
+
+      refreshHomeQualityKPI();
+      refreshRecentActivity();
+    });
+  }).catch(function(){
+    refreshHomeQualityKPI();
+    refreshRecentActivity();
+  });
 }
 
 function buildWorkflowBanner(step){
@@ -5939,37 +5961,34 @@ function showValidationError(title, msg){
 }
 
 function updateExecSummary(){
-  // 즉시 고정값 설정
-  var _pctEl = document.getElementById('exec-approval-pct');
-  var _subEl = document.getElementById('exec-approval-sub');
-  var _measEl = document.getElementById('exec-measured');
-  var _urgEl = document.getElementById('exec-urgent');
-  var _dateEl2 = document.getElementById('exec-date');
-  if(_pctEl) _pctEl.textContent = '57%';
-  if(_subEl) _subEl.textContent = '4 / 7 제품';
-  if(_measEl) _measEl.textContent = '7';
-  if(_urgEl) _urgEl.textContent = '0';
-  if(_dateEl2) _dateEl2.textContent = new Date().toLocaleDateString('ko-KR');
-
   var now = new Date();
   var dateEl = document.getElementById('exec-date');
   if(dateEl) dateEl.textContent = now.getFullYear()+'년 '+(now.getMonth()+1)+'월 '+now.getDate()+'일 기준 · 실시간 현황';
 
-  // 승인율은 refreshHomeKPI 완료 후 별도 업데이트
-  // 고정값 기준: 만도4 + AM사3 = 7제품
-  var amPids = ['at5851','ap5010','ap5030'];
-  var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus==='approved'; }).length;
+  var mandoTotal    = Object.keys(MANDO_PRODUCTS).length;
   var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
-  var totalApproved = mandoApproved + amApproved;
-  var totalProds = 7;
-  var pct = Math.round(totalApproved/totalProds*100);
 
-  var pctEl = document.getElementById('exec-approval-pct');
-  var subEl = document.getElementById('exec-approval-sub');
-  var measEl = document.getElementById('exec-measured');
-  if(pctEl) pctEl.textContent = pct+'%';
-  if(subEl) subEl.textContent = totalApproved+' / '+totalProds+' 제품';
-  if(measEl) measEl.textContent = totalProds;
+  db.ref('products').once('value').then(function(snapP){
+    var prodData = snapP.val() || {};
+    var prodList = Object.values(prodData);
+    var fbApproved = 0;
+    for(var j=0; j<prodList.length; j++){
+      var st = prodList[j].approvalStatus;
+      if(st === 'approved' || st === 'conditional') fbApproved++;
+    }
+    var totalProds    = prodList.length + mandoTotal;
+    var totalApproved = mandoApproved + fbApproved;
+    var pct = totalProds > 0 ? Math.round(totalApproved/totalProds*100) : 0;
+
+    var pctEl  = document.getElementById('exec-approval-pct');
+    var subEl  = document.getElementById('exec-approval-sub');
+    var measEl = document.getElementById('exec-measured');
+    var urgEl  = document.getElementById('exec-urgent');
+    if(pctEl)  pctEl.textContent  = pct+'%';
+    if(subEl)  subEl.textContent  = totalApproved+' / '+totalProds+' 제품';
+    if(measEl) measEl.textContent = totalProds;
+    if(urgEl)  urgEl.textContent  = '0';
+  });
 }
 
 // ===== 기능② ③ 데이터 렌더 후 자동 실행 트리거 =====
