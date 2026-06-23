@@ -3273,6 +3273,7 @@ function loadFirebaseData(){
 
     // KPI 업데이트
     refreshHomeKPI();
+    updateExecSummary();
   }).catch(function(err){
     console.error('Firebase 데이터 로드 실패:', err);
     alert('❌ 대시보드 데이터를 불러오지 못했습니다: ' + err.message);
@@ -3936,6 +3937,7 @@ function loadMandoApproval(){
     refreshMandoHomeKPI();
     buildOverviewPanel();
     updatePendingBadge();
+    updateExecSummary();
   }).catch(function(err){
     console.error('만도 승인 상태 로드 실패:', err);
   });
