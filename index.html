@@ -4050,19 +4050,7 @@ function loadAdminData(){
   });
 }
 
-function initExecSummary(){
-  var el1 = document.getElementById('exec-approval-pct');
-  var el2 = document.getElementById('exec-approval-sub');
-  var el3 = document.getElementById('exec-measured');
-  var el4 = document.getElementById('exec-urgent');
-  var el5 = document.getElementById('exec-date');
-  if(el1) el1.textContent = '57%';
-  if(el2) el2.textContent = '4 / 7 제품';
-  if(el3) el3.textContent = '7';
-  if(el4) el4.textContent = '0';
-  if(el5) el5.textContent = new Date().toLocaleDateString('ko-KR');
-}
-function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();updatePendingBadge();initExecSummary();updateExecSummary();}
+function goHome(){showScreen('home');updateBC([{label:'🏠 홈',fn:''}]);document.getElementById('topbarRight').innerHTML='관리자: 성우전자 개발팀<br>업데이트: '+new Date().toISOString().slice(0,10)+'';buildOverviewPanel();checkCpkWarning();refreshDDay();updatePendingBadge();updateExecSummary();refreshHomeKPI();}
 
 // ===== D-Day 마감일 =====
 var FIXED_DEADLINES = [
@@ -5988,18 +5976,33 @@ function updateExecSummary(){
   var mandoTotal    = Object.keys(MANDO_PRODUCTS).length;
   var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
   var amPids2 = ['at5851','ap5010','ap5030'];
-  var amTotal2    = amPids2.length;
-  var amApproved2 = amPids2.filter(function(pid){ return PRODUCTS[pid] && (PRODUCTS[pid].approvalStatus==='approved'||PRODUCTS[pid].approvalStatus==='conditional'); }).length;
+  var amTotal2 = amPids2.length;
 
   db.ref('products').once('value').then(function(snapP){
     var prodData = snapP.val() || {};
-    var prodList = Object.values(prodData);
-    var fbApproved = 0;
-    for(var j=0; j<prodList.length; j++){
-      var st = prodList[j].approvalStatus;
-      if(st === 'approved' || st === 'conditional') fbApproved++;
+
+    // AM사 승인: Firebase 우선, 없으면 hardcoded
+    var amApproved2 = 0;
+    for(var a=0; a<amPids2.length; a++){
+      var apid = amPids2[a];
+      var fbRec = prodData[apid];
+      if(fbRec){ if(fbRec.approvalStatus==='approved'||fbRec.approvalStatus==='conditional') amApproved2++; }
+      else if(PRODUCTS[apid]){ if(PRODUCTS[apid].approvalStatus==='approved'||PRODUCTS[apid].approvalStatus==='conditional') amApproved2++; }
     }
-    var totalProds    = prodList.length + mandoTotal + amTotal2;
+
+    // Firebase 제품 (AM사 PID 제외)
+    var fbProdCount=0, fbApproved=0;
+    var fbProds = Object.values(prodData);
+    for(var j=0; j<fbProds.length; j++){
+      var pid2 = fbProds[j].productId||'';
+      var isAm=false; for(var k=0;k<amPids2.length;k++){if(amPids2[k]===pid2){isAm=true;break;}}
+      if(isAm) continue;
+      fbProdCount++;
+      var st = fbProds[j].approvalStatus;
+      if(st==='approved'||st==='conditional') fbApproved++;
+    }
+
+    var totalProds    = fbProdCount + mandoTotal + amTotal2;
     var totalApproved = mandoApproved + amApproved2 + fbApproved;
     var pct = totalProds > 0 ? Math.round(totalApproved/totalProds*100) : 0;
 
