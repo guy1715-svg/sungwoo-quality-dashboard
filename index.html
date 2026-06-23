@@ -366,13 +366,6 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
       </div>
       <div style="display:flex;gap:1px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">
         <div style="padding:12px 20px;text-align:center;min-width:110px">
-          <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.07em;margin-bottom:4px;text-transform:uppercase">만도 승인</div>
-          <div style="font-size:16px;font-weight:700;color:#60a5fa" id="hero-mando-pct">-</div>
-          <div style="height:2px;background:rgba(255,255,255,0.1);border-radius:1px;margin-top:6px;overflow:hidden">
-            <div id="hero-mando-bar" style="height:100%;background:#3b82f6;width:0%;transition:width 0.8s ease;border-radius:1px"></div>
-          </div>
-        </div>
-        <div style="padding:12px 20px;text-align:center;min-width:110px;border-left:1px solid rgba(255,255,255,0.06)">
           <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.07em;margin-bottom:4px;text-transform:uppercase">전체 승인</div>
           <div style="font-size:16px;font-weight:700;color:#4ade80" id="hero-approved-total">-</div>
           <div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px" id="hero-approved-sub">/ - 제품</div>
@@ -2828,42 +2821,60 @@ function saveModel(customerId, customerName){
 }
 
 function refreshHomeKPI(){
-  // 만도 하드코딩 집계
+  // 만도 하드코딩 집계 (Firebase 없음)
   var mandoTotal    = Object.keys(MANDO_PRODUCTS).length; // 4
   var mandoApproved = Object.keys(MANDO_PRODUCTS).filter(function(pid){ return MANDO_PRODUCTS[pid].approved; }).length;
 
-  // AM사 하드코딩 집계 (Firebase에 없음)
+  // AM사 하드코딩 PID 목록
   var amPids = ['at5851','ap5010','ap5030'];
-  var amTotal    = amPids.length; // 3
-  var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && (PRODUCTS[pid].approvalStatus==='approved'||PRODUCTS[pid].approvalStatus==='conditional'); }).length;
+  var amTotal = amPids.length; // 3
 
-  // Firebase 실제 데이터 기준으로 동적 집계 (오성디앤이, 켐트로닉스 등 추가 고객사)
+  // Firebase 실제 데이터 기준 집계
   db.ref('customers').once('value').then(function(snapC){
     var custData = snapC.val() || {};
     var fbCustCount = Object.keys(custData).length;
-    // 만도(1) + AM사(1) + Firebase 고객사
-    var totalCust = fbCustCount + 2;
+    var totalCust = fbCustCount + 2; // +만도(1) +AM사(1)
 
     db.ref('products').once('value').then(function(snapP){
       var prodData = snapP.val() || {};
-      var prodList = Object.values(prodData);
 
       // 모델 수: Firebase 모델 + 만도(1) + AM사(1)
       var modelSet = {};
-      for(var i=0; i<prodList.length; i++){
-        var p = prodList[i];
+      var fbProds = Object.values(prodData);
+      for(var i=0; i<fbProds.length; i++){
+        var p = fbProds[i];
         if(p.customerId && p.modelName) modelSet[p.customerId+'__'+p.modelName] = 1;
       }
-      var totalModels = Object.keys(modelSet).length + 2; // +만도1 +AM사1
+      var totalModels = Object.keys(modelSet).length + 2;
 
-      // Firebase 제품 승인완료
+      // Firebase 제품 승인완료 (AM사 PID 제외 — 별도 집계)
       var fbApproved = 0;
-      for(var j=0; j<prodList.length; j++){
-        var st = prodList[j].approvalStatus;
+      var fbProdCount = 0;
+      for(var j=0; j<fbProds.length; j++){
+        var pid2 = fbProds[j].productId || '';
+        var isAmPid = false;
+        for(var k=0; k<amPids.length; k++){ if(amPids[k]===pid2){ isAmPid=true; break; } }
+        if(isAmPid) continue; // AM사 중복 방지
+        fbProdCount++;
+        var st = fbProds[j].approvalStatus;
         if(st === 'approved' || st === 'conditional') fbApproved++;
       }
 
-      var totalProds    = prodList.length + mandoTotal + amTotal;
+      // AM사 승인: Firebase에 있으면 Firebase 값, 없으면 hardcoded 값 사용
+      var amApproved = 0;
+      for(var a=0; a<amPids.length; a++){
+        var apid = amPids[a];
+        var fbRec = prodData[apid];
+        if(fbRec){
+          var ast = fbRec.approvalStatus;
+          if(ast==='approved'||ast==='conditional') amApproved++;
+        } else if(PRODUCTS[apid]){
+          var hst = PRODUCTS[apid].approvalStatus;
+          if(hst==='approved'||hst==='conditional') amApproved++;
+        }
+      }
+
+      var totalProds    = fbProdCount + mandoTotal + amTotal;
       var totalApproved = mandoApproved + amApproved + fbApproved;
 
       var elCust        = document.getElementById('kpi-cust');
@@ -2887,6 +2898,8 @@ function refreshHomeKPI(){
     });
   }).catch(function(){
     refreshHomeQualityKPI();
+    refreshRecentActivity();
+  });
     refreshRecentActivity();
   });
 }
