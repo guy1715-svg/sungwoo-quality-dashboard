@@ -1109,20 +1109,20 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
           <div style="background:#f8f8f8;border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:11px;color:#888;margin-bottom:4px">규격 허용 편차</div>
-            <div style="font-size:20px;font-weight:700;color:#1a1a2e">±0.08<span style="font-size:12px">mm</span></div>
+            <div id="scan-spec-val" style="font-size:20px;font-weight:700;color:#1a1a2e">±0.08<span style="font-size:12px">mm</span></div>
           </div>
           <div style="background:#f8f8f8;border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:11px;color:#888;margin-bottom:4px">측정 제품수</div>
-            <div style="font-size:20px;font-weight:700;color:#1a1a2e">710<span style="font-size:12px">개</span></div>
+            <div id="scan-total-val" style="font-size:20px;font-weight:700;color:#1a1a2e">-<span style="font-size:12px">개</span></div>
           </div>
           <div style="background:#eafaf1;border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:11px;color:#888;margin-bottom:4px">최대 휨</div>
-            <div style="font-size:20px;font-weight:700;color:#1e8449">0.035<span style="font-size:12px">mm</span></div>
+            <div id="scan-max-val" style="font-size:20px;font-weight:700;color:#1e8449">-<span style="font-size:12px">mm</span></div>
             <div style="font-size:10px;color:#27ae60">규격 내</div>
           </div>
           <div style="background:#eafaf1;border-radius:8px;padding:12px;text-align:center">
             <div style="font-size:11px;color:#888;margin-bottom:4px">평균 휨</div>
-            <div style="font-size:20px;font-weight:700;color:#1e8449">0.021<span style="font-size:12px">mm</span></div>
+            <div id="scan-avg-val" style="font-size:20px;font-weight:700;color:#1e8449">-<span style="font-size:12px">mm</span></div>
             <div style="font-size:10px;color:#27ae60">양호</div>
           </div>
         </div>
@@ -1137,7 +1137,7 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
           </div>
         </div>
         <div style="margin-top:12px;background:#f0f7ff;border-radius:8px;padding:10px 14px;font-size:11px;color:#1e40af">
-          💡 <strong>SMT 평탄도 기준:</strong> 하부스캔 최대 휨 0.08mm 이하 → 710개 전수 합격 (불량률 0%)
+          💡 <strong>SMT 평탄도 기준:</strong> 하부스캔 최대 휨 <span id="scan-spec-note">0.08</span>mm 이하 → <span id="scan-total-note">-</span>개 전수 합격 (불량률 <span id="scan-fail-rate">0</span>%)
         </div>
       </div>
     </div>
@@ -2270,19 +2270,20 @@ function exportPDFReport(){
   '<style>' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
     'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f7fa;color:#222;font-size:12px;padding:0}' +
-    '.page{max-width:800px;margin:0 auto;background:#fff;padding:32px 36px;min-height:100vh}' +
-    '.header{background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}' +
+    '.page{max-width:800px;margin:0 auto;background:#fff;padding:28px 36px}' +
+    '.page-break{page-break-before:always;padding-top:28px}' +
+    '.header{background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}' +
     '.header-left .co{font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:0.1em;margin-bottom:4px}' +
     '.header-left h1{font-size:18px;font-weight:800;color:#fff;margin-bottom:2px}' +
     '.header-left .sub{font-size:11px;color:rgba(255,255,255,0.5)}' +
     '.header-right{text-align:right}' +
     '.header-right .date{font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:4px}' +
     '.header-right .part{font-size:13px;font-weight:700;color:#60a5fa}' +
-    '.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}' +
-    '.kpi{border:1px solid #e8eaf0;border-radius:10px;padding:12px 10px;text-align:center;background:#fafafa}' +
-    '.kpi-val{font-size:22px;font-weight:800;margin-bottom:2px}' +
+    '.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}' +
+    '.kpi{border:1px solid #e8eaf0;border-radius:10px;padding:10px 8px;text-align:center;background:#fafafa}' +
+    '.kpi-val{font-size:20px;font-weight:800;margin-bottom:2px}' +
     '.kpi-lbl{font-size:10px;color:#888;font-weight:500}' +
-    '.section{font-size:12px;font-weight:800;color:#1a1a2e;margin:20px 0 8px;padding-bottom:5px;border-bottom:2px solid #1a1a2e;display:flex;align-items:center;gap:6px}' +
+    '.section{font-size:12px;font-weight:800;color:#1a1a2e;margin:16px 0 8px;padding-bottom:5px;border-bottom:2px solid #1a1a2e;display:flex;align-items:center;gap:6px}' +
     'table{width:100%;border-collapse:collapse}' +
     'th{background:#1a1a2e;color:#fff;padding:7px 8px;font-size:10px;text-align:center;font-weight:700}' +
     'th:nth-child(2){text-align:left}' +
@@ -2327,7 +2328,19 @@ function exportPDFReport(){
       '</tbody></table>' +
     '</div>' +
   '</div>' +
-  '<div class="section" style="margin-top:20px">📋 항목별 측정 상세 — ' + lastDate + '</div>' +
+  '<div class="page-break">' +
+  '<div class="header">' +
+    '<div class="header-left">' +
+      '<div class="co">SUNGWOO ELECTRONICS · GLOBAL PRODUCT MANAGEMENT</div>' +
+      '<h1>' + esc(curProduct.name) + ' — 측정 상세</h1>' +
+      '<div class="sub">기준일: ' + lastDate + ' &nbsp;|&nbsp; 2 / 2 페이지</div>' +
+    '</div>' +
+    '<div class="header-right">' +
+      '<div class="date">출력일: ' + nowStr + '</div>' +
+      '<div class="part">' + esc(curProduct.code) + '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="section">📋 항목별 측정 상세 — ' + lastDate + '</div>' +
   '<table><thead><tr><th>No.</th><th>측정 부위</th><th>Spec</th><th>TOL</th><th>측정값</th><th>편차(%)</th><th>Cpk</th><th>판정</th></tr></thead>' +
   '<tbody>' + tableRows + '</tbody></table>' +
   (function(){
@@ -2364,11 +2377,12 @@ function exportPDFReport(){
       '<tbody>'+ptRows+'</tbody></table>'+
       '<div style="font-size:10px;color:#888;margin-top:6px">* 기준: 최대 휨 ±'+sd.spec+'mm 이하 합격 &nbsp;|&nbsp; 측정 포인트: Height 1~12</div>';
   })() +
-  '<div class="footer" style="margin-top:20px">' +
+  '<div class="footer" style="margin-top:16px">' +
     '<span>성우전자 FAI 관리시스템 · SUNGWOO ELECTRONICS</span>' +
     '<span>* 편차(%) = (측정값 - Spec) ÷ TOL × 100 &nbsp;|&nbsp; 불합격: |편차| > 100%</span>' +
-  '</div>' +
-  '</div>' +
+  '</div>' +  // footer
+  '</div>' +  // page-break div 닫기
+  '</div>' +  // page div 닫기
   '<button class="print-btn" onclick="window.print()">🖨️ PDF 저장 / 인쇄</button>' +
   '</body></html>';
 
@@ -5515,6 +5529,21 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 function renderScanChart(scanData){
+  // KPI 숫자 동적 업데이트
+  var elSpec  = document.getElementById('scan-spec-val');
+  var elTotal = document.getElementById('scan-total-val');
+  var elMax   = document.getElementById('scan-max-val');
+  var elAvg   = document.getElementById('scan-avg-val');
+  var elSpecN = document.getElementById('scan-spec-note');
+  var elTotalN= document.getElementById('scan-total-note');
+  var elFailR = document.getElementById('scan-fail-rate');
+  if(elSpec)  elSpec.innerHTML  = '±'+scanData.spec+'<span style="font-size:12px">mm</span>';
+  if(elTotal) elTotal.innerHTML = scanData.total+'<span style="font-size:12px">개</span>';
+  if(elMax)   elMax.innerHTML   = scanData.max.toFixed(3)+'<span style="font-size:12px">mm</span>';
+  if(elAvg)   elAvg.innerHTML   = scanData.avg.toFixed(3)+'<span style="font-size:12px">mm</span>';
+  if(elSpecN) elSpecN.textContent = scanData.spec;
+  if(elTotalN)elTotalN.textContent = scanData.total;
+  if(elFailR) elFailR.textContent = scanData.total>0?Math.round(scanData.fail/scanData.total*100):0;
   // 분포 바차트
   var sc = document.getElementById('scanChart');
   if(sc._chart) sc._chart.destroy();
