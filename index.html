@@ -2330,7 +2330,41 @@ function exportPDFReport(){
   '<div class="section" style="margin-top:20px">📋 항목별 측정 상세 — ' + lastDate + '</div>' +
   '<table><thead><tr><th>No.</th><th>측정 부위</th><th>Spec</th><th>TOL</th><th>측정값</th><th>편차(%)</th><th>Cpk</th><th>판정</th></tr></thead>' +
   '<tbody>' + tableRows + '</tbody></table>' +
-  '<div class="footer">' +
+  (function(){
+    if(!curProduct.scanData) return '';
+    var sd = curProduct.scanData;
+    var passRate = Math.round(sd.pass/sd.total*100);
+    var pColor = passRate===100?'#16a34a':passRate>=90?'#f59e0b':'#dc2626';
+    // 포인트별 행
+    var ptRows = '';
+    if(sd.pointStats){
+      var pts = Object.keys(sd.pointStats).sort(function(a,b){return a-b;});
+      pts.forEach(function(pt){
+        var s = sd.pointStats[pt];
+        if(!s.vals||!s.vals.length) return;
+        var avg = (s.vals.reduce(function(a,b){return a+b;},0)/s.vals.length).toFixed(4);
+        var mx  = Math.max.apply(null,s.vals).toFixed(4);
+        var ok  = Math.round(s.pass/(s.pass+s.fail)*100);
+        var c   = ok===100?'#16a34a':ok>=90?'#f59e0b':'#dc2626';
+        ptRows += '<tr><td style="text-align:center;font-weight:700">Point '+pt+'</td>'+
+          '<td style="text-align:center">'+avg+'</td>'+
+          '<td style="text-align:center">'+mx+'</td>'+
+          '<td style="text-align:center;font-weight:700;color:'+c+'">'+ok+'%</td>'+
+          '<td style="text-align:center;font-weight:700;color:'+c+'">'+(ok===100?'✅ 합격':'⚠️ 확인')+'</td></tr>';
+      });
+    }
+    return '<div class="section" style="margin-top:20px">📐 하부스캔 휨 분석 (SMT 평탄도)</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">'+
+        '<div class="kpi"><div class="kpi-val" style="color:#1a1a2e">'+sd.total+'</div><div class="kpi-lbl">전수 측정수</div></div>'+
+        '<div class="kpi"><div class="kpi-val" style="color:#16a34a">'+sd.pass+'</div><div class="kpi-lbl">합격</div></div>'+
+        '<div class="kpi"><div class="kpi-val" style="color:#dc2626">'+sd.fail+'</div><div class="kpi-lbl">불합격</div></div>'+
+        '<div class="kpi"><div class="kpi-val" style="color:'+pColor+'">'+passRate+'%</div><div class="kpi-lbl">합격률</div></div>'+
+      '</div>'+
+      '<table><thead><tr><th>포인트</th><th>평균(mm)</th><th>최대(mm)</th><th>합격률</th><th>판정</th></tr></thead>'+
+      '<tbody>'+ptRows+'</tbody></table>'+
+      '<div style="font-size:10px;color:#888;margin-top:6px">* 기준: 최대 휨 ±'+sd.spec+'mm 이하 합격 &nbsp;|&nbsp; 측정 포인트: Height 1~12</div>';
+  })() +
+  '<div class="footer" style="margin-top:20px">' +
     '<span>성우전자 FAI 관리시스템 · SUNGWOO ELECTRONICS</span>' +
     '<span>* 편차(%) = (측정값 - Spec) ÷ TOL × 100 &nbsp;|&nbsp; 불합격: |편차| > 100%</span>' +
   '</div>' +
