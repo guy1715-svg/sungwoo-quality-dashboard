@@ -5185,14 +5185,46 @@ function parseHQFile(wb){
 function parseScanFile(wb){
   var ws = wb.Sheets[wb.SheetNames[0]];
   var arr = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
-  var spec = pNum(arr[0][1]) || 0.08;
+  var spec = 0.08;
   var maxVals = [];
+  // 포인트별 통계 (Height:1 ~ Height:12)
+  var pointStats = {}; // {1:{vals:[], pass:0, fail:0}, ...}
 
-  for(var i=3;i<arr.length;i++){
+  // 헤더 행 찾기 (INDEX 포함 행)
+  var dataStart = 0;
+  var heightCols = []; // [{col:idx, point:n}]
+  for(var h=0;h<Math.min(5,arr.length);h++){
+    var row = arr[h];
+    if(!row) continue;
+    for(var c=0;c<row.length;c++){
+      var cell = String(row[c]||'');
+      if(cell.indexOf('Height')>=0 || cell.indexOf('height')>=0){
+        var m = cell.match(/(\d+)/);
+        if(m) heightCols.push({col:c, point:parseInt(m[1])});
+      }
+    }
+    if(heightCols.length > 0){ dataStart = h+1; break; }
+  }
+  // 헤더 못찾으면 col 1~12를 Height 1~12로 간주
+  if(heightCols.length === 0){
+    for(var p=1;p<=12;p++) heightCols.push({col:p, point:p});
+    dataStart = 1;
+  }
+  heightCols.forEach(function(h){ pointStats[h.point]={vals:[],pass:0,fail:0}; });
+
+  for(var i=dataStart;i<arr.length;i++){
     var row = arr[i];
-    if(!row || !row[0] || String(row[0]).indexOf('제품') < 0) continue;
-    var maxVal = pNum(row[11]);
-    if(maxVal !== null) maxVals.push(maxVal);
+    if(!row || row[0]===null || row[0]===undefined || row[0]==='') continue;
+    var rowMax = -Infinity;
+    heightCols.forEach(function(h){
+      var v = pNum(row[h.col]);
+      if(v===null) return;
+      pointStats[h.point].vals.push(v);
+      if(v<=spec) pointStats[h.point].pass++;
+      else pointStats[h.point].fail++;
+      if(v>rowMax) rowMax=v;
+    });
+    if(rowMax > -Infinity) maxVals.push(rowMax);
   }
 
   if(maxVals.length === 0) return null;
@@ -5218,7 +5250,8 @@ function parseScanFile(wb){
     min: minV,
     pass: maxVals.filter(function(v){return v<=spec;}).length,
     fail: maxVals.filter(function(v){return v>spec;}).length,
-    dist: dist
+    dist: dist,
+    pointStats: pointStats
   };
 }
 
@@ -5251,10 +5284,16 @@ document.addEventListener('DOMContentLoaded', function(){
           // 파일명으로 추가 감지 (detectFileType이 unknown 반환 시)
           if(fileType === 'unknown'){
             var fn = file.name.toLowerCase();
-            if(fn.indexOf('측정') >= 0 || (fn.indexOf('data_') >= 0 && fn.indexOf('measurement') < 0)){
+            // CSV 파일: 날짜-시간 패턴 (26-06-22_102428 등) → 하부스캔
+            if(isCsv && /^\d{2}-\d{2}-\d{2}_\d+/.test(file.name)){
+              fileType = 'scan';
+            } else if(fn.indexOf('측정') >= 0 || (fn.indexOf('data_') >= 0 && fn.indexOf('measurement') < 0)){
               fileType = 'dimension_hq';
             } else if(fn.indexOf('measurement') >= 0){
               fileType = 'dimension';
+            } else if(isCsv){
+              // CSV이면서 다른 형식도 아닐 때 → 하부스캔으로 시도
+              fileType = 'scan';
             }
           }
 
@@ -5411,6 +5450,15 @@ document.addEventListener('DOMContentLoaded', function(){
             var scanSection = document.getElementById('scanSection');
             scanSection.style.display = 'block';
             renderScanChart(scanResult);
+            // 스캔 섹션 헤더 수치 동적 업데이트
+            var elSpec = scanSection.querySelector('[data-scan-spec]');
+            var elTotal = scanSection.querySelector('[data-scan-total]');
+            var elPass = scanSection.querySelector('[data-scan-pass]');
+            var elFail = scanSection.querySelector('[data-scan-fail]');
+            if(elSpec) elSpec.textContent = '±'+scanResult.spec;
+            if(elTotal) elTotal.textContent = scanResult.total;
+            if(elPass) elPass.textContent = scanResult.pass;
+            if(elFail) elFail.textContent = scanResult.fail;
 
             document.getElementById('measFileName').textContent = '✅ '+file.name;
             document.getElementById('measStatus').textContent = '📐 하부스캔 데이터 반영완료! 측정수: '+scanResult.total+'개 (합격률: '+Math.round(scanResult.pass/scanResult.total*100)+'%)';
@@ -5479,6 +5527,42 @@ function renderScanChart(scanData){
       }
     }
   });
+
+  // 포인트별 분석 표
+  if(scanData.pointStats){
+    var ptDiv = document.getElementById('scanPointTable');
+    if(!ptDiv){
+      ptDiv = document.createElement('div');
+      ptDiv.id = 'scanPointTable';
+      ptDiv.style.cssText = 'margin-top:14px;';
+      var scanSec = document.getElementById('scanSection');
+      if(scanSec) scanSec.appendChild(ptDiv);
+    }
+    var pts = Object.keys(scanData.pointStats).sort(function(a,b){return a-b;});
+    var rows = pts.map(function(pt){
+      var s = scanData.pointStats[pt];
+      var avg = s.vals.length ? (s.vals.reduce(function(a,b){return a+b;},0)/s.vals.length).toFixed(4) : '-';
+      var mx  = s.vals.length ? Math.max.apply(null,s.vals).toFixed(4) : '-';
+      var ok  = s.pass+s.fail > 0 ? Math.round(s.pass/(s.pass+s.fail)*100) : 0;
+      var color = ok===100?'#16a34a':ok>=90?'#f59e0b':'#dc2626';
+      return '<tr style="border-bottom:1px solid #f0f0f0">'+
+        '<td style="padding:6px 10px;font-weight:700;color:#1a1a2e">Point '+pt+'</td>'+
+        '<td style="padding:6px 10px;text-align:center">'+avg+'</td>'+
+        '<td style="padding:6px 10px;text-align:center">'+mx+'</td>'+
+        '<td style="padding:6px 10px;text-align:center;font-weight:700;color:'+color+'">'+ok+'%</td>'+
+      '</tr>';
+    }).join('');
+    ptDiv.innerHTML = '<div style="font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:8px">📍 포인트별 분석 (Height 1~12)</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:11px">'+
+        '<thead><tr style="background:#f8fafc">'+
+          '<th style="padding:6px 10px;text-align:left;color:#888">포인트</th>'+
+          '<th style="padding:6px 10px;text-align:center;color:#888">평균(mm)</th>'+
+          '<th style="padding:6px 10px;text-align:center;color:#888">최대(mm)</th>'+
+          '<th style="padding:6px 10px;text-align:center;color:#888">합격률</th>'+
+        '</tr></thead>'+
+        '<tbody>'+rows+'</tbody>'+
+      '</table>';
+  }
 }
 
 function setDate(date,btn){
