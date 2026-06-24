@@ -364,23 +364,9 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
           <span id="heroClock">시스템 정상 운영 중</span>
         </div>
       </div>
-      <div style="display:flex;gap:1px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">
-        <div style="padding:12px 20px;text-align:center;min-width:110px">
-          <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.07em;margin-bottom:4px;text-transform:uppercase">전체 승인</div>
-          <div style="font-size:16px;font-weight:700;color:#4ade80" id="hero-approved-total">-</div>
-          <div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px" id="hero-approved-sub">/ - 제품</div>
-        </div>
-        <div style="padding:12px 20px;text-align:center;min-width:120px;border-left:1px solid rgba(255,255,255,0.06)">
-          <div style="font-size:9px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.07em;margin-bottom:4px;text-transform:uppercase">진행률</div>
-          <div style="font-size:16px;font-weight:700;color:#a78bfa" id="hero-total-pct">-</div>
-          <div style="height:2px;background:rgba(255,255,255,0.1);border-radius:1px;margin-top:6px;overflow:hidden">
-            <div id="hero-total-bar" style="height:100%;background:linear-gradient(90deg,#7c3aed,#22c55e);width:0%;transition:width 1s ease;border-radius:1px"></div>
-          </div>
-        </div>
-        <div style="padding:12px 16px;text-align:center;border-left:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:6px;justify-content:center">
-          <button onclick="copyShareLink()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap" title="대시보드 링크 복사">🔗 링크 복사</button>
-          <button onclick="showGuide()" style="background:rgba(59,130,246,0.25);border:1px solid rgba(59,130,246,0.4);color:#93c5fd;border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap">📖 사용 가이드</button>
-        </div>
+      <div style="display:flex;flex-direction:column;gap:6px;justify-content:center">
+        <button onclick="copyShareLink()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap">🔗 링크 복사</button>
+        <button onclick="showGuide()" style="background:rgba(59,130,246,0.25);border:1px solid rgba(59,130,246,0.4);color:#93c5fd;border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap">📖 사용 가이드</button>
       </div>
     </div>
     <!-- hidden: 하위 호환성 -->
@@ -558,8 +544,8 @@ body.dark .topbar-nav-item.active{color:#fff;border-bottom-color:#3b82f6;}
             <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px">AM Corporation</div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:11px;color:rgba(255,255,255,0.5)">모델 1개 · 제품 3종</div>
-            <div style="font-size:11px;color:#6ee7b7;margin-top:2px">승인완료 3 / 3</div>
+            <div id="am-home-prod-count" style="font-size:11px;color:rgba(255,255,255,0.5)">모델 1개 · 제품 3종</div>
+            <div id="am-home-progress-text" style="font-size:11px;color:#6ee7b7;margin-top:2px">승인완료 3 / 3</div>
           </div>
         </div>
         <div style="padding:18px 22px">
@@ -2857,6 +2843,15 @@ function refreshHomeKPI(){
     countUp(heroAT, totalApproved, 1000);
     if(heroAS) heroAS.textContent = '/ ' + totalProds + ' 제품';
 
+    // AM사 홈 카드 숫자 동적 업데이트
+    var amProds = prodList.filter(function(p){return p.customerId==='am';});
+    var amTotal = amProds.length;
+    var amApproved = amProds.filter(function(p){return p.approvalStatus==='approved'||p.approvalStatus==='conditional';}).length;
+    var elAmCount = document.getElementById('am-home-prod-count');
+    var elAmProg  = document.getElementById('am-home-progress-text');
+    if(elAmCount) elAmCount.textContent = '모델 1개 · 제품 '+amTotal+'종';
+    if(elAmProg)  elAmProg.textContent  = '승인완료 '+amApproved+' / '+amTotal;
+
     refreshHomeQualityKPI();
     refreshRecentActivity();
   }).catch(function(){
@@ -3665,28 +3660,34 @@ function refreshMandoHomeKPI(){
   if(heroMandoPct) heroMandoPct.textContent = mandoApproved + ' / ' + total;
   if(heroMandoBar) heroMandoBar.style.width = pct + '%';
 
-  // 홈 상단 kpi-approved 숫자 갱신 (고정값 기준: 만도4 + AM사3 = 7제품)
-  var amPids = ['at5851','ap5010','ap5030'];
-  var amApproved = amPids.filter(function(pid){ return PRODUCTS[pid] && PRODUCTS[pid].approvalStatus === 'approved'; }).length;
-  var totalApproved = mandoApproved + amApproved;
-  var totalProds = 7;
-  var elApproved    = document.getElementById('kpi-approved');
-  var elApprovedSub = document.getElementById('kpi-approved-sub');
-  if(elApproved)    elApproved.textContent    = totalApproved;
-  if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
+  // 홈 상단 kpi-approved 숫자 갱신 — Firebase 기준으로 계산
+  db.ref('products').once('value').then(function(snap){
+    var prods = snap.val() || {};
+    var prodList = Object.values(prods);
+    var totalProds = prodList.length;
+    var totalApproved = 0;
+    for(var i=0; i<prodList.length; i++){
+      var st = prodList[i].approvalStatus;
+      if(st==='approved'||st==='conditional') totalApproved++;
+    }
+    var elApproved    = document.getElementById('kpi-approved');
+    var elApprovedSub = document.getElementById('kpi-approved-sub');
+    if(elApproved)    elApproved.textContent    = totalApproved;
+    if(elApprovedSub) elApprovedSub.textContent = totalApproved + ' / ' + totalProds + ' 제품';
 
-  // 전체 승인 게이지 업데이트
-  var totalPct = Math.round(totalApproved / totalProds * 100);
-  var heroTotalPct = document.getElementById('hero-total-pct');
-  var heroTotalBar = document.getElementById('hero-total-bar');
-  var heroTotalBreakdown = document.getElementById('hero-total-breakdown');
-  var heroApprovedTotal = document.getElementById('hero-approved-total');
-  var heroApprovedSub   = document.getElementById('hero-approved-sub');
-  if(heroTotalPct) heroTotalPct.textContent = totalPct + '%';
-  if(heroTotalBar) heroTotalBar.style.width = totalPct + '%';
-  if(heroTotalBreakdown) heroTotalBreakdown.textContent = '만도 ' + mandoApproved + '/4 · AM사 ' + amApproved + '/3';
-  if(heroApprovedTotal) heroApprovedTotal.textContent = totalApproved;
-  if(heroApprovedSub)   heroApprovedSub.textContent   = '/ ' + totalProds + ' 제품';
+    // 전체 승인 게이지 업데이트
+    var totalPct = totalProds > 0 ? Math.round(totalApproved / totalProds * 100) : 0;
+    var heroTotalPct = document.getElementById('hero-total-pct');
+    var heroTotalBar = document.getElementById('hero-total-bar');
+    var heroTotalBreakdown = document.getElementById('hero-total-breakdown');
+    var heroApprovedTotal = document.getElementById('hero-approved-total');
+    var heroApprovedSub   = document.getElementById('hero-approved-sub');
+    if(heroTotalPct) heroTotalPct.textContent = totalPct + '%';
+    if(heroTotalBar) heroTotalBar.style.width = totalPct + '%';
+    if(heroTotalBreakdown) heroTotalBreakdown.textContent = '만도 ' + mandoApproved + '/4 · 전체 ' + totalApproved + '/' + totalProds;
+    if(heroApprovedTotal) heroApprovedTotal.textContent = totalApproved;
+    if(heroApprovedSub)   heroApprovedSub.textContent   = '/ ' + totalProds + ' 제품';
+  });
 }
 
 function toggleMandoApproval(pid){
@@ -4404,8 +4405,66 @@ function goAMCustomerScreen(){
 }
 
 function goProductAM(){
-  showScreen('product-am');
+  var screenId = 'screen-dyn-am-shieldcan';
+  if(!document.getElementById(screenId)){
+    var div = document.createElement('div');
+    div.id = screenId;
+    div.className = 'screen';
+    document.querySelector('.container').appendChild(div);
+  }
+  var screen = document.getElementById(screenId);
+  screen.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:13px">제품 불러오는 중...</div>';
+  showScreen('dyn-am-shieldcan');
   updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사',fn:'goAMCustomerScreen()'},{label:'SHIELD CAN'}]);
+  db.ref('products').orderByChild('customerId').equalTo('am').once('value').then(function(snap){
+    var prods = [];
+    snap.forEach(function(ch){ var p=ch.val(); if(p.modelName==='SHIELD CAN'||!p.modelName) prods.push(p); });
+    var html = buildWorkflowBanner(3)+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">'+
+        '<div class="sec-title" style="margin-bottom:0">제품 선택 — SHIELD CAN</div>'+
+        '<div style="display:flex;gap:8px">'+
+          '<button onclick="openAddProduct(\'am\',\'AM사\',\'SHIELD CAN\')" style="padding:7px 14px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer">+ 제품 추가</button>'+
+          '<button onclick="goCompare()" style="padding:7px 14px;background:#0d1b33;color:#fff;border:none;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer">📂 HQ vs VINA 비교</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="product-grid">';
+    prods.forEach(function(p){
+      var pid = p.productId || p.id || '';
+      var st = p.approvalStatus || 'pending';
+      var isApproved = st==='approved'||st==='conditional';
+      var isRejected = st==='rejected';
+      var borderColor = isApproved?'#16a34a':isRejected?'#dc2626':'#e2e8f0';
+      var bgColor = isApproved?'#f0fdf4':isRejected?'#fef2f2':'#f8fafc';
+      var statusBadge = isApproved?(st==='conditional'?'<span class="p-tag" style="background:#fef3c7;color:#92400e">🔶 조건부승인</span>':'<span class="p-tag" style="background:#d1fae5;color:#065f46">✅ 승인완료</span>'):isRejected?'<span class="p-tag" style="background:#fee2e2;color:#991b1b">❌ 반려</span>':'<span class="p-tag" style="background:#fff3cd;color:#856404">⏳ 승인대기</span>';
+      var btnLabel = isApproved?'⏳승인취소':isRejected?'🔄재검토':'✅승인처리';
+      var dateStr = p.approvedAt?p.approvedAt.substring(0,10):p.rejectedAt?p.rejectedAt.substring(0,10):'';
+      var statusLabel = isApproved?'승인완료':isRejected?'반려':'승인대기';
+      html += '<div class="product-card" onclick="goDashboard(\''+pid+'\')" style="border-color:'+borderColor+';background:'+bgColor+'">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+          '<div style="font-size:11px;color:#888;font-weight:600">'+(p.productCode||pid)+'</div>'+
+          '<div style="display:flex;gap:4px">'+
+            '<button onclick="event.stopPropagation();toggleApproval(\''+pid+'\',\''+st+'\')" style="background:#fef3c7;border:none;border-radius:3px;color:#92400e;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">'+btnLabel+'</button>'+
+          '</div>'+
+        '</div>'+
+        '<div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:8px">'+(p.productName||p.name||'')+'</div>'+
+        '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+          '<span class="p-tag tag-vina">VINA ✓</span>'+statusBadge+
+        '</div>'+
+        '<div class="p-bar"><div class="p-bar-fill" style="width:'+(isApproved?'100':'0')+'%;background:'+borderColor+'"></div></div>'+
+        '<div style="font-size:10px;color:#888;margin-top:5px;display:flex;justify-content:space-between"><span>'+statusLabel+'</span><span>'+dateStr+'</span></div>'+
+        '<span class="p-arrow" style="color:'+borderColor+'">→</span>'+
+      '</div>';
+    });
+    html += '</div>';
+    screen.innerHTML = html;
+    // AM사 홈 카드 숫자 업데이트
+    var totalAm = prods.length;
+    var approvedAm = prods.filter(function(p){return p.approvalStatus==='approved'||p.approvalStatus==='conditional';}).length;
+    var el1 = document.getElementById('am-home-prod-count');
+    var el2 = document.getElementById('am-home-progress-text');
+    if(el1) el1.textContent = '모델 1개 · 제품 '+totalAm+'종';
+    if(el2) el2.textContent = '승인완료 '+approvedAm+' / '+totalAm;
+  });
 }
 
 function goCompare(){
