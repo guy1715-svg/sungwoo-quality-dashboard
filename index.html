@@ -2508,6 +2508,20 @@ function deleteProduct(productId, productName){
   });
 }
 
+function deleteProductFirebase(dbKey, productName){
+  if(!confirm('⚠️ [' + productName + '] 제품을 삭제하시겠습니까?\n측정 데이터도 함께 삭제됩니다.')) return;
+  Promise.all([
+    db.ref('products/' + dbKey).remove(),
+    db.ref('measData/' + dbKey).remove()
+  ]).then(function(){
+    showToast('✅ ' + productName + ' 삭제 완료', 'success');
+    refreshHomeKPI();
+    goProductAM();
+  }).catch(function(err){
+    alert('❌ 삭제 실패: ' + err.message);
+  });
+}
+
 function deleteCustomer(customerId, customerName){
   // 1. 해당 고객사의 제품 목록 조회 후 measData도 삭제
   db.ref('products').orderByChild('customerId').equalTo(customerId).once('value').then(function(snap){
@@ -4418,7 +4432,7 @@ function goProductAM(){
   updateBC([{label:'🏠 홈',fn:'goHome()'},{label:'AM사',fn:'goAMCustomerScreen()'},{label:'SHIELD CAN'}]);
   db.ref('products').orderByChild('customerId').equalTo('am').once('value').then(function(snap){
     var prods = [];
-    snap.forEach(function(ch){ var p=ch.val(); if(p.modelName==='SHIELD CAN'||!p.modelName) prods.push(p); });
+    snap.forEach(function(ch){ var p=ch.val(); p._key=ch.key; if(p.modelName==='SHIELD CAN'||!p.modelName) prods.push(p); });
     var html = buildWorkflowBanner(3)+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">'+
         '<div class="sec-title" style="margin-bottom:0">제품 선택 — SHIELD CAN</div>'+
@@ -4429,7 +4443,8 @@ function goProductAM(){
       '</div>'+
       '<div class="product-grid">';
     prods.forEach(function(p){
-      var pid = p.productId || p.id || '';
+      var pid = p.productId || p.id || p._key || '';
+      var dbKey = p._key || pid;
       var st = p.approvalStatus || 'pending';
       var isApproved = st==='approved'||st==='conditional';
       var isRejected = st==='rejected';
@@ -4444,6 +4459,7 @@ function goProductAM(){
           '<div style="font-size:11px;color:#888;font-weight:600">'+(p.productCode||pid)+'</div>'+
           '<div style="display:flex;gap:4px">'+
             '<button onclick="event.stopPropagation();toggleApproval(\''+pid+'\',\''+st+'\')" style="background:#fef3c7;border:none;border-radius:3px;color:#92400e;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">'+btnLabel+'</button>'+
+            '<button onclick="event.stopPropagation();deleteProductFirebase(\''+dbKey+'\',\''+esc(p.productName||p.name||pid)+'\')" style="background:#fee2e2;border:none;border-radius:3px;color:#991b1b;font-size:10px;padding:2px 7px;cursor:pointer;font-weight:700">🗑️삭제</button>'+
           '</div>'+
         '</div>'+
         '<div style="font-size:14px;font-weight:700;color:#1a2236;margin-bottom:8px">'+(p.productName||p.name||'')+'</div>'+
