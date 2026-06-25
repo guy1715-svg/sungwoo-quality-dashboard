@@ -2329,18 +2329,7 @@ function exportPDFReport(){
     '</div>' +
   '</div>' +
   '<div class="page-break">' +
-  '<div class="header">' +
-    '<div class="header-left">' +
-      '<div class="co">SUNGWOO ELECTRONICS · GLOBAL PRODUCT MANAGEMENT</div>' +
-      '<h1>' + esc(curProduct.name) + ' — 측정 상세</h1>' +
-      '<div class="sub">기준일: ' + lastDate + ' &nbsp;|&nbsp; 2 / 2 페이지</div>' +
-    '</div>' +
-    '<div class="header-right">' +
-      '<div class="date">출력일: ' + nowStr + '</div>' +
-      '<div class="part">' + esc(curProduct.code) + '</div>' +
-    '</div>' +
-  '</div>' +
-  '<div class="section">📋 항목별 측정 상세 — ' + lastDate + '</div>' +
+  '<div class="section" style="margin-top:8px">📋 항목별 측정 상세 — ' + lastDate + '</div>' +
   '<table><thead><tr><th>No.</th><th>측정 부위</th><th>Spec</th><th>TOL</th><th>측정값</th><th>편차(%)</th><th>Cpk</th><th>판정</th></tr></thead>' +
   '<tbody>' + tableRows + '</tbody></table>' +
   (function(){
